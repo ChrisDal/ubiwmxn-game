@@ -18,6 +18,9 @@ GameDemo::GameDemo()
     m_EndgameSoundBuffer.loadFromFile("Assets\\Test.wav");
 
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
+
+    // map tile 
+    m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), level, 32, 24);
 }
 
 void GameDemo::Update(float deltaTime)
@@ -43,6 +46,7 @@ void GameDemo::Update(float deltaTime)
 void GameDemo::Render(sf::RenderTarget& target)
 {
     target.clear(sf::Color(0, 0, 0));
+    target.draw(m_Tilemap);
     target.draw(m_Door);
     target.draw(m_MainCharacter);
 
