@@ -4,7 +4,7 @@
 GameDemo::GameDemo()
     : Game{ "Game Demo" }
     , m_Door{ 900, 600, 100, 200 }
-    , m_MainCharacter{}
+    , m_MainCharacter{ sf::Vector2u(1024,768) }
     , m_IsFinished{ false }
 {
     m_EndgameTextFont.loadFromFile("Assets\\arial.ttf");
