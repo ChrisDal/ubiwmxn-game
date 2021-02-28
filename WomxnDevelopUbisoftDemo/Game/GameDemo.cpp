@@ -4,6 +4,7 @@
 GameDemo::GameDemo()
     : Game{ "Game Demo" }
     , m_Door{ 900, 600, 100, 200 }
+    , main_Door{ 900, 100 }
     , m_MainCharacter{ sf::Vector2u(1024,768) }
     , m_IsFinished{ false }
 {
@@ -28,16 +29,17 @@ void GameDemo::Update(float deltaTime)
     m_MainCharacter.Update(deltaTime);
     m_Door.Update(deltaTime);
 
+
     if (!m_IsFinished)
     {
         //if (m_Door.IsColliding(m_MainCharacter))
-        //if (m_Door.Contains(m_MainCharacter.GetCenter()))
-        if (m_Door.Contains(m_MainCharacter))
+        //if (m_Door.Contains(m_MainCharacter))s
+        if (main_Door.Contains(m_MainCharacter.GetCenter()))
         {
             m_EndgameSound.play();
 
             m_MainCharacter.StartEndGame();
-            m_Door.StartEndGame();
+            main_Door.StartEndGame();
             m_IsFinished = true;
         }
     }
@@ -47,6 +49,7 @@ void GameDemo::Render(sf::RenderTarget& target)
 {
     target.clear(sf::Color(0, 0, 0));
     target.draw(m_Tilemap);
+    target.draw(main_Door);
     target.draw(m_Door);
     target.draw(m_MainCharacter);
 
@@ -83,4 +86,9 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     }
 
     ImGui::End();
+
+
+
+
+
 }
