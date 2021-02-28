@@ -2,6 +2,7 @@
 
 #include <Engine/Game.h>
 #include <Game/Door.h>
+#include <Game/Exit.h>
 #include <Game/MainCharacter.h>
 #include <Game/Tilemap.h>
 
@@ -22,6 +23,7 @@ private:
     // Solid Elements
     TileMap m_Tilemap;
     Door m_Door;
+    Exit main_Door;
     MainCharacter m_MainCharacter;
     // Game process
     bool m_IsFinished;

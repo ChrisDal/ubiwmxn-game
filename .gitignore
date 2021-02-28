@@ -1,3 +1,6 @@
 ./out
 ./tmp 
 .vs/
+/out/WomxnDevelopUbisoftDemo/Debug
+/external/imgui-sfml-master/out/build/x64-Debug (par défaut)
+/tmp/WomxnDevelopUbisoftDemo/Debug
