@@ -31,7 +31,7 @@ namespace
 }
 
 
-MainCharacter::MainCharacter()
+MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
     : m_IsPlayingEndGame(false), m_Position(250.0f, 250.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false)
 {
     m_Texture.loadFromFile(".\\Assets\\red_ball.bmp");
@@ -45,6 +45,13 @@ MainCharacter::MainCharacter()
     SetBoundingBox(m_Position, size);
 
     m_IsUsingJoystick = GetFirstJoystickIndex(m_JoystickIndex);
+
+    // sf vectors for min and max of windows app 
+    WIN_LIMIT_X.x = 0;
+    WIN_LIMIT_X.y = WIN_LIMITS.x;
+    WIN_LIMIT_Y.x = 0;
+    WIN_LIMIT_Y.y = WIN_LIMITS.y;
+
 }
 
 
@@ -129,6 +136,15 @@ void MainCharacter::Update(float deltaTime)
     }
 
     m_Position += m_Velocity * deltaTime;
+
+    // Handling out window 
+    if (m_Position.x < WIN_LIMIT_X.x or m_Position.x > WIN_LIMIT_X.y) {
+        m_Position.x -= m_Velocity.x * deltaTime;
+    }
+    if (m_Position.y < WIN_LIMIT_Y.x   or m_Position.y > WIN_LIMIT_Y.y) {
+        m_Position.y -= m_Velocity.y * deltaTime;
+    }
+
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
 }
