@@ -34,7 +34,7 @@ namespace
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
     : m_IsPlayingEndGame(false), m_Position(250.0f, 250.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false)
 {
-    m_Texture.loadFromFile(".\\Assets\\red_ball.bmp");
+    m_Texture.loadFromFile(".\\Assets\\bulle.png");
 
     const sf::Vector2f size(static_cast<float>(m_Texture.getSize().x), static_cast<float>(m_Texture.getSize().y));
 
@@ -55,7 +55,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
 }
 
 
-void MainCharacter::Update(float deltaTime)
+void MainCharacter::Update(float deltaTime, TileMap &Tm)
 {
     if (m_IsPlayingEndGame)
     {
@@ -145,6 +145,14 @@ void MainCharacter::Update(float deltaTime)
         m_Position.y -= m_Velocity.y * deltaTime;
     }
 
+    // handling out not walkable blocks 
+    // To Do modify test on 4 corners of the bouding box rather than pos=center
+    if (!Tm.walkable_tile(m_Position)) {
+        m_Velocity.x = 0;
+        m_Velocity.y = 0;
+        m_Position -= m_Velocity * deltaTime;
+    }
+
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
 }
@@ -158,4 +166,10 @@ void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 void MainCharacter::StartEndGame()
 {
     m_IsPlayingEndGame = true;
+}
+
+
+sf::Vector2f MainCharacter::getVelocity() const
+{
+    return MainCharacter::m_Velocity;
 }

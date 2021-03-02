@@ -26,7 +26,7 @@ GameDemo::GameDemo()
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter.Update(deltaTime);
+    m_MainCharacter.Update(deltaTime, m_Tilemap);
     m_Door.Update(deltaTime);
 
 
@@ -88,6 +88,39 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     ImGui::End();
 
 
+    // ImGui example menu overlay 
+    static bool show_app_simple_overlay = true;
+    const float DISTANCE = 10.0f;
+    static int corner = 3;
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    if (corner != -1)
+    {
+        window_flags |= ImGuiWindowFlags_NoMove;
+        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    }
+    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+    if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
+    {
+        ImGui::Text("Main character velocity");
+        ImGui::Separator();
+        ImGui::Text(" Velocity character X : %.2f", m_MainCharacter.getVelocity().x);
+        ImGui::Text(" Velocity character Y : %.2f", m_MainCharacter.getVelocity().y);
+
+        if (ImGui::BeginPopupContextWindow())
+        {
+            if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
+            if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
+            if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
+            if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
+            if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
+            if (&show_app_simple_overlay && ImGui::MenuItem("Close")) show_app_simple_overlay = false;
+            ImGui::EndPopup();
+        }
+    }
+    ImGui::End();
 
 
 
