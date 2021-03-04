@@ -22,11 +22,14 @@ GameDemo::GameDemo()
 
     // map tile 
     m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), level, 32, 24);
+	// define found plateform 
+	m_plateform = m_Tilemap.getPlateforms(); 
+	
 }
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter.Update(deltaTime, m_Tilemap);
+    m_MainCharacter.Update(deltaTime, m_plateform);
     m_Door.Update(deltaTime);
 
 
@@ -49,6 +52,14 @@ void GameDemo::Render(sf::RenderTarget& target)
 {
     target.clear(sf::Color(0, 0, 0));
     target.draw(m_Tilemap);
+	
+	// draw bounding box for plateform 
+	/*for ( const auto& pfxi : m_plateform) 
+	{
+		target.draw(pfxi); 
+	}
+	*/ 
+	
     target.draw(main_Door);
     target.draw(m_Door);
     target.draw(m_MainCharacter);
@@ -84,6 +95,19 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "GAME IN PROGRESS");
         }
     }
+	
+	if (ImGui::CollapsingHeader("MainCharacter Collision"))
+    {
+        if (m_MainCharacter.getCollidingPf())
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision with Plateform");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "No collision with plateform");
+        }
+    }
+	
 
     ImGui::End();
 

@@ -44,6 +44,15 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
             quad[1].texCoords = sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
             quad[2].texCoords = sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
             quad[3].texCoords = sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
+			
+			// create plateforms : bounding box associated 
+			for (int k = 0; k < sizeof(m_nowalk) ; k++) 
+			{
+				if (tileNumber == m_nowalk[k])
+					m_plateforms.push_back(Plateform(quad[0].position, quad[1].position, quad[2].position, quad[3].position));
+			}
+			
+			
         }
 
     return true;
@@ -84,5 +93,16 @@ bool TileMap::walkable_tile(sf::Vector2f& position)
     }
 
     return walkable;
+}
 
+std::vector<Plateform> TileMap::getPlateforms()
+{
+	
+	// process Tilemap 
+	
+	// get all non walkable tiles 
+	
+	// create plateforms associated 
+	return m_plateforms ;
+	
 }

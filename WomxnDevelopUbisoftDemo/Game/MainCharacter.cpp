@@ -55,7 +55,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
 }
 
 
-void MainCharacter::Update(float deltaTime, TileMap &Tm)
+void MainCharacter::Update(float deltaTime, std::vector<Plateform> &Pf)
 {
     if (m_IsPlayingEndGame)
     {
@@ -147,11 +147,25 @@ void MainCharacter::Update(float deltaTime, TileMap &Tm)
 
     // handling out not walkable blocks 
     // To Do modify test on 4 corners of the bouding box rather than pos=center
-    if (!Tm.walkable_tile(m_Position)) {
+    /*if (!Tm.walkable_tile(m_Position)) {
         m_Velocity.x = 0;
         m_Velocity.y = 0;
         m_Position -= m_Velocity * deltaTime;
-    }
+    }*/
+
+    _colliding_plateforms = false;
+
+    for (const Plateform& pfmi : Pf)
+    {
+        if (this->IsColliding(pfmi)) {
+            _colliding_plateforms = true;
+            m_Position += m_Velocity * deltaTime;
+            m_Velocity.x = 0;
+            m_Velocity.y = 0;
+        }
+    };
+	
+	
 
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
