@@ -106,6 +106,43 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "No collision with plateform");
         }
+		
+		if (m_MainCharacter.getCollidingLeft())
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Left : Yes");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Left : No");
+        }
+        
+        if (m_MainCharacter.getCollidingRight())
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Right : Yes");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Right : No");
+        }
+        
+        if (m_MainCharacter.getCollidingUp())
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Up : Yes");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Up : No");
+        }
+        
+        if (m_MainCharacter.getCollidingDown())
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Down : Yes");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Down : No");
+        }
+
     }
 	
 

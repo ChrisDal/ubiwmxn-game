@@ -23,4 +23,6 @@ protected:
     sf::Vector2f m_position; 
 
     bool walkable; 
+
+	
 };

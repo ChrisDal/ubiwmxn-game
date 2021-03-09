@@ -23,7 +23,6 @@ Plateform::~Plateform()
 
 
 
-
 void Plateform::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(m_Rectangle);
@@ -34,4 +33,6 @@ sf::Vector2f Plateform::getPosition() const {return m_position; }
 
 
 bool Plateform::getWalkable() const {return walkable; }
+
+
 

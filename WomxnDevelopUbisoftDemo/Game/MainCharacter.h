@@ -14,6 +14,17 @@ public:
     
     sf::Vector2f getVelocity() const; 
 	bool getCollidingPf() const { return _colliding_plateforms;}
+	bool isCollidingLeft(const BoxCollideable& other, const bool k_keyboard[5]) const;
+	bool isCollidingRight(const BoxCollideable& other, const bool k_keyboard[5]) const;
+	bool isCollidingUp(const BoxCollideable& other, const bool k_keyboard[5]) const;
+	bool isCollidingDown(const BoxCollideable& other, const bool k_keyboard[5]) const;
+    //  get
+
+	bool getCollidingLeft() const { return c_left;}
+	bool getCollidingRight() const { return c_right;}
+	bool getCollidingUp() const { return c_up;}
+	bool getCollidingDown() const { return c_down;}
+
 
 private:
     sf::Texture m_Texture;
@@ -33,6 +44,11 @@ private:
 	
 	// test 
 	bool _colliding_plateforms{false}; 
+	// colision side detection on Quad
+	bool c_left; 
+	bool c_right; 
+	bool c_up; 
+	bool c_down; 
 
     
     

@@ -17,7 +17,7 @@ public:
         auto bbox = other.GetBoundingBox();
         return m_BoundingBox.contains(bbox.left, bbox.top) && m_BoundingBox.contains(bbox.left + bbox.width, bbox.top + bbox.height);
     }
-
+	
     inline const sf::Vector2f GetCenter() 
     {
         return sf::Vector2f(m_BoundingBox.left + (m_BoundingBox.width / 2.0f), m_BoundingBox.top + (m_BoundingBox.height / 2.0f));
