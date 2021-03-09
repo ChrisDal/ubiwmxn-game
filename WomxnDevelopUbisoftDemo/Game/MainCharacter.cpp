@@ -57,7 +57,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
 }
 
 
-void MainCharacter::Update(float deltaTime, std::vector<Plateform> &Pf)
+void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf)
 {
     if (m_IsPlayingEndGame)
     {
@@ -68,10 +68,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform> &Pf)
     const float SPEED_INC = 10.0f;
     const float DEAD_ZONE = 5.0f;
     const float SLOWDOWN_RATE = 0.9f;
-	
-	const sf::Vector2f old_Position = m_Position; 
-	// List = Right Left Up Down Space
-	bool k_KeyboardPressed[5] = {false, false, false, false, false}; 
+
+    const sf::Vector2f old_Position = m_Position;
+    // List = Right Left Up Down Space
+    bool k_KeyboardPressed[5] = { false, false, false, false, false };
 
     if (m_IsUsingJoystick)
     {
@@ -100,12 +100,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform> &Pf)
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
             m_Velocity.x = fmin(m_Velocity.x + SPEED_INC, SPEED_MAX);
-			k_KeyboardPressed[0] = true; 
+            k_KeyboardPressed[0] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Left))
         {
             m_Velocity.x = fmax(m_Velocity.x - SPEED_INC, -SPEED_MAX);
-			k_KeyboardPressed[1] = true;
+            k_KeyboardPressed[1] = true;
         }
         else
         {
@@ -115,12 +115,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform> &Pf)
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
             m_Velocity.y = fmin(m_Velocity.y + SPEED_INC, SPEED_MAX);
-			k_KeyboardPressed[2] = true;
+            k_KeyboardPressed[2] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Up))
         {
             m_Velocity.y = fmax(m_Velocity.y - SPEED_INC, -SPEED_MAX);
-			k_KeyboardPressed[3] = true;
+            k_KeyboardPressed[3] = true;
         }
         else
         {
@@ -133,7 +133,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform> &Pf)
             {
                 m_Sprite.setScale(0.8f, 0.8f);
                 m_WasButtonPressed = true;
-				k_KeyboardPressed[4] = true;
+                k_KeyboardPressed[4] = true;
             }
         }
         else
@@ -145,34 +145,52 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform> &Pf)
             }
         }
     }
-	
-	_colliding_plateforms = false;
+
+    _colliding_plateforms = false;
 
     for (const Plateform& pfmi : Pf)
     {
         if (this->IsColliding(pfmi)) {
             _colliding_plateforms = true;
-            //m_Position = old_Position;
-			// determine collision side character referentiel 
-			c_left  = MainCharacter::isCollidingLeft(pfmi, k_KeyboardPressed);
+            // m_Position = old_Position;
+            // determine collision side character referentiel 
+            c_left = MainCharacter::isCollidingLeft(pfmi, k_KeyboardPressed);
             c_right = MainCharacter::isCollidingRight(pfmi, k_KeyboardPressed);
-            c_up    = MainCharacter::isCollidingUp(pfmi, k_KeyboardPressed);
-            c_down  = MainCharacter::isCollidingDown(pfmi, k_KeyboardPressed);
+            c_up = MainCharacter::isCollidingUp(pfmi, k_KeyboardPressed);
+            c_down = MainCharacter::isCollidingDown(pfmi, k_KeyboardPressed);
 
-			
-			/*if (k_KeyboardPressed[0] or k_KeyboardPressed[1]) 
-			{
-				m_Velocity.x = 0;
-				
-			} else if (k_KeyboardPressed[2] or k_KeyboardPressed[3])
-			{
-				m_Velocity.y = 0;
-			}*/
+
+            if ((c_left and m_Velocity.x < 0) or (c_right and m_Velocity.x > 0))
+            {
+                // velocity positive 
+                m_Velocity.x = 0;
+
+            }
+            if ((c_up and m_Velocity.y < 0) or (c_down and m_Velocity.y > 0)) {
+                // velocity needs to be positive 
+                m_Velocity.y = 0;
+            }
+
         }
     };
-	
 
-    m_Position += m_Velocity * deltaTime;
+    
+    // test if one keyboard pressed 
+    bool none_keyboard = true; 
+    for (const bool k : k_KeyboardPressed) 
+    { 
+        if (k) {
+            none_keyboard = false; 
+        }
+    }
+    // if inertia doesn't take you into a plateform : update pos
+    if (!(_colliding_plateforms and none_keyboard)) {
+        m_Position += m_Velocity * deltaTime;
+    }
+ 
+
+
+    
 
     // Handling out window 
     if (m_Position.x < WIN_LIMIT_X.x or m_Position.x > WIN_LIMIT_X.y) {
