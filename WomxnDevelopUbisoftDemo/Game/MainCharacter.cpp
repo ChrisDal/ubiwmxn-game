@@ -32,9 +32,11 @@ namespace
 
 
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
-    : m_IsPlayingEndGame(false), m_Position(250.0f, 250.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false)
+    : m_IsPlayingEndGame(false), m_Position(250.0f, 250.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
+    c_left(false), c_right(false), c_up(false), c_down(false)
 {
-    m_Texture.loadFromFile(".\\Assets\\red_ball.bmp");
+
+    m_Texture.loadFromFile(".\\Assets\\bulle.png");
 
     const sf::Vector2f size(static_cast<float>(m_Texture.getSize().x), static_cast<float>(m_Texture.getSize().y));
 
@@ -55,7 +57,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
 }
 
 
-void MainCharacter::Update(float deltaTime)
+void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf)
 {
     if (m_IsPlayingEndGame)
     {
@@ -66,6 +68,10 @@ void MainCharacter::Update(float deltaTime)
     const float SPEED_INC = 10.0f;
     const float DEAD_ZONE = 5.0f;
     const float SLOWDOWN_RATE = 0.9f;
+
+    const sf::Vector2f old_Position = m_Position;
+    // List = Right Left Up Down Space
+    bool k_KeyboardPressed[5] = { false, false, false, false, false };
 
     if (m_IsUsingJoystick)
     {
@@ -94,10 +100,12 @@ void MainCharacter::Update(float deltaTime)
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
             m_Velocity.x = fmin(m_Velocity.x + SPEED_INC, SPEED_MAX);
+            k_KeyboardPressed[0] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Left))
         {
             m_Velocity.x = fmax(m_Velocity.x - SPEED_INC, -SPEED_MAX);
+            k_KeyboardPressed[1] = true;
         }
         else
         {
@@ -107,10 +115,12 @@ void MainCharacter::Update(float deltaTime)
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
             m_Velocity.y = fmin(m_Velocity.y + SPEED_INC, SPEED_MAX);
+            k_KeyboardPressed[2] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Up))
         {
             m_Velocity.y = fmax(m_Velocity.y - SPEED_INC, -SPEED_MAX);
+            k_KeyboardPressed[3] = true;
         }
         else
         {
@@ -123,6 +133,7 @@ void MainCharacter::Update(float deltaTime)
             {
                 m_Sprite.setScale(0.8f, 0.8f);
                 m_WasButtonPressed = true;
+                k_KeyboardPressed[4] = true;
             }
         }
         else
@@ -135,7 +146,51 @@ void MainCharacter::Update(float deltaTime)
         }
     }
 
-    m_Position += m_Velocity * deltaTime;
+    _colliding_plateforms = false;
+
+    for (const Plateform& pfmi : Pf)
+    {
+        if (this->IsColliding(pfmi)) {
+            _colliding_plateforms = true;
+            // m_Position = old_Position;
+            // determine collision side character referentiel 
+            c_left = MainCharacter::isCollidingLeft(pfmi, k_KeyboardPressed);
+            c_right = MainCharacter::isCollidingRight(pfmi, k_KeyboardPressed);
+            c_up = MainCharacter::isCollidingUp(pfmi, k_KeyboardPressed);
+            c_down = MainCharacter::isCollidingDown(pfmi, k_KeyboardPressed);
+
+
+            if ((c_left and m_Velocity.x < 0) or (c_right and m_Velocity.x > 0))
+            {
+                // velocity positive 
+                m_Velocity.x = 0;
+
+            }
+            if ((c_up and m_Velocity.y < 0) or (c_down and m_Velocity.y > 0)) {
+                // velocity needs to be positive 
+                m_Velocity.y = 0;
+            }
+
+        }
+    };
+
+    
+    // test if one keyboard pressed 
+    bool none_keyboard = true; 
+    for (const bool k : k_KeyboardPressed) 
+    { 
+        if (k) {
+            none_keyboard = false; 
+        }
+    }
+    // if inertia doesn't take you into a plateform : update pos
+    if (!(_colliding_plateforms and none_keyboard)) {
+        m_Position += m_Velocity * deltaTime;
+    }
+ 
+
+
+    
 
     // Handling out window 
     if (m_Position.x < WIN_LIMIT_X.x or m_Position.x > WIN_LIMIT_X.y) {
@@ -144,6 +199,17 @@ void MainCharacter::Update(float deltaTime)
     if (m_Position.y < WIN_LIMIT_Y.x   or m_Position.y > WIN_LIMIT_Y.y) {
         m_Position.y -= m_Velocity.y * deltaTime;
     }
+
+    // handling out not walkable blocks 
+    // To Do modify test on 4 corners of the bouding box rather than pos=center
+    /*if (!Tm.walkable_tile(m_Position)) {
+        m_Velocity.x = 0;
+        m_Velocity.y = 0;
+        m_Position -= m_Velocity * deltaTime;
+    }*/
+
+
+	
 
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
@@ -158,4 +224,52 @@ void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 void MainCharacter::StartEndGame()
 {
     m_IsPlayingEndGame = true;
+}
+
+
+sf::Vector2f MainCharacter::getVelocity() const
+{
+    return MainCharacter::m_Velocity;
+}
+
+
+
+bool MainCharacter::isCollidingLeft(const BoxCollideable& other, const bool k_keyboard[5]) const
+{
+	
+	bool leftup = other.Contains(m_BoundingBox.left, m_BoundingBox.top);
+	bool leftdown = other.Contains(m_BoundingBox.left, m_BoundingBox.top + m_BoundingBox.height);
+
+	return (leftup or leftdown) and k_keyboard[1]; 
+
+}
+
+bool MainCharacter::isCollidingRight(const BoxCollideable& other, const bool k_keyboard[5]) const
+{
+
+    bool righttup = other.Contains(m_BoundingBox.left + m_BoundingBox.width, m_BoundingBox.top);
+    bool rightdown = other.Contains(m_BoundingBox.left + m_BoundingBox.width, m_BoundingBox.top + m_BoundingBox.height);
+
+    return (righttup or rightdown) and k_keyboard[0];
+
+}
+
+bool MainCharacter::isCollidingUp(const BoxCollideable& other, const bool k_keyboard[5]) const
+{
+
+    bool leftup = other.Contains(m_BoundingBox.left, m_BoundingBox.top);
+    bool rightup = other.Contains(m_BoundingBox.left + m_BoundingBox.width, m_BoundingBox.top);
+
+    return (leftup or rightup) and k_keyboard[3];
+
+}
+
+bool MainCharacter::isCollidingDown(const BoxCollideable& other, const bool k_keyboard[5]) const
+{
+
+    bool leftdown = other.Contains(m_BoundingBox.left , m_BoundingBox.top + m_BoundingBox.width);
+    bool rightdown = other.Contains(m_BoundingBox.left + m_BoundingBox.width, m_BoundingBox.top + m_BoundingBox.width);
+
+    return (leftdown or rightdown) and k_keyboard[2];
+
 }

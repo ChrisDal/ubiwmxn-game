@@ -1,10 +1,12 @@
 #pragma once
+#include <vector> 
 
 #include <Engine/Game.h>
 #include <Game/Door.h>
 #include <Game/Exit.h>
 #include <Game/MainCharacter.h>
 #include <Game/Tilemap.h>
+#include <Game/Plateform.h>
 
 class GameDemo : public Game
 {
@@ -25,6 +27,8 @@ private:
     Door m_Door;
     Exit main_Door;
     MainCharacter m_MainCharacter;
+	std::vector<Plateform> m_plateform = {}; 
+	
     // Game process
     bool m_IsFinished;
 

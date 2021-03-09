@@ -9,6 +9,10 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
     // load the tileset texture
     if (!m_tileset.loadFromFile(tileset))
         return false;
+    
+    // keep in memory tiles level 
+    m_tiles = tiles; 
+    m_tilesize = tileSize; 
 
     // resize the vertex array to fit the level size
     m_vertices.setPrimitiveType(sf::Quads);
@@ -40,6 +44,15 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, const int*
             quad[1].texCoords = sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
             quad[2].texCoords = sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
             quad[3].texCoords = sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
+			
+			// create plateforms : bounding box associated 
+			for (int k = 0; k < sizeof(m_nowalk) ; k++) 
+			{
+				if (tileNumber == m_nowalk[k])
+					m_plateforms.push_back(Plateform(quad[0].position, quad[1].position, quad[2].position, quad[3].position));
+			}
+			
+			
         }
 
     return true;
@@ -58,4 +71,38 @@ void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const
     // draw the vertex array
     target.draw(m_vertices, states);
 
-};
+}; 
+
+// is the position tile walkable 
+bool TileMap::walkable_tile(sf::Vector2f& position)
+{
+    bool walkable = true;
+    if (m_tilesize.x <= 0 && m_tilesize.y <= 0) {
+        return walkable; 
+    }
+    // from position get tile 
+    sf::Vector2f tilepos(std::ceil(position.x / m_tilesize.x), std::ceil(position.y / m_tilesize.y));
+    sf::FloatRect tilemapsize = m_vertices.getBounds();
+    int tiletype = m_tiles[int(tilepos.x) - 1 + (int(tilepos.y) -1 )* int(tilemapsize.width / m_tilesize.x)  ];
+
+    // check if walking allowed
+    for (int i = 0; i < sizeof(m_nowalk) ; i++) {
+        if (tiletype == m_nowalk[i]) {
+            walkable = false;
+        };
+    }
+
+    return walkable;
+}
+
+std::vector<Plateform> TileMap::getPlateforms()
+{
+	
+	// process Tilemap 
+	
+	// get all non walkable tiles 
+	
+	// create plateforms associated 
+	return m_plateforms ;
+	
+}
