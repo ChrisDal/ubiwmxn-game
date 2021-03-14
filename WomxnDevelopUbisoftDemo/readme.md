@@ -14,7 +14,7 @@ To Do List
 ---------- 
 
 [ ] MainPlayer :
-- [ ] Déplacements au Pad 
+- [X] Déplacements au Pad 
 - [ ] Affinement 
 - [ ] Combats
 - [ ] Reborn / Mort 
