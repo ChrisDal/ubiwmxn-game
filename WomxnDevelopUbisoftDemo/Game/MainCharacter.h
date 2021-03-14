@@ -28,8 +28,12 @@ public:
 	bool getCollidingDown() const { return c_down;}
     bool getInTheAir()  const { return m_InTheAir; }
 
-    void SetPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop);
+    // Set 
+    void setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop);
     void setInTheAir(TileMap& Tm);
+    
+    //
+    bool isAllowJumping() const { return m_CanJump;}
 
 
 private:
@@ -46,6 +50,10 @@ private:
 
     // in the air vs on the floor 
     bool m_InTheAir; 
+
+    // Jumping
+    bool m_CanJump; 
+    short unsigned int m_nbjumps{ 0 };
 
     // max move window 
     sf::Vector2f WIN_LIMIT_X;

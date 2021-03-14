@@ -33,7 +33,7 @@ namespace
 
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
     : m_IsPlayingEndGame(false), m_Position(160.0f, 672.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
-    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true)
+    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_CanJump(true)
 {
 
     m_Texture.loadFromFile(".\\Assets\\bulle.png");
@@ -70,6 +70,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     const float GRAVITY = 98.1f;
     const float NO_GRAVITY = 0.0f;
     const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
+    const short unsigned int NB_MAX_JUMPS = 3; 
 
     const float SPEED_INC = 10.0f;
     const float DEAD_ZONE = 5.0f;
@@ -89,7 +90,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         // Define if in the air or not 
         setInTheAir(Tm); 
 
-        // Gravity 
+        // in the Air or on plateforms
         if (m_InTheAir)
         {
             m_Velocity.y = fmin(m_Velocity.y + GRAVITY, SPEED_MAX_FALL); 
@@ -97,6 +98,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         else 
         {
             m_Velocity.y = NO_GRAVITY;
+            m_nbjumps = 0;
         }
         
 
@@ -108,10 +110,19 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 // m_Sprite.setScale(0.8f, 0.8f);
                 m_WasButtonPressed = true;
                 k_JoystickPressed[0] = true; 
+                 
                 // Jumping 
-                m_Velocity.y = - sqrtf(2.0f*GRAVITY*JUMP_HEIGHT);
-                m_InTheAir = true; 
-
+                if (m_nbjumps < NB_MAX_JUMPS)
+                {
+                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT);
+                    m_InTheAir = true;
+                    m_CanJump = true; 
+                    m_nbjumps++;
+                }
+                else
+                {
+                    m_CanJump = false;
+                }
             }
         }
         else
@@ -178,7 +189,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     // Test collision with new Position 
     short unsigned int colliding_loop = 0; 
-    SetPosition(deltaTime, Pf, colliding_loop);
+    setPosition(deltaTime, Pf, colliding_loop);
 
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
@@ -223,7 +234,7 @@ void MainCharacter::setInTheAir(TileMap& Tm)
 
 }
 
-void MainCharacter::SetPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop)
+void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop)
 {   
 
     while (cloop < 20)
@@ -249,7 +260,7 @@ void MainCharacter::SetPosition(float deltaTime, std::vector<Plateform>& Pf, sho
             new_Position = m_Position;
             m_Velocity.y *= 0.9f;
             cloop++;
-            SetPosition(deltaTime, Pf, cloop);
+            setPosition(deltaTime, Pf, cloop);
             
         }
         
