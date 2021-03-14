@@ -96,7 +96,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         }
     }
 	
-	if (ImGui::CollapsingHeader("MainCharacter Collision"))
+	if (ImGui::CollapsingHeader("MainCharacter Status"))
     {
         if (m_MainCharacter.getCollidingPf())
         {

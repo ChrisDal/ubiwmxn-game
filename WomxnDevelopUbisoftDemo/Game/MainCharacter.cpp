@@ -32,7 +32,7 @@ namespace
 
 
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
-    : m_IsPlayingEndGame(false), m_Position(250.0f, 250.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
+    : m_IsPlayingEndGame(false), m_Position(160.0f, 672.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
     c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true)
 {
 
@@ -69,7 +69,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     const float GRAVITY = 98.1f;
     const float NO_GRAVITY = 0.0f;
-    const float JUMP_HEIGHT = 32.f*12.0f*10.0f;
+    const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
 
     const float SPEED_INC = 10.0f;
     const float DEAD_ZONE = 5.0f;
@@ -87,19 +87,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
        
         // Define if in the air or not 
-        //setInTheAir(Tm); 
+        setInTheAir(Tm); 
 
         // Gravity 
         if (m_InTheAir)
         {
-            if ((m_Velocity.y + GRAVITY) < SPEED_MAX_FALL)
-            {
-                // chute libre: v(t) = -g*t 
-                m_Velocity.y += GRAVITY;
-            }
-            else {
-                m_Velocity.y = SPEED_MAX_FALL;
-            }
+            m_Velocity.y = fmin(m_Velocity.y + GRAVITY, SPEED_MAX_FALL); 
         }
         else 
         {
@@ -150,12 +143,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
-            m_Velocity.y = fmin(m_Velocity.y + SPEED_INC, SPEED_MAX);
+            // m_Velocity.y = fmin(m_Velocity.y + SPEED_INC, SPEED_MAX);
             k_KeyboardPressed[2] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Up))
         {
-            m_Velocity.y = fmax(m_Velocity.y - SPEED_INC, -SPEED_MAX);
+            // m_Velocity.y = fmax(m_Velocity.y - SPEED_INC, -SPEED_MAX);
             k_KeyboardPressed[3] = true;
         }
         else
@@ -183,20 +176,9 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     }
 
 
-    // Test if colliding 
+    // Test collision with new Position 
     short unsigned int colliding_loop = 0; 
     SetPosition(deltaTime, Pf, colliding_loop);
-
-  
-    // test if one keyboard pressed 
-    bool none_keyboard = true; 
-    for (const bool k : k_KeyboardPressed) 
-    { 
-        if (k) {
-            none_keyboard = false; 
-        }
-    }
-
 
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
@@ -216,15 +198,26 @@ void MainCharacter::StartEndGame()
 
 void MainCharacter::setInTheAir(TileMap& Tm)
 {
-    sf::Vector2f next_tilepos = m_Position + sf::Vector2f(0.0f, m_BoundingBox.height / 2.0f);
-    // In the air if down neighboor tile is walkable 
-    if (!Tm.walkable_tile(next_tilepos))
+    // Left and right down corners
+    sf::Vector2f left_feet = m_Position  + sf::Vector2f(-float(m_BoundingBox.width)/2.0f, float(m_BoundingBox.height)/2.0f); 
+    sf::Vector2f right_feet = m_Position + sf::Vector2f(+float(m_BoundingBox.width)/2.0f, float(m_BoundingBox.height)/2.0f); 
+    
+    // Delta pixels
+    const float D_PIXELS = 2.0f; 
+
+    // All right and left tiles are walkable 
+    sf::Vector2f nl_feet = left_feet  + sf::Vector2f(0.0f, D_PIXELS);
+    sf::Vector2f nr_feet = right_feet + sf::Vector2f(0.0f, D_PIXELS);
+
+       
+    // In the air if down neighboors tiles are walkable 
+    if (Tm.walkable_tile(nl_feet) && Tm.walkable_tile(nr_feet))
     {
-        m_InTheAir = false; 
+        m_InTheAir = true; 
     }
     else 
     {
-        m_InTheAir = true;
+        m_InTheAir = false;
     }
 
 
@@ -259,11 +252,8 @@ void MainCharacter::SetPosition(float deltaTime, std::vector<Plateform>& Pf, sho
             SetPosition(deltaTime, Pf, cloop);
             
         }
-
         
-    }
-    
-
+    } 
 }
 
 void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, bool& colliding)
