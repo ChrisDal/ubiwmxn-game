@@ -76,22 +76,21 @@ void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const
 // is the position tile walkable 
 bool TileMap::walkable_tile(sf::Vector2f& position)
 {
-    bool walkable = true;
+    bool walkable = false;
+    // error 
     if (m_tilesize.x <= 0 && m_tilesize.y <= 0) {
-        return walkable; 
+        return walkable;
     }
     // from position get tile 
     sf::Vector2f tilepos(std::ceil(position.x / m_tilesize.x), std::ceil(position.y / m_tilesize.y));
     sf::FloatRect tilemapsize = m_vertices.getBounds();
     int tiletype = m_tiles[int(tilepos.x) - 1 + (int(tilepos.y) -1 )* int(tilemapsize.width / m_tilesize.x)  ];
-
-    // check if walking allowed
-    for (int i = 0; i < sizeof(m_nowalk) ; i++) {
-        if (tiletype == m_nowalk[i]) {
-            walkable = false;
-        };
+    
+    // 0 >= plateforme >= 9 
+    // 9 < Walkable < 100  
+    if (tiletype > 9 && tiletype < 100) {
+        walkable = true;
     }
-
     return walkable;
 }
 

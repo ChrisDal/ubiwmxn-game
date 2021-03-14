@@ -13,6 +13,7 @@ public:
 
     bool walkable_tile(sf::Vector2f& position); 
 	std::vector<Plateform> getPlateforms(); 
+    sf::Vector2u getTileSize() const {return m_tilesize; }
 
 
 private:

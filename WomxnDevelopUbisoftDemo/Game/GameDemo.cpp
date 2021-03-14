@@ -29,7 +29,7 @@ GameDemo::GameDemo()
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter.Update(deltaTime, m_plateform);
+    m_MainCharacter.Update(deltaTime, m_plateform, m_Tilemap);
     m_Door.Update(deltaTime);
 
 
@@ -96,7 +96,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         }
     }
 	
-	if (ImGui::CollapsingHeader("MainCharacter Collision"))
+	if (ImGui::CollapsingHeader("MainCharacter Status"))
     {
         if (m_MainCharacter.getCollidingPf())
         {
@@ -141,6 +141,24 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         else
         {
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Down : No");
+        }
+        
+        if (m_MainCharacter.getInTheAir())
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "In the Air : Yes");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "In the Air : No");
+        }
+
+        if (m_MainCharacter.isAllowJumping())
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Can Jump : Yes");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Can Jump : No");
         }
 
     }

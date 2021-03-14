@@ -32,8 +32,8 @@ namespace
 
 
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
-    : m_IsPlayingEndGame(false), m_Position(250.0f, 250.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
-    c_left(false), c_right(false), c_up(false), c_down(false)
+    : m_IsPlayingEndGame(false), m_Position(160.0f, 672.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
+    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_CanJump(true)
 {
 
     m_Texture.loadFromFile(".\\Assets\\bulle.png");
@@ -57,7 +57,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
 }
 
 
-void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf)
+void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm)
 {
     if (m_IsPlayingEndGame)
     {
@@ -65,25 +65,64 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf)
     }
 
     const float SPEED_MAX = 150.0f;
+    const float SPEED_MAX_FALL = 1000.0f;
+
+    const float GRAVITY = 98.1f;
+    const float NO_GRAVITY = 0.0f;
+    const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
+    const short unsigned int NB_MAX_JUMPS = 3; 
+
     const float SPEED_INC = 10.0f;
     const float DEAD_ZONE = 5.0f;
     const float SLOWDOWN_RATE = 0.9f;
 
+    // handling collision : new pos vs old pos 
     const sf::Vector2f old_Position = m_Position;
+    
     // List = Right Left Up Down Space
     bool k_KeyboardPressed[5] = { false, false, false, false, false };
+    bool k_JoystickPressed[8] = { false, false, false, false, false, false, false, false };
 
     if (m_IsUsingJoystick)
     {
         m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
-        m_Velocity.y = GetScaledAxis(m_JoystickIndex, Joystick::Axis::Y, DEAD_ZONE, SPEED_MAX);
+       
+        // Define if in the air or not 
+        setInTheAir(Tm); 
 
+        // in the Air or on plateforms
+        if (m_InTheAir)
+        {
+            m_Velocity.y = fmin(m_Velocity.y + GRAVITY, SPEED_MAX_FALL); 
+        }
+        else 
+        {
+            m_Velocity.y = NO_GRAVITY;
+            m_nbjumps = 0;
+        }
+        
+
+        // Joystick Index 0 = A, 1 = , 2 = , 3 = 
         if (Joystick::isButtonPressed(m_JoystickIndex, 0))
         {
             if (!m_WasButtonPressed)
             {
-                m_Sprite.setScale(0.8f, 0.8f);
+                // m_Sprite.setScale(0.8f, 0.8f);
                 m_WasButtonPressed = true;
+                k_JoystickPressed[0] = true; 
+                 
+                // Jumping 
+                if (m_nbjumps < NB_MAX_JUMPS)
+                {
+                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT);
+                    m_InTheAir = true;
+                    m_CanJump = true; 
+                    m_nbjumps++;
+                }
+                else
+                {
+                    m_CanJump = false;
+                }
             }
         }
         else
@@ -92,6 +131,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf)
             {
                 m_Sprite.setScale(1.0f, 1.0f);
                 m_WasButtonPressed = false;
+                k_JoystickPressed[0] = true; 
             }
         }
     }
@@ -114,12 +154,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf)
 
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
-            m_Velocity.y = fmin(m_Velocity.y + SPEED_INC, SPEED_MAX);
+            // m_Velocity.y = fmin(m_Velocity.y + SPEED_INC, SPEED_MAX);
             k_KeyboardPressed[2] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Up))
         {
-            m_Velocity.y = fmax(m_Velocity.y - SPEED_INC, -SPEED_MAX);
+            // m_Velocity.y = fmax(m_Velocity.y - SPEED_INC, -SPEED_MAX);
             k_KeyboardPressed[3] = true;
         }
         else
@@ -146,70 +186,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf)
         }
     }
 
-    _colliding_plateforms = false;
 
-    for (const Plateform& pfmi : Pf)
-    {
-        if (this->IsColliding(pfmi)) {
-            _colliding_plateforms = true;
-            // m_Position = old_Position;
-            // determine collision side character referentiel 
-            c_left = MainCharacter::isCollidingLeft(pfmi, k_KeyboardPressed);
-            c_right = MainCharacter::isCollidingRight(pfmi, k_KeyboardPressed);
-            c_up = MainCharacter::isCollidingUp(pfmi, k_KeyboardPressed);
-            c_down = MainCharacter::isCollidingDown(pfmi, k_KeyboardPressed);
-
-
-            if ((c_left and m_Velocity.x < 0) or (c_right and m_Velocity.x > 0))
-            {
-                // velocity positive 
-                m_Velocity.x = 0;
-
-            }
-            if ((c_up and m_Velocity.y < 0) or (c_down and m_Velocity.y > 0)) {
-                // velocity needs to be positive 
-                m_Velocity.y = 0;
-            }
-
-        }
-    };
-
-    
-    // test if one keyboard pressed 
-    bool none_keyboard = true; 
-    for (const bool k : k_KeyboardPressed) 
-    { 
-        if (k) {
-            none_keyboard = false; 
-        }
-    }
-    // if inertia doesn't take you into a plateform : update pos
-    if (!(_colliding_plateforms and none_keyboard)) {
-        m_Position += m_Velocity * deltaTime;
-    }
- 
-
-
-    
-
-    // Handling out window 
-    if (m_Position.x < WIN_LIMIT_X.x or m_Position.x > WIN_LIMIT_X.y) {
-        m_Position.x -= m_Velocity.x * deltaTime;
-    }
-    if (m_Position.y < WIN_LIMIT_Y.x   or m_Position.y > WIN_LIMIT_Y.y) {
-        m_Position.y -= m_Velocity.y * deltaTime;
-    }
-
-    // handling out not walkable blocks 
-    // To Do modify test on 4 corners of the bouding box rather than pos=center
-    /*if (!Tm.walkable_tile(m_Position)) {
-        m_Velocity.x = 0;
-        m_Velocity.y = 0;
-        m_Position -= m_Velocity * deltaTime;
-    }*/
-
-
-	
+    // Test collision with new Position 
+    short unsigned int colliding_loop = 0; 
+    setPosition(deltaTime, Pf, colliding_loop);
 
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
@@ -226,6 +206,96 @@ void MainCharacter::StartEndGame()
     m_IsPlayingEndGame = true;
 }
 
+
+void MainCharacter::setInTheAir(TileMap& Tm)
+{
+    // Left and right down corners
+    sf::Vector2f left_feet = m_Position  + sf::Vector2f(-float(m_BoundingBox.width)/2.0f, float(m_BoundingBox.height)/2.0f); 
+    sf::Vector2f right_feet = m_Position + sf::Vector2f(+float(m_BoundingBox.width)/2.0f, float(m_BoundingBox.height)/2.0f); 
+    
+    // Delta pixels
+    const float D_PIXELS = 2.0f; 
+
+    // All right and left tiles are walkable 
+    sf::Vector2f nl_feet = left_feet  + sf::Vector2f(0.0f, D_PIXELS);
+    sf::Vector2f nr_feet = right_feet + sf::Vector2f(0.0f, D_PIXELS);
+
+       
+    // In the air if down neighboors tiles are walkable 
+    if (Tm.walkable_tile(nl_feet) && Tm.walkable_tile(nr_feet))
+    {
+        m_InTheAir = true; 
+    }
+    else 
+    {
+        m_InTheAir = false;
+    }
+
+
+}
+
+void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop)
+{   
+
+    while (cloop < 20)
+    {
+        sf::Vector2f new_Position = m_Position;
+        // new position calculations 
+        new_Position += m_Velocity * deltaTime;
+
+        m_Sprite.setPosition(new_Position);
+        SetCenter(new_Position);
+
+        // Colliding Check
+        _colliding_plateforms = false;
+        isCollidingSolid(new_Position, Pf, _colliding_plateforms);
+
+        if (!_colliding_plateforms)
+        {
+            m_Position = new_Position;
+            break;
+        }
+        else
+        {
+            new_Position = m_Position;
+            m_Velocity.y *= 0.9f;
+            cloop++;
+            setPosition(deltaTime, Pf, cloop);
+            
+        }
+        
+    } 
+}
+
+void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, bool& colliding)
+{
+
+    for (const Plateform& pfmi : Pf)
+    {
+        if (this->IsColliding(pfmi)) {
+            _colliding_plateforms = true;
+            /*
+            // m_Position = old_Position;
+            // determine collision side character referentiel
+            c_left = MainCharacter::isCollidingLeft(pfmi, k_KeyboardPressed);
+            c_right = MainCharacter::isCollidingRight(pfmi, k_KeyboardPressed);
+            c_up = MainCharacter::isCollidingUp(pfmi, k_KeyboardPressed);
+            c_down = MainCharacter::isCollidingDown(pfmi, k_KeyboardPressed);
+            */
+            m_InTheAir = false;
+
+        }
+    };
+
+    // Handling out window 
+    if (newpos.x < WIN_LIMIT_X.x or newpos.x > WIN_LIMIT_X.y) {
+        _colliding_plateforms = true;
+    }
+    if (newpos.y < WIN_LIMIT_Y.x or newpos.y > WIN_LIMIT_Y.y) {
+        _colliding_plateforms = true;
+    }
+
+};
 
 sf::Vector2f MainCharacter::getVelocity() const
 {
