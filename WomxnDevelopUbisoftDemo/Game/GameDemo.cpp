@@ -154,18 +154,76 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
         if (m_MainCharacter.isAllowJumping())
         {
-            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Can Jump : Yes");
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Can Jump : No");
         }
         else
         {
-            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Can Jump : No");
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Can Jump : Yes");
         }
 
     }
+    
+
+    if (ImGui::CollapsingHeader("Inputs"))
+    {
+
+        if (ImGui::TreeNode("Pad"))
+        {
+            // Color buttons, demonstrate using PushID() to add unique 
+            // identifier in the ID stack, and changing style.
+            std::vector<std::string> buttons_name = { "A", "B", "X", "Y","LB", "RB", "LT","RT"};
+            for (int i = 0; i < 8; i++)
+            {
+                if (i > 0)
+                    ImGui::SameLine();
+                    ImGui::PushID(i);
+                    if (m_MainCharacter.getJoystickPressed(i))
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 8.0f, 0.85f, 0.85f));
+                    }
+                    else
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 8.0f, 0.6f, 0.6f));
+                    }
+                    
+                    ImGui::Button(buttons_name[i].c_str());
+                    ImGui::PopStyleColor(1);
+                    ImGui::PopID();
+            }
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Keyboard"))
+        {
+            // Color buttons, demonstrate using PushID() to add unique 
+            // identifier in the ID stack, and changing style.
+            std::vector<std::string> keyboard_name = { "Up", "Down", "Left", "Right", "Space" };
+            for (int i = 0; i < 5; i++)
+            {
+                if (i > 0)
+                    ImGui::SameLine();
+                    ImGui::PushID(i);
+					if (m_MainCharacter.getKeyboardKey(keyboard_name[i]))
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 5.0f, 0.85f, 0.85f));
+                    }
+                    else
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 5.0f, 0.6f, 0.6f));
+                    }
+                    ImGui::Button(keyboard_name[i].c_str());
+                    ImGui::PopStyleColor(1);
+                    ImGui::PopID();
+            }
+            ImGui::TreePop();
+        }
+    }
+
 	
 
     ImGui::End();
 
+ 
 
     // ImGui example menu overlay 
     static bool show_app_simple_overlay = true;

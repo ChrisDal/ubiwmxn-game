@@ -27,6 +27,10 @@ public:
 	bool getCollidingUp() const { return c_up;}
 	bool getCollidingDown() const { return c_down;}
     bool getInTheAir()  const { return m_InTheAir; }
+	
+	// Inputs 
+    bool getJoystickPressed(int& btn_indx) const; 
+	bool getKeyboardKey(std::string keyname) const;
 
     // Set 
     void setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop);
