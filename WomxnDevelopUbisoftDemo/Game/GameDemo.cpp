@@ -154,11 +154,11 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
         if (m_MainCharacter.isAllowJumping())
         {
-            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Can Jump : No");
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Can Jump : Yes");
         }
         else
         {
-            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Can Jump : Yes");
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Can Jump : No");
         }
 
     }
