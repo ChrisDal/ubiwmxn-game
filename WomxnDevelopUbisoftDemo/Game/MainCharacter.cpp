@@ -74,7 +74,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     const float SPEED_INC = 10.0f;
     const float DEAD_ZONE = 5.0f;
-    const float SLOWDOWN_RATE = 0.9f;
+    const float SLOWDOWN_RATE = 0.5f;
 
     // handling collision : new pos vs old pos 
     const sf::Vector2f old_Position = m_Position;
@@ -83,26 +83,28 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     bool k_KeyboardPressed[5] = { false, false, false, false, false };
     bool k_JoystickPressed[8] = { false, false, false, false, false, false, false, false };
 
+    // Define if in the air or not 
+    setInTheAir(Tm);
+
+    // in the Air or on plateforms
+    if (m_InTheAir)
+    {
+        m_Velocity.y = fmin(m_Velocity.y + GRAVITY, SPEED_MAX_FALL);
+    }
+    else
+    {
+        m_Velocity.y = NO_GRAVITY;
+        m_nbjumps = 0;
+        m_CanJump = true;
+    }
+
+
+    // Velocity and Jumping determination 
     if (m_IsUsingJoystick)
     {
         m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
        
-        // Define if in the air or not 
-        setInTheAir(Tm); 
-
-        // in the Air or on plateforms
-        if (m_InTheAir)
-        {
-            m_Velocity.y = fmin(m_Velocity.y + GRAVITY, SPEED_MAX_FALL); 
-        }
-        else 
-        {
-            m_Velocity.y = NO_GRAVITY;
-            m_nbjumps = 0;
-        }
-        
-
-        // Joystick Index 0 = A, 1 = , 2 = , 3 = 
+        // Joystick Index 0 = A, 1 = B , 2 = X , 3 = Y 
         if (Joystick::isButtonPressed(m_JoystickIndex, 0))
         {
             if (!m_WasButtonPressed)
@@ -115,7 +117,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 {
                     m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT);
                     m_InTheAir = true;
-                    m_CanJump = true; 
+                    m_CanJump = true;
                     m_nbjumps++;
                 }
                 else
@@ -149,30 +151,43 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         else
         {
             m_Velocity.x *= SLOWDOWN_RATE;
+            k_KeyboardPressed[0] = false;
+            k_KeyboardPressed[1] = false;
         }
 
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
-            // m_Velocity.y = fmin(m_Velocity.y + SPEED_INC, SPEED_MAX);
             k_KeyboardPressed[2] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Up))
         {
-            // m_Velocity.y = fmax(m_Velocity.y - SPEED_INC, -SPEED_MAX);
             k_KeyboardPressed[3] = true;
         }
         else
         {
-            m_Velocity.y *= SLOWDOWN_RATE;
+            k_KeyboardPressed[2] = false;
+            k_KeyboardPressed[3] = false;
         }
 
         if (Keyboard::isKeyPressed(Keyboard::Space))
         {
             if (!m_WasButtonPressed)
             {
-                m_Sprite.setScale(0.8f, 0.8f);
                 m_WasButtonPressed = true;
                 k_KeyboardPressed[4] = true;
+
+                // Jumping 
+                if (m_nbjumps < NB_MAX_JUMPS)
+                {
+                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT);
+                    m_InTheAir = true;
+                    m_CanJump = true;
+                    m_nbjumps++;
+                }
+                else
+                {
+                    m_CanJump = false;
+                }
             }
         }
         else
@@ -181,6 +196,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             {
                 m_Sprite.setScale(1.0f, 1.0f);
                 m_WasButtonPressed = false;
+                k_KeyboardPressed[4] = false;
             }
         }
     }
