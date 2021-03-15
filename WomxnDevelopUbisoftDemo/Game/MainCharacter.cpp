@@ -107,7 +107,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             if (!m_WasButtonPressed)
             {
-                // m_Sprite.setScale(0.8f, 0.8f);
                 m_WasButtonPressed = true;
                 k_JoystickPressed[0] = true; 
                  
@@ -131,7 +130,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             {
                 m_Sprite.setScale(1.0f, 1.0f);
                 m_WasButtonPressed = false;
-                k_JoystickPressed[0] = true; 
+                k_JoystickPressed[0] = false; 
             }
         }
     }
@@ -194,6 +193,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
 }
+
+
 
 
 void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -301,6 +302,49 @@ sf::Vector2f MainCharacter::getVelocity() const
 {
     return MainCharacter::m_Velocity;
 }
+
+
+bool MainCharacter::getJoystickPressed(int& btn_indx) const
+{
+
+    if (Joystick::isButtonPressed(m_JoystickIndex, btn_indx))
+    {
+        return true; 
+    }
+    else 
+    {
+        return false; 
+    }
+
+}
+
+
+bool MainCharacter::getKeyboardKey(std::string keyname) const
+{
+	bool value = false; 
+    if (keyname == "Up") {
+        value = Keyboard::isKeyPressed(Keyboard::Up);
+    }
+    else if (keyname == "Down") {
+        value = Keyboard::isKeyPressed(Keyboard::Down);
+    }
+    else if (keyname == "Left") {
+        value = Keyboard::isKeyPressed(Keyboard::Left);
+    }
+    else if (keyname == "Right") {
+        value = Keyboard::isKeyPressed(Keyboard::Right);
+    }
+    else if (keyname == "Space") {
+        value = Keyboard::isKeyPressed(Keyboard::Space);
+    }
+    else {
+        value = false; 
+    }
+	
+	return value; 
+
+}
+
 
 
 
