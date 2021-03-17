@@ -26,6 +26,11 @@ GameDemo::GameDemo()
     m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 
 	m_plateform = m_Tilemap.getPlateforms(); 
+
+    // Ennemies 
+    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-objets-monstres.csv");
+    m_Elements.setTilemapType(false);
+    m_ennemies = m_Elements.loadObjects("Assets\\ennemies_empty.png", sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
 	
 }
 
@@ -55,12 +60,12 @@ void GameDemo::Render(sf::RenderTarget& target)
     target.clear(sf::Color(0, 0, 0));
     target.draw(m_Tilemap);
 	
-	// draw bounding box for plateform 
-	/*for ( const auto& pfxi : m_plateform) 
+	// Ennemies 
+	for ( const auto& enm : m_ennemies) 
 	{
-		target.draw(pfxi); 
+		target.draw(enm); 
 	}
-	*/ 
+	
 	
     target.draw(main_Door);
     target.draw(m_Door);
