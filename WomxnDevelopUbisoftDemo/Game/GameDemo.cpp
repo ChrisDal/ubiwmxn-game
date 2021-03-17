@@ -21,7 +21,7 @@ GameDemo::GameDemo()
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
 
     // map tile 
-    m_Tilemap.readCsvTilemap("Assets\\levels\\Level1-TMPF-Tilemap-pf.csv", 32, 24);
+    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Tilemap-pf.csv");
     // test
     m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 

@@ -103,20 +103,14 @@ std::vector<Plateform> TileMap::getPlateforms()
 }
 
 // read csv 
-void TileMap::readCsvTilemap(const std::string& levelcsv, int row, int col)
+void TileMap::loadCsvTilemap(const std::string& levelcsv)
 {
-    // From name verify existence 
-    // create a file object 
-    std::ifstream pcsv;
-    std::string filename = "D:\\DALILA\\GameDesign\\Ubisoft\\womxn-develop-at-ubisoft-demo\\WomxnDevelopUbisoftDemo\\"+ levelcsv;
-
-
-    m_tiles = ReadLevelFile(filename);
- 
+    // Read CSV files and assign to Tilemap attributes return std::vector
+    m_tiles = ReadLevelFile(levelcsv);
 }
 
 // Read File and create board in memory usable
-std::vector<int> TileMap::ReadLevelFile(std::string& filename)
+std::vector<int> TileMap::ReadLevelFile(const std::string& filename)
 {
 
     std::ifstream myfile(filename);
@@ -138,3 +132,15 @@ std::vector<int> TileMap::ReadLevelFile(std::string& filename)
     return eboard;
 }
 
+
+void TileMap::setTilemapType(bool isbackground)
+{
+    if (isbackground)
+    {
+        m_type = backplateform; 
+    }
+    else
+    {
+        m_type = monstobjects;
+    }
+}
