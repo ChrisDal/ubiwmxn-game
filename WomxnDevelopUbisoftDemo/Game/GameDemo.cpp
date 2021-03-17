@@ -21,7 +21,9 @@ GameDemo::GameDemo()
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
 
     // map tile 
-    m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), level, 32, 24);
+    m_Tilemap.readCsvTilemap("Assets\\levels\\Level1-TMPF-Tilemap-pf.csv", 32, 24);
+    // test
+    m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 
 	m_plateform = m_Tilemap.getPlateforms(); 
 	
@@ -171,7 +173,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             // Color buttons, demonstrate using PushID() to add unique 
             // identifier in the ID stack, and changing style.
-            std::vector<std::string> buttons_name = { "A", "B", "X", "Y","LB", "RB", "LT","RT"};
+            std::vector<std::string> buttons_name = { "A", "B", "X", "Y","LB", "RB", "Back","Menu"};
             for (int i = 0; i < 8; i++)
             {
                 if (i > 0)
