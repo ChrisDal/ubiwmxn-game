@@ -19,7 +19,7 @@ public:
     // Load and assign to quad
     bool load(const std::string& tileset, sf::Vector2u tileSize, unsigned int width, unsigned int height);
     // Load and create ennemies sprite 
-    std::vector<Ennemie> loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height);
+    void loadObjects(std::vector<Ennemie>& l_ennemies, const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 

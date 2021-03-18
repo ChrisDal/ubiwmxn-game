@@ -1,14 +1,14 @@
 #include <stdafx.h>
 #include <Game/TileMap.h>
-#include <Game/Ennemie.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height)
+
+void TileMap::loadObjects(std::vector<Ennemie>& l_ennemies, const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height)
 {
 	
 	if (m_type != monstobjects)
 	{
-		return std::vector<Ennemie> {}; 
+        return;
 	}
 	
 	// load objectset = image then extract to texture 
@@ -22,7 +22,6 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 	// keep in memory tiles level 
     m_tilesize = tileSize;
 	
-	std::vector<Ennemie> l_ennemies; 
 	// Find tile of interest 
 	// populate the vertex array
     for (unsigned int i = 0; i < width; ++i)
@@ -37,20 +36,19 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
                 sf::Vector2u coord(tx, ty);
                 printf("Coord [x,y] : %d %d \n", tx, ty);
                 sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
-                printf("Tiles n %d \n", i * width + j);
+                printf("Tiles n %d \n", i + j * width);
 				if (m_tiles[i + j * width] < 300 && m_tiles[i + j * width] > 129){
                     printf("Ennemie to create\n");
-					l_ennemies.push_back(Ennemie(spaw, false, coord, objectset, tileSize.x, tileSize.y));
+					l_ennemies.emplace_back(spaw, false, coord, objectset, tileSize.x, tileSize.y);
 				}
 				else 
 				{
-					l_ennemies.push_back(Ennemie(spaw, true, coord, objectset, tileSize.x, tileSize.y));
+					l_ennemies.emplace_back(spaw, true, coord, objectset, tileSize.x, tileSize.y);
 				}
 			}				
 	
 		}
-
-	return l_ennemies; 
+ 
 }
 
 // code from SFML tutorial page 
