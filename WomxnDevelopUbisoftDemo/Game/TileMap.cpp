@@ -12,17 +12,15 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 	}
 	
 	// load objectset = image then extract to texture 
-	sf::Image image;
+	/*sf::Image image;
     if (!image.loadFromFile(objectset))
     {
         return std::vector<Ennemie> {};
-    }
+    }*/
         
 	
 	// keep in memory tiles level 
     m_tilesize = tileSize;
-	sf::Vector2u spritesheet = image.getSize();
-    sf::Vector2u n(spritesheet.x / NspriteSize.x, spritesheet.y / NspriteSize.y);
 	
 	std::vector<Ennemie> l_ennemies; 
 	// Find tile of interest 
@@ -30,20 +28,23 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
     for (unsigned int i = 0; i < width; ++i)
         for (unsigned int j = 0; j < height; ++j)
         {
-			if (m_tiles[i + j * width] > 99)
+			if (m_tiles[i + j * width] > 101)
 			{
 				// non movable ennemies 
 				int ntiles = m_tiles[i + j * width] - 100;
-				sf::Vector2u coord((ntiles % n.x)*width, static_cast<unsigned int>(ntiles) / n.x);
-				sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
+                unsigned int tx = (ntiles % NspriteSize.x) * tileSize.x;
+                unsigned int ty = (ntiles / NspriteSize.x) * tileSize.y;
+                sf::Vector2u coord(tx, ty);
+                printf("Coord [x,y] : %d %d \n", tx, ty);
+                sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
                 printf("Tiles n %d \n", i * width + j);
 				if (m_tiles[i + j * width] < 300 && m_tiles[i + j * width] > 129){
                     printf("Ennemie to create\n");
-					l_ennemies.push_back(Ennemie(spaw, false, coord, image, tileSize.x, tileSize.y));
+					l_ennemies.push_back(Ennemie(spaw, false, coord, objectset, tileSize.x, tileSize.y));
 				}
 				else 
 				{
-					l_ennemies.push_back(Ennemie(spaw, true, coord, image, tileSize.x, tileSize.y));
+					l_ennemies.push_back(Ennemie(spaw, true, coord, objectset, tileSize.x, tileSize.y));
 				}
 			}				
 	

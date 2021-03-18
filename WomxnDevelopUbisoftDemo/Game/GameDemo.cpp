@@ -30,7 +30,7 @@ GameDemo::GameDemo()
     // Ennemies 
     m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-objets-monstres.csv");
     m_Elements.setTilemapType(false);
-    m_ennemies = m_Elements.loadObjects("Assets\\ennemies_empty.png", sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
+    m_ennemies = m_Elements.loadObjects("Assets\\ennemies_all_black.png", sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
 	
 }
 
@@ -66,7 +66,9 @@ void GameDemo::Render(sf::RenderTarget& target)
 		target.draw(enm); 
 	}
 	
-	
+    //debug display
+    target.draw(m_ennemies[2]);
+
     target.draw(main_Door);
     target.draw(m_Door);
     target.draw(m_MainCharacter);

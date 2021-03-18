@@ -3,7 +3,7 @@
 class Ennemie : public sf::Drawable, public BoxCollideable
 {
 public:
-    Ennemie(sf::Vector2f& spawn_pos, bool canmove, sf::Vector2u& upperleft, const sf::Image& spriteimage, unsigned int sx, unsigned int sy);
+    Ennemie(sf::Vector2f& spawn_pos, bool canmove, sf::Vector2u& upperleft, const std::string& spriteimage, unsigned int sx, unsigned int sy);
     ~Ennemie(); 
 
     void Update(float deltaTime);
