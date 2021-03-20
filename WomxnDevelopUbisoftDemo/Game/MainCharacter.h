@@ -14,10 +14,11 @@ public:
     
     sf::Vector2f getVelocity() const; 
 	bool getCollidingPf() const { return _colliding_plateforms;}
-	bool isCollidingLeft(const BoxCollideable& other, const bool k_keyboard[5]) const;
-	bool isCollidingRight(const BoxCollideable& other, const bool k_keyboard[5]) const;
-	bool isCollidingUp(const BoxCollideable& other, const bool k_keyboard[5]) const;
-	bool isCollidingDown(const BoxCollideable& other, const bool k_keyboard[5]) const;
+	// bool isCollidingLeft(const BoxCollideable& other, const bool k_keyboard[5]) const;
+	bool isCollidingLeft(const BoxCollideable& other,  bool keypressed) const;
+	bool isCollidingRight(const BoxCollideable& other,  bool keypressed) const;
+	bool isCollidingUp(const BoxCollideable& other,  bool keypressed) const;
+	bool isCollidingDown(const BoxCollideable& other,  bool keypressed) const;
     void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, bool& colliding);
     
     //  get
@@ -50,6 +51,8 @@ private:
 
     sf::Vector2f m_Position; 
     sf::Vector2f m_Velocity;
+    // Sign Velocity : true pos, false neg 
+    sf::Vector2<bool> s_Velocity = { false, false };
     bool m_IsPlayingEndGame;
 
     // in the air vs on the floor 
