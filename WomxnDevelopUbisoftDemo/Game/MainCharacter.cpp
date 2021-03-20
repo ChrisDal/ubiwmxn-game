@@ -65,8 +65,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     }
 
     const float SPEED_MAX = 150.0f;
-    const float SPEED_MAX_FALL = 1000.0f;
+    const float SPEED_MAX_FALL = 800.0f;
 
+    const float APPLIED_FACTOR = 0.6f;
+    const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.82f;
     const float GRAVITY = 98.1f;
     const float NO_GRAVITY = 0.0f;
     const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
@@ -83,8 +85,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     bool k_KeyboardPressed[5] = { false, false, false, false, false };
     bool k_JoystickPressed[8] = { false, false, false, false, false, false, false, false };
 
-    // Sign Velocity : true pos, false neg 
-    sf::Vector2<bool> s_Velocity = { false, false }; 
+    
 
     // Define if in the air or not 
     setInTheAir(Tm);
@@ -92,7 +93,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     // in the Air or on plateforms
     if (m_InTheAir)
     {
-        m_Velocity.y = fmin(m_Velocity.y + GRAVITY, SPEED_MAX_FALL);
+        m_Velocity.y = fmin(m_Velocity.y + (GRAVITY * APPLIED_FALL_FACTOR), SPEED_MAX_FALL);
     }
     else
     {
@@ -118,7 +119,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 // Jumping 
                 if (m_nbjumps < NB_MAX_JUMPS)
                 {
-                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT);
+                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_FACTOR);
                     m_InTheAir = true;
                     m_CanJump = true;
                     m_nbjumps++;
@@ -194,7 +195,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 // Jumping 
                 if (m_nbjumps < NB_MAX_JUMPS)
                 {
-                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT);
+                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_FACTOR);
                     m_InTheAir = true;
                     m_CanJump = true;
                     m_nbjumps++;
@@ -322,15 +323,19 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
             
             m_InTheAir = false;
             // If collision stops velocity on the direction
-            if ((c_left and (m_Velocity.x < 0.0f)) or (c_right and (m_Velocity.x > 0.0f)))
-            {
-                m_Velocity.x = 0.0f;
-            }
+            bool collided_pf_left = c_left and not s_Velocity.x;
+            bool collided_pf_right = c_right and s_Velocity.x;
             
             // corners bumping against plateforms
-            if ((c_left and c_down) or (c_right and c_up))
+            if ((c_left) or (c_right))
             {
                 m_InTheAir = true;
+
+                if (collided_pf_left or collided_pf_right)
+                {
+                    m_Velocity.x = 0.0f;
+                }
+
                  
             }
             

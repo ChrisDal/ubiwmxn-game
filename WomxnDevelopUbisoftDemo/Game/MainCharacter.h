@@ -51,6 +51,8 @@ private:
 
     sf::Vector2f m_Position; 
     sf::Vector2f m_Velocity;
+    // Sign Velocity : true pos, false neg 
+    sf::Vector2<bool> s_Velocity = { false, false };
     bool m_IsPlayingEndGame;
 
     // in the air vs on the floor 
