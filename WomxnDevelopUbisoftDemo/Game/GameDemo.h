@@ -31,6 +31,7 @@ private:
 	std::vector<Plateform> m_plateform = {}; 
     // Affects life
     TileMap m_Elements; 
+    sf::Texture m_TextureAtlas;
     std::vector<Ennemie> m_ennemies = {};
 	
     // Game process

@@ -30,7 +30,13 @@ GameDemo::GameDemo()
     // Ennemies 
     m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-objets-monstres.csv");
     m_Elements.setTilemapType(false);
-    m_Elements.loadObjects(m_ennemies, ".\\Assets\\ennemies_all_black.png", sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
+
+    // Get texture 
+    const std::string texture_name = "Assets\\ennemies_empty2.png"; 
+    m_TextureAtlas.loadFromFile(texture_name);
+    Ennemie::SetTextureAtlas(&m_TextureAtlas);
+
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
 	
 }
 
@@ -250,6 +256,9 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
     {
+        ImGui::Image(main_Door.GetTexture());   //  allow display an image in the UI  =>  For life bar or display an icon
+        ImGui::SetCursorPosY(0.0f);            // use to put back the cursor on top/left corner of the image to display above it
+
         ImGui::Text("Main character velocity");
         ImGui::Separator();
         ImGui::Text(" Velocity character X : %.2f", m_MainCharacter.getVelocity().x);

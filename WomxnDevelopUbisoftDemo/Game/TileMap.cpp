@@ -1,54 +1,48 @@
 #include <stdafx.h>
 #include <Game/TileMap.h>
+#include <Game/Ennemie.h>
 
 
-
-void TileMap::loadObjects(std::vector<Ennemie>& l_ennemies, const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height)
 {
 	
-	if (m_type != monstobjects)
+	if (m_type != TmapType::monstobjects)
 	{
-        return;
+		return std::vector<Ennemie> {}; 
 	}
-	
-	// load objectset = image then extract to texture 
-	/*sf::Image image;
-    if (!image.loadFromFile(objectset))
-    {
-        return std::vector<Ennemie> {};
-    }*/
-        
-	
+
 	// keep in memory tiles level 
     m_tilesize = tileSize;
 	
+	std::vector<Ennemie> l_ennemies; 
 	// Find tile of interest 
 	// populate the vertex array
     for (unsigned int i = 0; i < width; ++i)
         for (unsigned int j = 0; j < height; ++j)
         {
-			if (m_tiles[i + j * width] > 101)
+			if (m_tiles[i + j * width] > 122)
 			{
 				// non movable ennemies 
 				int ntiles = m_tiles[i + j * width] - 100;
                 unsigned int tx = (ntiles % NspriteSize.x) * tileSize.x;
                 unsigned int ty = (ntiles / NspriteSize.x) * tileSize.y;
                 sf::Vector2u coord(tx, ty);
-                printf("Coord [x,y] : %d %d \n", tx, ty);
+
                 sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
-                printf("Tiles n %d \n", i + j * width);
+
 				if (m_tiles[i + j * width] < 300 && m_tiles[i + j * width] > 129){
-                    printf("Ennemie to create\n");
-					l_ennemies.emplace_back(spaw, false, coord, objectset, tileSize.x, tileSize.y);
+                    
+					l_ennemies.push_back(Ennemie(spaw, false, coord, tileSize.x, tileSize.y));
 				}
 				else 
 				{
-					l_ennemies.emplace_back(spaw, true, coord, objectset, tileSize.x, tileSize.y);
+					l_ennemies.push_back(Ennemie(spaw, true, coord, tileSize.x, tileSize.y));
 				}
 			}				
 	
 		}
- 
+
+	return l_ennemies; 
 }
 
 // code from SFML tutorial page 
@@ -86,25 +80,25 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
             sf::Vertex* quad = &m_vertices[(i + j * width) * 4];
 
             // define its 4 corners
-            quad[0].position = sf::Vector2f(i * tileSize.x, j * tileSize.y);
-            quad[1].position = sf::Vector2f((i + 1) * tileSize.x, j * tileSize.y);
-            quad[2].position = sf::Vector2f((i + 1) * tileSize.x, (j + 1) * tileSize.y);
-            quad[3].position = sf::Vector2f(i * tileSize.x, (j + 1) * tileSize.y);
+            quad[0].position = sf::Vector2f((float)(i * tileSize.x),         (float)(j * tileSize.y));
+            quad[1].position = sf::Vector2f((float)((i + 1) * tileSize.x),   (float)(j * tileSize.y));
+            quad[2].position = sf::Vector2f((float)((i + 1) * tileSize.x),   (float)((j + 1) * tileSize.y));
+            quad[3].position = sf::Vector2f((float)(i * tileSize.x),         (float)((j + 1) * tileSize.y));
 
             // define its 4 texture coordinates
-            quad[0].texCoords = sf::Vector2f(tu * tileSize.x, tv * tileSize.y);
-            quad[1].texCoords = sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
-            quad[2].texCoords = sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
-            quad[3].texCoords = sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
-
-            // create plateforms : bounding box associated 
-            for (int k = 0; k < sizeof(m_nowalk); k++)
-            {
-                if (tileNumber == m_nowalk[k])
-                    m_plateforms.push_back(Plateform(quad[0].position, quad[1].position, quad[2].position, quad[3].position));
-            }
-
-
+            quad[0].texCoords = sf::Vector2f((float)(tu * tileSize.x),          (float)(tv * tileSize.y));
+            quad[1].texCoords = sf::Vector2f((float)((tu + 1) * tileSize.x),    (float)(tv * tileSize.y));
+            quad[2].texCoords = sf::Vector2f((float)((tu + 1) * tileSize.x),    (float)((tv + 1) * tileSize.y));
+            quad[3].texCoords = sf::Vector2f((float)(tu * tileSize.x),          (float)((tv + 1) * tileSize.y));
+			
+			// create plateforms : bounding box associated 
+			for (int k = 0; k < sizeof(m_nowalk) ; k++) 
+			{
+				if (tileNumber == m_nowalk[k])
+					m_plateforms.push_back(Plateform(quad[0].position, quad[1].position, quad[2].position, quad[3].position));
+			}
+			
+			
         }
 
         return true;
@@ -186,10 +180,10 @@ void TileMap::setTilemapType(bool isbackground)
 {
     if (isbackground)
     {
-        m_type = backplateform; 
+        m_type = TmapType::backplateform;
     }
     else
     {
-        m_type = monstobjects;
+        m_type = TmapType::monstobjects;
     }
 }

@@ -49,10 +49,10 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
     m_IsUsingJoystick = GetFirstJoystickIndex(m_JoystickIndex);
 
     // sf vectors for min and max of windows app 
-    WIN_LIMIT_X.x = 0;
-    WIN_LIMIT_X.y = WIN_LIMITS.x;
-    WIN_LIMIT_Y.x = 0;
-    WIN_LIMIT_Y.y = WIN_LIMITS.y;
+    WIN_LIMIT_X.x = 0.0f;
+    WIN_LIMIT_X.y = (float)WIN_LIMITS.x;
+    WIN_LIMIT_Y.x = 0.0f;
+    WIN_LIMIT_Y.y = (float)WIN_LIMITS.y;
 
 }
 

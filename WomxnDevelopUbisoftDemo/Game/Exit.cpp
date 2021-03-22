@@ -14,7 +14,7 @@ Exit::Exit(float xCenterPos, float yCenterPos)
 	m_Rectangle.setSize(m_TextureSize);
 	SetBoundingBox(center, m_TextureSize);
 	m_Rectangle.setTexture(&m_Texture);
-	m_Rectangle.setTextureRect(sf::IntRect(0, 0, m_TextureSize.x, m_TextureSize.y));
+	m_Rectangle.setTextureRect(sf::IntRect(0, 0, (int)m_TextureSize.x, (int)m_TextureSize.y));
 	m_Rectangle.setOrigin(m_TextureSize * 0.5f);
 	
 
@@ -39,7 +39,7 @@ void Exit::StartEndGame()
 	sf::Texture end_texture;
 	if (!end_texture.loadFromFile(".\\Assets\\11-Door\\Opening_46x56.png")) {
 		m_Rectangle.setTexture(&end_texture);
-		m_Rectangle.setTextureRect(sf::IntRect(m_TextureSize.x * 3, 0, m_TextureSize.x, m_TextureSize.y));
+		m_Rectangle.setTextureRect(sf::IntRect((int)m_TextureSize.x * 3, 0, (int)m_TextureSize.x, (int)m_TextureSize.y));
 	}
 	else {
 		m_Rectangle.setFillColor(sf::Color(255, 255, 255, 128));

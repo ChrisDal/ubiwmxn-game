@@ -10,6 +10,8 @@ public:
 
 	void StartEndGame();
 
+	const sf::Texture& GetTexture() const { return m_Texture; }
+
 private:
 	sf::RectangleShape m_Rectangle;
 	sf::Texture m_Texture; 

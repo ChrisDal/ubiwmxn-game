@@ -2,8 +2,12 @@
 
 class Ennemie : public sf::Drawable, public BoxCollideable
 {
+    static sf::Texture* m_pTextureAtlas;
 public:
-    Ennemie(sf::Vector2f& spawn_pos, bool canmove, sf::Vector2u& upperleft, const std::string& spriteimage, unsigned int sx, unsigned int sy);
+    static const sf::Texture* GetTextureAtlas()  { return m_pTextureAtlas;  }
+    static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
+
+    Ennemie(sf::Vector2f& spawn_pos, bool canmove, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy);
     ~Ennemie(); 
 
     void Update(float deltaTime);
@@ -13,7 +17,7 @@ public:
     bool getCanMove() const { return moving; }; 
 
 private:
-    sf::Texture e_Texture;
+    
     sf::Sprite e_Sprite;
     sf::Vector2f e_size;
 
