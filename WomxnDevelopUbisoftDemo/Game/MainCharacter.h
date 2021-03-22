@@ -2,6 +2,8 @@
 #include <Game/TileMap.h>
 #include <Game/Plateform.h> 
 
+enum class AnimName { Idle, Walk, Jump, DoubleJump, Attack, Hurt, Die, Dodge, Surprise, Reborn };
+
 class MainCharacter : public sf::Drawable, public BoxCollideable
 {
 public:	
@@ -40,6 +42,17 @@ public:
     //
     bool isAllowJumping() const { return m_CanJump;}
 
+    // Animation 
+    void Play(AnimName anim_name, float deltaTime);
+    void Pause();
+    void Stop();
+    void setFrameTexture(AnimName anim_name, float deltaTime);
+    void resetFrameCounter() {a_framecount = 0; a_framecounttexture= 0; };
+    void setCurrentAnim(AnimName anim_name) { m_current_anim = anim_name; };
+    bool getPlaying() const { return is_PlayingAnim; };
+    void setPlaying(const bool& status) { is_PlayingAnim = status; };
+    std::string getAnimName(); 
+
 
 private:
     sf::Texture m_Texture;
@@ -74,6 +87,20 @@ private:
 	bool c_up; 
 	bool c_down; 
 
+
+    // animation texure 
+    sf::Vector2u a_textsquare_offset;
+    // Animation has a framerate mais on resfresh tous les deltaTime = 30 ou 60fps
+    unsigned int a_framecount = 0;
+    unsigned int a_framecounttexture = 0;
+    unsigned int a_framerate = 10; // anim = 10 fps
+    const float a_spi = 1.0f / a_framerate; // inverse framerate
+	float sumdeltaTime = 0.0f;
+    AnimName m_current_anim = AnimName::Idle; 
+    bool is_PlayingAnim{ false };
+    // Facing direction
+    bool direction{ false }; // true: right, false: left 
+    void setFacingDirection(); 
     
     
 };
