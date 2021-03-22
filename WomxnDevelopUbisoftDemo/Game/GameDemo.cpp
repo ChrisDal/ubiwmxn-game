@@ -21,9 +21,22 @@ GameDemo::GameDemo()
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
 
     // map tile 
-    m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), level, 32, 24);
+    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Tilemap-pf.csv");
+    // test
+    m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 
 	m_plateform = m_Tilemap.getPlateforms(); 
+
+    // Ennemies 
+    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-objets-monstres.csv");
+    m_Elements.setTilemapType(false);
+
+    // Get texture 
+    const std::string texture_name = "Assets\\ennemies_empty2.png"; 
+    m_TextureAtlas.loadFromFile(texture_name);
+    Ennemie::SetTextureAtlas(&m_TextureAtlas);
+
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
 	
 }
 
@@ -53,13 +66,15 @@ void GameDemo::Render(sf::RenderTarget& target)
     target.clear(sf::Color(0, 0, 0));
     target.draw(m_Tilemap);
 	
-	// draw bounding box for plateform 
-	/*for ( const auto& pfxi : m_plateform) 
+	// Ennemies 
+	for ( const auto& enm : m_ennemies) 
 	{
-		target.draw(pfxi); 
+		target.draw(enm); 
 	}
-	*/ 
 	
+    //debug display
+    target.draw(m_ennemies[2]);
+
     target.draw(main_Door);
     target.draw(m_Door);
     target.draw(m_MainCharacter);
@@ -180,7 +195,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             // Color buttons, demonstrate using PushID() to add unique 
             // identifier in the ID stack, and changing style.
-            std::vector<std::string> buttons_name = { "A", "B", "X", "Y","LB", "RB", "LT","RT"};
+            std::vector<std::string> buttons_name = { "A", "B", "X", "Y","LB", "RB", "Back","Menu"};
             for (int i = 0; i < 8; i++)
             {
                 if (i > 0)
@@ -250,6 +265,9 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
     {
+        ImGui::Image(main_Door.GetTexture());   //  allow display an image in the UI  =>  For life bar or display an icon
+        ImGui::SetCursorPosY(0.0f);            // use to put back the cursor on top/left corner of the image to display above it
+
         ImGui::Text("Main character velocity");
         ImGui::Separator();
         ImGui::Text(" Velocity character X : %.2f", m_MainCharacter.getVelocity().x);
