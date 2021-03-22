@@ -159,6 +159,15 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         else
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Can Jump : No");
+        }        
+        
+        if (m_MainCharacter.getPlaying())
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f),  m_MainCharacter.getAnimName().c_str());
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), m_MainCharacter.getAnimName().c_str());
         }
 
     }

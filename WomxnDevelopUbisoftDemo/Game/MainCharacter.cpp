@@ -30,21 +30,25 @@ namespace
     }
 }
 
-
+// constructor
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
     : m_IsPlayingEndGame(false), m_Position(160.0f, 672.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
-    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_CanJump(true)
+    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_CanJump(true), a_textsquare_offset(12,22)
 {
 
-    m_Texture.loadFromFile(".\\Assets\\bulle.png");
-
-    const sf::Vector2f size(static_cast<float>(m_Texture.getSize().x), static_cast<float>(m_Texture.getSize().y));
-
+    m_Texture.loadFromFile(".\\Assets\\hero\\cat_addon_sprite.png");
     m_Sprite.setTexture(m_Texture);
+    m_Sprite.setTextureRect(sf::IntRect(a_textsquare_offset.x, a_textsquare_offset.y, 32, 32));
+    //printf("Size x,y texture %d,%d ", m_Texture.getSize().x, m_Texture.getSize().y);
+    //const sf::Vector2f size(static_cast<float>(m_Texture.getSize().x), static_cast<float>(m_Texture.getSize().y));
+    const sf::Vector2f size(static_cast<float>(32), static_cast<float>(32));
+
+
     m_Sprite.setOrigin(size * 0.5f);
     m_Sprite.setPosition(m_Position);
+    //m_Sprite.setScale(2.0f, 2.0f);
 
-    SetBoundingBox(m_Position, size);
+    SetBoundingBox(m_Position, sf::Vector2f(18, 30));
 
     m_IsUsingJoystick = GetFirstJoystickIndex(m_JoystickIndex);
 
@@ -108,6 +112,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     {
         m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
         s_Velocity.x = (m_Velocity.x >= 0.0f); 
+
+
         // Joystick Index 0 = A, 1 = B , 2 = X , 3 = Y 
         if (Joystick::isButtonPressed(m_JoystickIndex, 0))
         {
@@ -123,6 +129,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                     m_InTheAir = true;
                     m_CanJump = true;
                     m_nbjumps++;
+                    
                 }
                 else
                 {
@@ -142,6 +149,34 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
 
         s_Velocity.y = (m_Velocity.y >= 0.0f);
+		
+
+        if (m_InTheAir)
+        {
+            if (m_nbjumps == 1)
+            {
+                Play(AnimName::Jump, deltaTime);
+            }
+            else
+            {
+                Play(AnimName::DoubleJump, deltaTime);
+            }
+        }
+        else
+        {
+            if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
+            {
+                Play(AnimName::Idle, deltaTime);
+            }
+            // moving left right 
+            else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
+            {
+                Play(AnimName::Walk, deltaTime);
+            }
+        }
+		
+
+
     }
     else
     {
@@ -203,6 +238,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 else
                 {
                     m_CanJump = false;
+                    
                 }
             }
         }
@@ -215,7 +251,33 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 k_KeyboardPressed[4] = false;
             }
         }
+
+        if (m_InTheAir)
+        {
+            if (m_nbjumps == 1)
+            {
+                Play(AnimName::Jump, deltaTime);
+            }
+            else
+            {
+                Play(AnimName::DoubleJump, deltaTime);
+            }
+        }
+        else
+        {
+            if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
+            {
+                Play(AnimName::Idle, deltaTime);
+            }
+            // moving left right 
+            else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
+            {
+                Play(AnimName::Walk, deltaTime);
+            }
+        }
+
     }
+
 
 
     // Test collision with new Position 
@@ -447,4 +509,175 @@ bool MainCharacter::isCollidingDown(const BoxCollideable& other, bool keypressed
 
     return (leftdown or rightdown) and keypressed;
 
+}
+
+
+//  ---------------------------------
+//              Animation 
+// ----------------------------------
+
+// 
+void MainCharacter::Play(AnimName anim_name, float deltaTime)
+{
+    // Update frame texture 
+    setFrameTexture(anim_name, deltaTime);
+	// set current
+	setCurrentAnim(anim_name); 
+    setPlaying(true);
+}
+
+void MainCharacter::Pause() 
+{
+    // reste sur la meme frame 
+    setPlaying(false);
+};
+
+
+void MainCharacter::Stop() {
+    // Reset counters
+    setPlaying(false);
+    a_framecount = 0; 
+    a_framecounttexture = 0;
+	sumdeltaTime = 0.0f;
+};
+
+void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
+{
+    short unsigned int nb_frames_anim=1; 
+    short unsigned int line_anim=0;
+    short unsigned int a_offset = 0; // offset frame pour l'animation si besoin
+    const sf::Vector2u sizetexture = {64,64};
+	const float deltaSecond = 1.0f;
+	
+	if (anim_name != m_current_anim)
+	{
+		// reset counters
+		Stop();
+	}
+	
+    switch (anim_name)
+    {
+        case AnimName::Idle:      
+            nb_frames_anim = 4;
+            line_anim = 0; 
+            a_offset = 0;
+            break;
+        case AnimName::Walk:      
+            nb_frames_anim = 8;
+            line_anim = 1; 
+            a_offset = 0;
+            break;
+        case AnimName::Jump:       
+            nb_frames_anim = 8;
+            line_anim = 2; 
+            a_offset = 0;
+            break;
+        case AnimName::DoubleJump : 
+            nb_frames_anim = 6;
+            line_anim = 2; 
+            a_offset = 2;
+            break;
+        case AnimName::Die:
+            nb_frames_anim = 7;
+            line_anim = 4;
+            a_offset = 0;
+            break;
+        case AnimName::Attack: 
+            nb_frames_anim = 6;
+            line_anim = 15; 
+            a_offset = 0;
+            break;
+        case AnimName::Hurt: 
+            nb_frames_anim = 2;
+            line_anim = 4;
+            a_offset = 1;
+            break;
+        case AnimName::Dodge: 
+            nb_frames_anim = 6;
+            line_anim = 14; 
+            a_offset = 0;
+            break;
+        case AnimName::Surprise: 
+            nb_frames_anim = 6;
+            line_anim = 14; 
+            a_offset = 0;
+            break;
+        case AnimName::Reborn: 
+            nb_frames_anim = 4;
+            line_anim = 4;
+            a_offset = 7;
+            break;
+
+        default: 
+            nb_frames_anim = 4;
+            line_anim = 4;
+            a_offset = 0;
+            break;
+    }
+
+
+    // DT = 1/ 60.0 APP FRAMERATE 
+	sumdeltaTime += deltaTime;
+
+    // si on dépasse 1/framerate(anim) on change de frame  
+    if (sumdeltaTime > a_spi)
+    {
+        // set texture 
+        int y = line_anim * sizetexture.y ;
+        int x = (a_framecounttexture % (nb_frames_anim)) * sizetexture.x + ( a_offset * sizetexture.x);
+        m_Sprite.setTextureRect(sf::IntRect(x + a_textsquare_offset.x , y + a_textsquare_offset.y, sizetexture.x/2, sizetexture.y/2));
+        // ++ number of frame in this specific animation modulo nb frames anim 
+        a_framecounttexture++;
+		sumdeltaTime = 0.0f; 
+    }
+
+
+    a_framecount++;
+}
+
+
+
+std::string MainCharacter::getAnimName()
+{
+
+    std::string animname;
+    switch (m_current_anim)
+    {
+    case AnimName::Idle:
+        animname = "Idle";
+        break;
+    case AnimName::Walk:
+        animname = "Walk";
+        break;
+    case AnimName::Jump:
+        animname = "Jump";
+        break;
+    case AnimName::DoubleJump:
+        animname = "DoubleJump";
+        break;
+    case AnimName::Die:
+        animname = "Die";
+        break;
+    case AnimName::Attack:
+        animname = "Attack";
+        break;
+    case AnimName::Hurt:
+        animname = "Hurt";
+        break;
+    case AnimName::Dodge:
+        animname = "Dodge";
+        break;
+    case AnimName::Surprise:
+        animname = "Surprise";
+        break;
+    case AnimName::Reborn:
+        animname = "Reborn";
+        break;
+
+    default:
+        animname = "No anim";
+        break;
+    }
+
+    return animname;
 }
