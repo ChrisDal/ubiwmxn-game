@@ -98,6 +98,9 @@ private:
 	float sumdeltaTime = 0.0f;
     AnimName m_current_anim = AnimName::Idle; 
     bool is_PlayingAnim{ false };
+    // Facing direction
+    bool direction{ false }; // true: right, false: left 
+    void setFacingDirection(); 
     
     
 };

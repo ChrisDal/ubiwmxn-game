@@ -112,7 +112,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     {
         m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
         s_Velocity.x = (m_Velocity.x >= 0.0f); 
-
+        
+        setFacingDirection();
 
         // Joystick Index 0 = A, 1 = B , 2 = X , 3 = Y 
         if (Joystick::isButtonPressed(m_JoystickIndex, 0))
@@ -142,7 +143,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             if (m_WasButtonPressed)
             {
-                m_Sprite.setScale(1.0f, 1.0f);
+                //m_Sprite.setScale(1.0f, 1.0f);
                 m_WasButtonPressed = false;
                 k_JoystickPressed[0] = false; 
             }
@@ -206,6 +207,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             k_KeyboardPressed[1] = false;
         }
 
+
+
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
             k_KeyboardPressed[2] = true;
@@ -252,6 +255,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             }
         }
 
+
+        // Animation 
+
+        // facing direction
+        setFacingDirection();
+
+        // Animation to play
         if (m_InTheAir)
         {
             if (m_nbjumps == 1)
@@ -546,7 +556,7 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
     short unsigned int nb_frames_anim=1; 
     short unsigned int line_anim=0;
     short unsigned int a_offset = 0; // offset frame pour l'animation si besoin
-    const sf::Vector2u sizetexture = {64,64};
+    const sf::Vector2i sizetexture = {64,64};
 	const float deltaSecond = 1.0f;
 	
 	if (anim_name != m_current_anim)
@@ -625,7 +635,16 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
         // set texture 
         int y = line_anim * sizetexture.y ;
         int x = (a_framecounttexture % (nb_frames_anim)) * sizetexture.x + ( a_offset * sizetexture.x);
-        m_Sprite.setTextureRect(sf::IntRect(x + a_textsquare_offset.x , y + a_textsquare_offset.y, sizetexture.x/2, sizetexture.y/2));
+        int leftrect = x + a_textsquare_offset.x;
+        int sizex = sizetexture.x / 2;
+        
+        if (!direction)
+        {
+            leftrect = x + sizetexture.x - a_textsquare_offset.x;
+            sizex = - sizetexture.x / 2;
+        }
+        
+        m_Sprite.setTextureRect(sf::IntRect(leftrect, y + a_textsquare_offset.y, sizex, sizetexture.y/2));
         // ++ number of frame in this specific animation modulo nb frames anim 
         a_framecounttexture++;
 		sumdeltaTime = 0.0f; 
@@ -681,3 +700,20 @@ std::string MainCharacter::getAnimName()
 
     return animname;
 }
+
+
+void MainCharacter::setFacingDirection()
+{
+    // direction for animation 
+    if (m_Velocity.x < -0.01f)
+    {
+        direction = false;
+    }
+    else if (m_Velocity.x > 0.01f)
+    {
+        direction = true;
+    }
+    // else ==0.0f : relies on previous value
+
+}
+
