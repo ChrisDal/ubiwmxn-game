@@ -48,7 +48,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
     m_Sprite.setPosition(m_Position);
     //m_Sprite.setScale(2.0f, 2.0f);
 
-    SetBoundingBox(m_Position, sf::Vector2f(18, 30));
+    SetBoundingBox(m_Position, sf::Vector2f(0.5625*m_Sprite.getScale().x*size.x, 0.9375 * m_Sprite.getScale().y * size.y));
 
     m_IsUsingJoystick = GetFirstJoystickIndex(m_JoystickIndex);
 
