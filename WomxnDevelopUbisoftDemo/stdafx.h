@@ -9,3 +9,4 @@
 
 #include <Engine/Game.h>
 #include <Engine/Collision.h>
+#include <Engine/Animation.h>

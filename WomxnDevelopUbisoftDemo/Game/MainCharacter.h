@@ -2,10 +2,14 @@
 #include <Game/TileMap.h>
 #include <Game/Plateform.h> 
 
-enum class AnimName { Idle, Walk, Jump, DoubleJump, Attack, Hurt, Die, Dodge, Surprise, Reborn };
+
 
 class MainCharacter : public sf::Drawable, public BoxCollideable
 {
+    enum class AnimName { Idle, Walk, Jump, DoubleJump, 
+                            Attack, Hurt, Die, Dodge, 
+                            Surprise, Reborn };
+
 public:	
     MainCharacter(sf::Vector2u WIN_LIMITS);
 
@@ -16,7 +20,6 @@ public:
     
     sf::Vector2f getVelocity() const; 
 	bool getCollidingPf() const { return _colliding_plateforms;}
-	// bool isCollidingLeft(const BoxCollideable& other, const bool k_keyboard[5]) const;
 	bool isCollidingLeft(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingRight(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingUp(const BoxCollideable& other,  bool keypressed) const;

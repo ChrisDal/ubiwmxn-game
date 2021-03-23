@@ -47,6 +47,12 @@
     <ClCompile Include="Game\Ennemie.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Animation.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\DeadBody.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -84,6 +90,12 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\Ennemie.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Animation.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\DeadBody.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
