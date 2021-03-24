@@ -58,15 +58,59 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
     WIN_LIMIT_Y.x = 0.0f;
     WIN_LIMIT_Y.y = (float)WIN_LIMITS.y;
 
+    // Reborn init 
+    m_RespawnPosition = m_Position; 
+	DeadBody::SetTextureAtlas(&m_Texture); 
+    // Animations
+    InitAnimType();             // ToDo : make a configuration files for animation's details
+    m_OneTimeAnimations = { AnimName::Die, AnimName::Reborn }; 
+   
+
 }
 
 
-void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm)
+void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie)
 {
     if (m_IsPlayingEndGame)
     {
         return;
     }
+
+    if (!m_isAlive and not m_Respawning and a_done_anim)
+    {
+        printf("Is Dying ");
+        // call reborn 
+        m_Velocity = {0.0f, 0.0f}; 
+		m_Respawning = true; 
+        // create dead bodies 
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32)); 
+			
+		// assign position to respawn spot 
+		m_Position = m_RespawnPosition;
+
+    } 
+	else if (m_Respawning)
+	{
+        printf("Is Respawing ");
+		Play(AnimName::Reborn, deltaTime, false); 
+		if (a_done_anim)
+		{
+			m_Respawning = false; 
+		}
+        return;
+	}
+
+    // Alive or not 
+
+    bool living = Alive(deltaTime, l_ennemie);
+    if (not living)
+    {
+        // Launch dies 
+        Play(AnimName::Die, deltaTime, true);
+        return;
+    }
+		
+
 
     const float SPEED_MAX = 150.0f;
     const float SPEED_MAX_FALL = 800.0f;
@@ -156,23 +200,23 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             if (m_nbjumps == 1)
             {
-                Play(AnimName::Jump, deltaTime);
+                Play(AnimName::Jump, deltaTime, true);
             }
             else
             {
-                Play(AnimName::DoubleJump, deltaTime);
+                Play(AnimName::DoubleJump, deltaTime, true);
             }
         }
         else
         {
             if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
             {
-                Play(AnimName::Idle, deltaTime);
+                Play(AnimName::Idle, deltaTime, true);
             }
             // moving left right 
             else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
             {
-                Play(AnimName::Walk, deltaTime);
+                Play(AnimName::Walk, deltaTime, true);
             }
         }
 		
@@ -207,7 +251,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             k_KeyboardPressed[1] = false;
         }
 
-
+		// facing direction
+        setFacingDirection();
 
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
@@ -255,38 +300,36 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             }
         }
 
-
-        // Animation 
-
-        // facing direction
-        setFacingDirection();
-
         // Animation to play
         if (m_InTheAir)
         {
             if (m_nbjumps == 1)
             {
-                Play(AnimName::Jump, deltaTime);
+                Play(AnimName::Jump, deltaTime, true);
             }
             else
             {
-                Play(AnimName::DoubleJump, deltaTime);
+                Play(AnimName::DoubleJump, deltaTime, true);
             }
         }
         else
         {
             if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
             {
-                Play(AnimName::Idle, deltaTime);
+                Play(AnimName::Idle, deltaTime, true);
             }
             // moving left right 
             else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
             {
-                Play(AnimName::Walk, deltaTime);
+                Play(AnimName::Walk, deltaTime, true);
             }
         }
+		
+
 
     }
+
+
 
 
 
@@ -304,6 +347,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite);
+
+    for (const auto& dbd : m_deadbodies)
+    {
+        target.draw(dbd);
+
+    }
 }
 
 void MainCharacter::StartEndGame()
@@ -433,6 +482,9 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
 
 };
 
+
+
+
 sf::Vector2f MainCharacter::getVelocity() const
 {
     return MainCharacter::m_Velocity;
@@ -480,6 +532,9 @@ bool MainCharacter::getKeyboardKey(std::string keyname) const
 
 }
 
+// ----------------------------------------
+//          Colliding 
+// ----------------------------------------
 
 bool MainCharacter::isCollidingLeft(const BoxCollideable& other, bool keypressed) const
 {
@@ -527,13 +582,50 @@ bool MainCharacter::isCollidingDown(const BoxCollideable& other, bool keypressed
 // ----------------------------------
 
 // 
-void MainCharacter::Play(AnimName anim_name, float deltaTime)
+void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
 {
-    // Update frame texture 
-    setFrameTexture(anim_name, deltaTime);
-	// set current
-	setCurrentAnim(anim_name); 
-    setPlaying(true);
+    
+    if (m_current_anim != anim_name)
+    {
+        Stop(); // reset counters
+    }
+    
+    if (not loop)
+    {
+        // To do : Get by animation name 
+        AnimType next_anim = m_AllAnims.Die; 
+        if (a_framecounttexture == next_anim.nb_frames_anim)
+        {
+            Pause(); 
+            a_done_anim = true; 
+            setPlaying(false);
+            Stop();
+            return; 
+        }
+
+        if (not a_done_anim)
+        {
+            // Update frame texture 
+            setFrameTexture(anim_name, deltaTime);
+            // set current
+            setCurrentAnim(anim_name);
+            setPlaying(true);
+
+        }
+
+    } 
+    else 
+    {
+        // Update frame texture 
+        setFrameTexture(anim_name, deltaTime);
+        // set current
+        setCurrentAnim(anim_name);
+        setPlaying(true);
+    }
+    
+
+    
+
 }
 
 void MainCharacter::Pause() 
@@ -551,19 +643,43 @@ void MainCharacter::Stop() {
 	sumdeltaTime = 0.0f;
 };
 
+
+void MainCharacter::InitAnimType()
+{
+    
+
+    m_AllAnims.Idle = { 4, 0, 0, "Idle" };
+    m_AllAnims.Walk = { 8, 1, 0, "Walk" };
+    m_AllAnims.Jump = { 8, 2, 0, "Jump" };
+    m_AllAnims.DoubleJump = { 6, 2, 2, "DoubleJump" };
+    m_AllAnims.Die = { 7, 4, 0, "Die" };
+    m_AllAnims.Hurt = { 2, 4, 1, "Hurt" };
+    m_AllAnims.Dodge = { 6, 14, 0, "Dodge" };
+    m_AllAnims.Surprise = { 6, 14, 0, "Surprise" };
+    m_AllAnims.Reborn = { 4, 4, 7, "Reborn" };
+
+    
+    /*
+        struct AllAnims {
+        struct AnimType Idle { 4, 0, 0, "Idle" };
+        struct AnimType Walk { 8, 1, 0, "Walk" };
+        struct AnimType Jump { 8, 2, 0, "Jump" };
+        struct AnimType DoubleJump { 6, 2, 2, "DoubleJump" };
+        struct AnimType Die { 7, 4, 0, "Die" };
+        struct AnimType Hurt { 2, 4, 1, "Hurt" };
+        struct AnimType Dodge { 6, 14, 0, "Dodge" };
+        struct AnimType Surprise { 6, 14, 0, "Surprise" };
+        struct AnimType Reborn { 4, 4, 7, "Reborn" };
+    };*/
+
+}
+
 void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
 {
     short unsigned int nb_frames_anim=1; 
     short unsigned int line_anim=0;
     short unsigned int a_offset = 0; // offset frame pour l'animation si besoin
     const sf::Vector2i sizetexture = {64,64};
-	const float deltaSecond = 1.0f;
-	
-	if (anim_name != m_current_anim)
-	{
-		// reset counters
-		Stop();
-	}
 	
     switch (anim_name)
     {
@@ -716,4 +832,36 @@ void MainCharacter::setFacingDirection()
     // else ==0.0f : relies on previous value
 
 }
+
+
+// ----------------------------------------------
+//                  Gameplay 
+// ----------------------------------------------
+
+bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
+{
+    if (m_Respawning)
+    {
+        setAliveOrDead(true);
+        return getAlive();
+    }
+    
+    // check at each frame if it collides against ennemies 
+    for (auto const& enm : l_ennemies)
+    {
+
+       
+        if (IsColliding(enm) and m_isAlive)
+        {	// Die 
+            setAliveOrDead(false);
+            printf("Dieee");
+            break;
+        }
+    }
+
+
+    return getAlive();
+}
+	
+
 

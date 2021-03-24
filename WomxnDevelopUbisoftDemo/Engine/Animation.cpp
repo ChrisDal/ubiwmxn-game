@@ -19,9 +19,9 @@ void Animation::Stop()
     // no playing 
     setPlaying(false);
     // reset counters
-    resetFrame();
-    resetFrameTexture();
-    resetDtime(); 
+    a_framecount = 0; 
+    a_frametexture = 0;
+    a_sumdeltaTime = 0.0f; 
 
 }
 	
@@ -31,6 +31,13 @@ void Animation::Pause()
     setPlaying(false);
 }
 
+
+void Animation::setFrameTexture(AnimName anim_name, float deltaTime)
+{
+    // Do something 
+    // see below 
+    return;
+}
 
 /* Exemple of setFrameTexture 
 void Animation::setFrameTexture(AnimName anim_name, float deltaTime)

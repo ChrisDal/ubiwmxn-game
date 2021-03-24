@@ -1,7 +1,4 @@
 #pragma once
-
-#include <Game/MainCharacter.h>
-
 class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
 	// common to dead bodies
@@ -9,7 +6,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 	static sf::Texture*  m_pTextureAtlas;
 	
 public: 
-	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, MainCharacter mchara);
+	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy);
 	
 	void Update(float deltaTime); 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -31,9 +28,7 @@ private:
 	sf::Vector2f m_Position; 
 	sf::Vector2f m_size; 
 	sf::Sprite m_Sprite;
-	
-	// dependant of maincharacter 
-	MainCharacter* m_pMainCharacter = nullptr; 
+
 	AnimAction a_current_anim{ AnimAction::Idle };
 	
 	// collisions 

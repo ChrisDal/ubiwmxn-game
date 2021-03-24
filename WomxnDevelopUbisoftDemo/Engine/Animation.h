@@ -2,6 +2,14 @@
 
 class Animation
 {
+	
+	struct AnimType {
+		short unsigned int nb_frames_anim; 
+		short unsigned int line_anim; 
+		short unsigned int a_offset;
+		std::string name; 
+	};
+	
 	enum class AnimName {
 		Idle, Walk, Jump, DoubleJump,
 		Attack, Hurt, Die, Dodge,
@@ -20,7 +28,7 @@ public:
 	void Pause();
 
 	// Define frame to show : texture 
-	virtual void setFrameTexture(AnimName anim_name, float deltaTime) = 0;
+	void setFrameTexture(AnimName anim_name, float deltaTime);
 
 	// Is a animation is playing 
 	inline void setPlaying(const bool& playing) { a_isPlaying = playing; };
@@ -50,5 +58,7 @@ protected:
 	bool a_direction{ true }; 						// direction=true:right, false:left
 	bool a_isPlaying{ false }; 						// Animation is currently playing
 	AnimName a_current_anim{ AnimName::Idle }; 		// animation currently playing
+	bool a_one_time_anim{ false };					// To use for one time animation
+
 
 };

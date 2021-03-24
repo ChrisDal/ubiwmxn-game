@@ -1,6 +1,8 @@
 #pragma once
 #include <Game/TileMap.h>
 #include <Game/Plateform.h> 
+#include <Game/Ennemie.h> 
+#include <Game/DeadBody.h> 
 
 
 
@@ -10,10 +12,29 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
                             Attack, Hurt, Die, Dodge, 
                             Surprise, Reborn };
 
+    struct AnimType {
+        short unsigned int nb_frames_anim;
+        short unsigned int line_anim;
+        short unsigned int a_offset;
+        std::string name;
+    };
+
+    struct AllAnims {
+        struct AnimType Idle;
+        struct AnimType Walk;
+        struct AnimType Jump;
+        struct AnimType DoubleJump;
+        struct AnimType Die;
+        struct AnimType Hurt;
+        struct AnimType Dodge;
+        struct AnimType Surprise;
+        struct AnimType Reborn;
+    };
+
 public:	
     MainCharacter(sf::Vector2u WIN_LIMITS);
 
-    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm);
+    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void StartEndGame();
@@ -42,11 +63,19 @@ public:
     void setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop);
     void setInTheAir(TileMap& Tm);
     
-    //
+    // Jump
     bool isAllowJumping() const { return m_CanJump;}
+	
+	// Alive or set dead 
+	void setAliveOrDead(const bool& not_dead) { m_isAlive = not_dead;}
+	bool getAlive() const { return m_isAlive; }
+	// define if alive or not
+	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
+    
 
     // Animation 
-    void Play(AnimName anim_name, float deltaTime);
+    void InitAnimType();
+    void Play(AnimName anim_name, float deltaTime, bool loop);
     void Pause();
     void Stop();
     void setFrameTexture(AnimName anim_name, float deltaTime);
@@ -55,6 +84,7 @@ public:
     bool getPlaying() const { return is_PlayingAnim; };
     void setPlaying(const bool& status) { is_PlayingAnim = status; };
     std::string getAnimName(); 
+    bool a_done_anim{ false }; 
 
 
 private:
@@ -69,6 +99,12 @@ private:
     sf::Vector2f m_Velocity;
     // Sign Velocity : true pos, false neg 
     sf::Vector2<bool> s_Velocity = { false, false };
+	
+	// dead bodies 
+	std::vector<DeadBody> m_deadbodies{}; 
+	
+	
+	
     bool m_IsPlayingEndGame;
 
     // in the air vs on the floor 
@@ -77,12 +113,17 @@ private:
     // Jumping
     bool m_CanJump; 
     short unsigned int m_nbjumps{ 0 };
+	
+	// Dead or alive 
+	bool m_isAlive{true}; 
+	bool m_Respawning{false}; 
+    sf::Vector2f m_RespawnPosition{0.0f,0.f};
 
     // max move window 
     sf::Vector2f WIN_LIMIT_X;
     sf::Vector2f WIN_LIMIT_Y;
 	
-	// test 
+	// Colliding 
 	bool _colliding_plateforms{false}; 
 	// colision side detection on Quad
 	bool c_left; 
@@ -101,6 +142,8 @@ private:
 	float sumdeltaTime = 0.0f;
     AnimName m_current_anim = AnimName::Idle; 
     bool is_PlayingAnim{ false };
+    std::vector<AnimName> m_OneTimeAnimations{};
+    AllAnims m_AllAnims;
     // Facing direction
     bool direction{ false }; // true: right, false: left 
     void setFacingDirection(); 

@@ -6,7 +6,7 @@
 #include <Game/Exit.h>
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h>
-
+#include <Game/DeadBody.h>
 #include <Game/Tilemap.h>
 #include <Game/Plateform.h>
 
@@ -34,7 +34,7 @@ private:
     TileMap m_Elements; 
     sf::Texture m_TextureAtlas;
     std::vector<Ennemie> m_ennemies = {};
-	//std::vector<DeadBody> m_deadbodies = {};
+	std::vector<DeadBody> m_deadbodies = {};
 	
     // Game process
     bool m_IsFinished;

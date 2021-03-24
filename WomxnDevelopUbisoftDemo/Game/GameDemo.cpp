@@ -37,12 +37,13 @@ GameDemo::GameDemo()
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
 
     m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
+
 	
 }
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter.Update(deltaTime, m_plateform, m_Tilemap);
+    m_MainCharacter.Update(deltaTime, m_plateform, m_Tilemap, m_ennemies);
     m_Door.Update(deltaTime);
 
 
@@ -72,8 +73,11 @@ void GameDemo::Render(sf::RenderTarget& target)
 		target.draw(enm); 
 	}
 	
-    //debug display
-    target.draw(m_ennemies[2]);
+	for ( const auto& dbd : m_deadbodies)
+	{
+		target.draw(dbd);
+		
+	}
 
     target.draw(main_Door);
     target.draw(m_Door);
@@ -183,6 +187,15 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         else
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), m_MainCharacter.getAnimName().c_str());
+        }        
+        
+        if (m_MainCharacter.getAlive())
+        {
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f),  "Alive");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Dead");
         }
 
     }

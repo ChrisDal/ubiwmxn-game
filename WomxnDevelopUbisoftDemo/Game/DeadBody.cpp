@@ -5,7 +5,7 @@
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 
 // constructor 
-DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, MainCharacter mchara)
+DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
 {
 
     sf::Vector2i offset_texture = sf::Vector2i(12, 22);
