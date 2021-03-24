@@ -106,7 +106,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     if (not living)
     {
         // Launch dies 
-        Play(AnimName::Die, deltaTime, true);
+        Play(AnimName::Die, deltaTime, false);
         return;
     }
 		
@@ -594,7 +594,7 @@ void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
     {
         // To do : Get by animation name 
         AnimType next_anim = m_AllAnims.Die; 
-        if (a_framecounttexture == next_anim.nb_frames_anim)
+        if (a_framecounttexture == (next_anim.nb_frames_anim-1))
         {
             Pause(); 
             a_done_anim = true; 

@@ -14,7 +14,7 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
 
     // Set texture 
     m_Sprite.setTexture(*m_pTextureAtlas);
-    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x, getTextureOffset().y, m_size.x, m_size.y));
+    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + 6 * 64, getTextureOffset().y + 4 * 64, m_size.x, m_size.y));
     // Set Origin
     m_Sprite.setOrigin(m_size * 0.5f);
     // Set Position
