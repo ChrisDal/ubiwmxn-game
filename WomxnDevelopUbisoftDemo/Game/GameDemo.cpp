@@ -5,7 +5,6 @@ GameDemo::GameDemo()
     : Game{ "Game Demo" }
     , m_Door{ 900, 600, 100, 200 }
     , main_Door{ 900, 100 }
-    , m_MainCharacter{ sf::Vector2u(1024,768) }
     , m_IsFinished{ false }
 {
     m_EndgameTextFont.loadFromFile("Assets\\arial.ttf");
@@ -37,13 +36,21 @@ GameDemo::GameDemo()
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
 
     m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
-
+    
+    // Load main character 
+    m_MainCharacter = new MainCharacter(sf::Vector2u(1024, 768), m_Elements.getMainCharacterSpawnPosition());
 	
+}
+
+GameDemo::~GameDemo()
+{
+    delete m_MainCharacter;
+    printf("free main character\n");
 }
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter.Update(deltaTime, m_plateform, m_Tilemap, m_ennemies);
+    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies);
     m_Door.Update(deltaTime);
 
 
@@ -51,11 +58,11 @@ void GameDemo::Update(float deltaTime)
     {
         //if (m_Door.IsColliding(m_MainCharacter))
         //if (m_Door.Contains(m_MainCharacter))s
-        if (main_Door.Contains(m_MainCharacter.GetCenter()))
+        if (main_Door.Contains(m_MainCharacter->GetCenter()))
         {
             m_EndgameSound.play();
 
-            m_MainCharacter.StartEndGame();
+            m_MainCharacter->StartEndGame();
             main_Door.StartEndGame();
             m_IsFinished = true;
         }
@@ -81,7 +88,7 @@ void GameDemo::Render(sf::RenderTarget& target)
 
     target.draw(main_Door);
     target.draw(m_Door);
-    target.draw(m_MainCharacter);
+    target.draw(*m_MainCharacter);
 
     if (m_IsFinished)
     {
@@ -97,7 +104,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
     if (ImGui::CollapsingHeader("Main character position"))
     {
-        const auto& mainCharCenterPos = m_MainCharacter.GetCenter();
+        const auto& mainCharCenterPos = m_MainCharacter->GetCenter();
 
         ImGui::Text("X: %f", mainCharCenterPos.x);
         ImGui::Text("Y: %f", mainCharCenterPos.y);
@@ -117,7 +124,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 	
 	if (ImGui::CollapsingHeader("MainCharacter Status"))
     {
-        if (m_MainCharacter.getCollidingPf())
+        if (m_MainCharacter->getCollidingPf())
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision with Plateform");
         }
@@ -126,7 +133,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "No collision with plateform");
         }
 		
-		if (m_MainCharacter.getCollidingLeft())
+		if (m_MainCharacter->getCollidingLeft())
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Left : Yes");
         }
@@ -135,7 +142,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Left : No");
         }
         
-        if (m_MainCharacter.getCollidingRight())
+        if (m_MainCharacter->getCollidingRight())
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Right : Yes");
         }
@@ -144,7 +151,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Right : No");
         }
         
-        if (m_MainCharacter.getCollidingUp())
+        if (m_MainCharacter->getCollidingUp())
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Up : Yes");
         }
@@ -153,7 +160,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Up : No");
         }
         
-        if (m_MainCharacter.getCollidingDown())
+        if (m_MainCharacter->getCollidingDown())
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Down : Yes");
         }
@@ -162,7 +169,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Collision Down : No");
         }
         
-        if (m_MainCharacter.getInTheAir())
+        if (m_MainCharacter->getInTheAir())
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "In the Air : Yes");
         }
@@ -171,7 +178,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "In the Air : No");
         }
 
-        if (m_MainCharacter.isAllowJumping())
+        if (m_MainCharacter->isAllowJumping())
         {
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "Can Jump : Yes");
         }
@@ -180,16 +187,16 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Can Jump : No");
         }        
         
-        if (m_MainCharacter.getPlaying())
+        if (m_MainCharacter->getPlaying())
         {
-            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f),  m_MainCharacter.getAnimName().c_str());
+            ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f),  m_MainCharacter->getAnimName().c_str());
         }
         else
         {
-            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), m_MainCharacter.getAnimName().c_str());
+            ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), m_MainCharacter->getAnimName().c_str());
         }        
         
-        if (m_MainCharacter.getAlive())
+        if (m_MainCharacter->getAlive())
         {
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f),  "Alive");
         }
@@ -214,7 +221,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
                 if (i > 0)
                     ImGui::SameLine();
                     ImGui::PushID(i);
-                    if (m_MainCharacter.getJoystickPressed(i))
+                    if (m_MainCharacter->getJoystickPressed(i))
                     {
                         ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 8.0f, 0.85f, 0.85f));
                     }
@@ -240,7 +247,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
                 if (i > 0)
                     ImGui::SameLine();
                     ImGui::PushID(i);
-					if (m_MainCharacter.getKeyboardKey(keyboard_name[i]))
+					if (m_MainCharacter->getKeyboardKey(keyboard_name[i]))
                     {
                         ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 5.0f, 0.85f, 0.85f));
                     }
@@ -283,8 +290,8 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
         ImGui::Text("Main character velocity");
         ImGui::Separator();
-        ImGui::Text(" Velocity character X : %.2f", m_MainCharacter.getVelocity().x);
-        ImGui::Text(" Velocity character Y : %.2f", m_MainCharacter.getVelocity().y);
+        ImGui::Text(" Velocity character X : %.2f", m_MainCharacter->getVelocity().x);
+        ImGui::Text(" Velocity character Y : %.2f", m_MainCharacter->getVelocity().y);
 
         if (ImGui::BeginPopupContextWindow())
         {

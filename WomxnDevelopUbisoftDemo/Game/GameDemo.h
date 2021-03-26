@@ -14,6 +14,7 @@ class GameDemo : public Game
 {
 public:
     GameDemo();
+    ~GameDemo();
 
     void Update(float deltaTime) override;
     void Render(sf::RenderTarget& target) override;
@@ -28,7 +29,7 @@ private:
     TileMap m_Tilemap;
     Door m_Door;
     Exit main_Door;
-    MainCharacter m_MainCharacter;
+    MainCharacter* m_MainCharacter;
 	std::vector<Plateform> m_plateform = {}; 
     // Affects life
     TileMap m_Elements; 

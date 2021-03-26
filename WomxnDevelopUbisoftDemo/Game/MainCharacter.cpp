@@ -31,20 +31,20 @@ namespace
 }
 
 // constructor
-MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
-    : m_IsPlayingEndGame(false), m_Position(160.0f, 672.0f), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
+MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position)
+    : m_IsPlayingEndGame(false), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
     c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_CanJump(true), a_textsquare_offset(12,22)
 {
 
     m_Texture.loadFromFile(".\\Assets\\hero\\cat_addon_sprite.png");
     m_Sprite.setTexture(m_Texture);
     m_Sprite.setTextureRect(sf::IntRect(a_textsquare_offset.x, a_textsquare_offset.y, 32, 32));
-    //printf("Size x,y texture %d,%d ", m_Texture.getSize().x, m_Texture.getSize().y);
     //const sf::Vector2f size(static_cast<float>(m_Texture.getSize().x), static_cast<float>(m_Texture.getSize().y));
     const sf::Vector2f size(static_cast<float>(32), static_cast<float>(32));
 
 
     m_Sprite.setOrigin(size * 0.5f);
+    m_Position = spawn_position; 
     m_Sprite.setPosition(m_Position);
     //m_Sprite.setScale(2.0f, 2.0f);
 
@@ -63,9 +63,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS)
 	DeadBody::SetTextureAtlas(&m_Texture); 
     // Animations
     InitAnimType();             // ToDo : make a configuration files for animation's details
-    m_OneTimeAnimations = { AnimName::Die, AnimName::Reborn }; 
    
-
 }
 
 
@@ -187,7 +185,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             if (m_WasButtonPressed)
             {
-                //m_Sprite.setScale(1.0f, 1.0f);
                 m_WasButtonPressed = false;
                 k_JoystickPressed[0] = false; 
             }
@@ -229,13 +226,11 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             m_Velocity.x = fmin(m_Velocity.x + SPEED_INC, SPEED_MAX);
             k_KeyboardPressed[0] = true;
-            s_Velocity.x = (m_Velocity.x >= 0.0f);
         }
         else if (Keyboard::isKeyPressed(Keyboard::Left))
         {
             m_Velocity.x = fmax(m_Velocity.x - SPEED_INC, -SPEED_MAX);
             k_KeyboardPressed[1] = true;
-            s_Velocity.x = (m_Velocity.x >= 0.0f);
         }
         else
         {
@@ -243,13 +238,15 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             m_Velocity.x = std::abs(m_Velocity.x * SLOWDOWN_RATE);
             if (s_Velocity.x)
             {
-                m_Velocity = -m_Velocity;
+                m_Velocity.x = -m_Velocity.x;
             }
 
             
             k_KeyboardPressed[0] = false;
             k_KeyboardPressed[1] = false;
         }
+		
+		s_Velocity.x = (m_Velocity.x >= 0.0f);
 
 		// facing direction
         setFacingDirection();
@@ -294,12 +291,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             if (m_WasButtonPressed)
             {
-                m_Sprite.setScale(1.0f, 1.0f);
                 m_WasButtonPressed = false;
                 k_KeyboardPressed[4] = false;
             }
         }
-
+		
+		s_Velocity.y = (m_Velocity.y >= 0.0f);
+		
         // Animation to play
         if (m_InTheAir)
         {

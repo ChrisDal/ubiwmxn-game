@@ -20,17 +20,24 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
     for (unsigned int i = 0; i < width; ++i)
         for (unsigned int j = 0; j < height; ++j)
         {
-			if (m_tiles[i + j * width] > 122)
+            unsigned int k = i + j * width;
+            if (m_tiles[k] > 120)
 			{
 				// non movable ennemies 
-				int ntiles = m_tiles[i + j * width] - 100;
+				int ntiles = m_tiles[k] - 100;
                 unsigned int tx = (ntiles % NspriteSize.x) * tileSize.x;
                 unsigned int ty = (ntiles / NspriteSize.x) * tileSize.y;
                 sf::Vector2u coord(tx, ty);
 
                 sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
 
-				if (m_tiles[i + j * width] < 300 && m_tiles[i + j * width] > 129){
+                if (m_tiles[k] == 121)
+                {
+                    m_spawnPosition = spaw; 
+                    continue;
+                }
+
+				if (m_tiles[k] < 300 && m_tiles[k] > 129){
                     
 					l_ennemies.push_back(Ennemie(spaw, false, coord, tileSize.x, tileSize.y));
 				}
@@ -38,8 +45,8 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 				{
 					l_ennemies.push_back(Ennemie(spaw, true, coord, tileSize.x, tileSize.y));
 				}
-			}				
-	
+			}
+
 		}
 
 	return l_ennemies; 

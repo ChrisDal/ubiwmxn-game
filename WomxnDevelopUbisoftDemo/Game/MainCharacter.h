@@ -32,7 +32,7 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
     };
 
 public:	
-    MainCharacter(sf::Vector2u WIN_LIMITS);
+    MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position);
 
     void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
