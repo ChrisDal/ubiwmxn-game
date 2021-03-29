@@ -1,9 +1,10 @@
 #include <stdafx.h>
 #include <Game/TileMap.h>
 #include <Game/Ennemie.h>
+#include <Game/ObjectsElements.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -20,26 +21,35 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
     for (unsigned int i = 0; i < width; ++i)
         for (unsigned int j = 0; j < height; ++j)
         {
-			if (m_tiles[i + j * width] > 122)
+            unsigned int k = i + j * width;
+            if (m_tiles[k] > 100)
 			{
 				// non movable ennemies 
-				int ntiles = m_tiles[i + j * width] - 100;
+				int ntiles = m_tiles[k] - 100;
                 unsigned int tx = (ntiles % NspriteSize.x) * tileSize.x;
                 unsigned int ty = (ntiles / NspriteSize.x) * tileSize.y;
                 sf::Vector2u coord(tx, ty);
 
                 sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
 
-				if (m_tiles[i + j * width] < 300 && m_tiles[i + j * width] > 129){
+                if (m_tiles[k] == 101)
+                {
+                    m_spawnPosition = spaw; 
+                    continue;
+                }
+
+				if (m_tiles[k] < 300 && m_tiles[k] > 200){
                     
-					l_ennemies.push_back(Ennemie(spaw, false, coord, tileSize.x, tileSize.y));
+					// Die at touch 
+                    l_ennemies.push_back(Ennemie(spaw, false, coord, tileSize.x, tileSize.y));
 				}
 				else 
 				{
-					l_ennemies.push_back(Ennemie(spaw, true, coord, tileSize.x, tileSize.y));
+					// classical elements
+                    l_objects.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
 				}
-			}				
-	
+			}
+
 		}
 
 	return l_ennemies; 
@@ -134,10 +144,41 @@ bool TileMap::walkable_tile(sf::Vector2f& position)
 
     // 0 >= plateforme >= 9 
     // 9 < Walkable < 100  
-    if (tiletype > 9 && tiletype < 100) {
+    if (tiletype > 9 && tiletype < 121) {
         walkable = true;
     }
     return walkable;
+}
+
+// Get a vector according to elements of Tiles : 
+//  0 : air, 1 : water, 2 : lava, 3 : void, -1 : non valid tile 
+short int TileMap::ElementsTiles(sf::Vector2f& position)
+{
+    short int element = -1;
+    // error 
+    if (m_tilesize.x <= 0 && m_tilesize.y <= 0) {
+        return element;
+    }
+    // from position get tile 
+    sf::Vector2f tilepos(std::ceil(position.x / m_tilesize.x), std::ceil(position.y / m_tilesize.y));
+    sf::FloatRect tilemapsize = m_vertices.getBounds();
+    int tiletype = m_tiles[int(tilepos.x) - 1 + (int(tilepos.y) - 1) * int(tilemapsize.width / m_tilesize.x)];
+
+    // 0 >= plateforme >= 9 
+    // 9 < Walkable < 100  
+    switch (tiletype)
+    {
+        case(10): element = 0; break; 
+        case(11): element = 0; break; 
+        case(12): element = 1; break; 
+        case(13): element = 0; break; 
+        case(14): element = 2; break; 
+        case(15): element = 3; break; 
+        default: element = -1; break;
+    }
+
+    return element;
+
 }
 
 std::vector<Plateform> TileMap::getPlateforms()
