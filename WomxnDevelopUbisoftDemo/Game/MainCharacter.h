@@ -61,7 +61,8 @@ public:
 
     // Set 
     void setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop);
-    void setInTheAir(TileMap& Tm);
+    void setInElements(TileMap& Tm); // set air, water, void, lava
+
     
     // Jump
     bool isAllowJumping() const { return m_CanJump;}
@@ -108,10 +109,18 @@ private:
     bool m_IsPlayingEndGame;
 
     // in the air vs on the floor 
+    bool m_isWalkable; 
     bool m_InTheAir; 
+    bool m_InTheWater;
+    bool m_InTheVoid;
+    bool m_InTheLava;
+
+    // amount of time under water 
+    float m_CounterWater{ 0.0f };
 
     // Jumping
     bool m_CanJump; 
+    bool m_IsJumping; 
     short unsigned int m_nbjumps{ 0 };
 	
 	// Dead or alive 
@@ -145,7 +154,7 @@ private:
     std::vector<AnimName> m_OneTimeAnimations{};
     AllAnims m_AllAnims;
     // Facing direction
-    bool direction{ false }; // true: right, false: left 
+    bool a_direction{ false }; // true: right, false: left 
     void setFacingDirection(); 
     
     

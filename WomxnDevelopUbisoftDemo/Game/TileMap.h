@@ -22,8 +22,9 @@ public:
     std::vector<Ennemie> loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-
+    // Type of tiles 
     bool walkable_tile(sf::Vector2f& position); 
+    short int ElementsTiles(sf::Vector2f& position);
     // Get 
 	std::vector<Plateform> getPlateforms(); 
     sf::Vector2u getTileSize() const {return m_tilesize; }

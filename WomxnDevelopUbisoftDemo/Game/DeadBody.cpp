@@ -6,6 +6,8 @@ sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 
 // constructor 
 DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
+    : m_isWalkable{false}, 
+    c_down{false}, c_left{false}, c_up{false}, c_right{false}
 {
 
     sf::Vector2i offset_texture = sf::Vector2i(12, 22);
@@ -41,6 +43,7 @@ void DeadBody::Update(float deltaTime)
 //////////////////
 //   Animation ///
 //////////////////
+
 void DeadBody::Play(AnimAction anim_name, float deltaTime)
 {
     // Update frame texture 
@@ -132,4 +135,22 @@ void DeadBody::setFrameTexture(AnimAction anim_name, float deltaTime)
 
 
     // ToDo : reset counters before they it the maximum => call Pause
+}
+
+void DeadBody::InitAnimType()
+{
+    
+
+    m_AllAnims.Idle = { 4, 0, 0, "Idle" };
+    m_AllAnims.Stack = { 8, 1, 0, "Walk" };
+    m_AllAnims.Launch = { 8, 2, 0, "Jump" };
+    m_AllAnims.Fire = { 6, 2, 2, "DoubleJump" };
+    m_AllAnims.Iced = { 7, 4, 0, "Die" };
+    m_AllAnims.Slippy = { 2, 4, 1, "Hurt" };
+    m_AllAnims.Smoked = { 6, 14, 0, "Dodge" };
+    m_AllAnims.Swollen = { 6, 14, 0, "Surprise" };
+    m_AllAnims.Ladder = { 4, 4, 7, "Reborn" };
+
+
+
 }

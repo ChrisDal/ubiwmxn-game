@@ -20,18 +20,18 @@ GameDemo::GameDemo()
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
 
     // map tile 
-    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Tilemap-pf.csv");
+    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map.csv");
     // test
-    m_Tilemap.load("Assets\\tileset_32_32.png", sf::Vector2u(32, 32), 32, 24);
+    m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 
 	m_plateform = m_Tilemap.getPlateforms(); 
 
     // Ennemies 
-    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-objets-monstres.csv");
+    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map-elements.csv");
     m_Elements.setTilemapType(false);
 
     // Get texture 
-    const std::string texture_name = "Assets\\ennemies_empty2.png"; 
+    const std::string texture_name = "Assets\\ennemies_empty3.png"; 
     m_TextureAtlas.loadFromFile(texture_name);
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
 
@@ -45,7 +45,6 @@ GameDemo::GameDemo()
 GameDemo::~GameDemo()
 {
     delete m_MainCharacter;
-    printf("free main character\n");
 }
 
 void GameDemo::Update(float deltaTime)
@@ -80,11 +79,6 @@ void GameDemo::Render(sf::RenderTarget& target)
 		target.draw(enm); 
 	}
 	
-	for ( const auto& dbd : m_deadbodies)
-	{
-		target.draw(dbd);
-		
-	}
 
     target.draw(main_Door);
     target.draw(m_Door);

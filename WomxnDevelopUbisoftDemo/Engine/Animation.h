@@ -3,6 +3,8 @@
 class Animation
 {
 	
+public:
+
 	struct AnimType {
 		short unsigned int nb_frames_anim; 
 		short unsigned int line_anim; 
@@ -16,7 +18,6 @@ class Animation
 		Surprise, Reborn
 	};
 
-public:
 
 	// entire file for animation
 	void setMainTexture(const sf::Texture charatexture) { *a_spritesheet = charatexture; }

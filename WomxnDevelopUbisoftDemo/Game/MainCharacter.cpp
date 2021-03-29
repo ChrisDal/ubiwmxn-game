@@ -33,7 +33,8 @@ namespace
 // constructor
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position)
     : m_IsPlayingEndGame(false), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
-    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_CanJump(true), a_textsquare_offset(12,22)
+    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_InTheWater(false), 
+    m_InTheVoid(false), m_CanJump(true), a_textsquare_offset(12,22)
 {
 
     m_Texture.loadFromFile(".\\Assets\\hero\\cat_addon_sprite.png");
@@ -86,6 +87,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
 
+
     } 
 	else if (m_Respawning)
 	{
@@ -97,6 +99,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		}
         return;
 	}
+
+
+    // Define if in the air or not 
+    setInElements(Tm);
 
     // Alive or not 
 
@@ -111,10 +117,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
 
     const float SPEED_MAX = 150.0f;
+    const float WATER_SPEED_MAX = SPEED_MAX * 0.3f;
     const float SPEED_MAX_FALL = 800.0f;
+    const float WATER_SPEED_MAX_FALL = SPEED_MAX_FALL / 8.0f;
 
     const float APPLIED_FACTOR = 0.6f;
     const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.82f;
+    const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.15f;
     const float GRAVITY = 98.1f;
     const float NO_GRAVITY = 0.0f;
     const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
@@ -131,31 +140,40 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     bool k_KeyboardPressed[5] = { false, false, false, false, false };
     bool k_JoystickPressed[8] = { false, false, false, false, false, false, false, false };
 
-    
-
-    // Define if in the air or not 
-    setInTheAir(Tm);
-
     // in the Air or on plateforms
-    if (m_InTheAir)
+    if (m_isWalkable and m_InTheAir)
     {
         m_Velocity.y = fmin(m_Velocity.y + (GRAVITY * APPLIED_FALL_FACTOR), SPEED_MAX_FALL);
+    }
+    else if (m_InTheWater and m_isWalkable)
+    {
+        m_Velocity.y = fmin(m_Velocity.y + (GRAVITY * APPLIED_WATER_FACTOR), WATER_SPEED_MAX_FALL);
     }
     else
     {
         m_Velocity.y = NO_GRAVITY;
         m_nbjumps = 0;
-        m_CanJump = true;
     }
 
+    // determine if can jump or not 
+    m_CanJump = ((m_nbjumps < NB_MAX_JUMPS) and !m_InTheWater) or ((m_nbjumps < 1) and m_InTheWater);
 
     // Velocity and Jumping determination 
     if (m_IsUsingJoystick)
     {
-        m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
-        s_Velocity.x = (m_Velocity.x >= 0.0f); 
+
+        if (m_InTheWater)
+        {
+            m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, WATER_SPEED_MAX);
+        }
+        else
+        {
+            m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
+        }
         
+        s_Velocity.x = (m_Velocity.x >= 0.0f);
         setFacingDirection();
+        
 
         // Joystick Index 0 = A, 1 = B , 2 = X , 3 = Y 
         if (Joystick::isButtonPressed(m_JoystickIndex, 0))
@@ -164,20 +182,32 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             {
                 m_WasButtonPressed = true;
                 k_JoystickPressed[0] = true; 
-                 
-                // Jumping 
-                if (m_nbjumps < NB_MAX_JUMPS)
+
+                if (m_CanJump)
                 {
-                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_FACTOR);
-                    m_InTheAir = true;
-                    m_CanJump = true;
-                    m_nbjumps++;
-                    
+                    if (!m_InTheWater)
+                    {
+                        m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_FACTOR);
+                        m_InTheAir = true;
+                        m_IsJumping = true;
+                        m_nbjumps++;
+                    }
+                    else if (m_InTheWater)
+                    {
+                        m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_WATER_FACTOR);
+                        m_IsJumping = true;
+                        m_nbjumps++;
+                    }
+                    else
+                    {
+                        m_IsJumping = false;
+                    }
                 }
                 else
                 {
-                    m_CanJump = false;
+                    m_IsJumping = false;
                 }
+
             }
             
         }
@@ -187,13 +217,14 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             {
                 m_WasButtonPressed = false;
                 k_JoystickPressed[0] = false; 
+                m_IsJumping = false;
             }
         }
 
         s_Velocity.y = (m_Velocity.y >= 0.0f);
 		
 
-        if (m_InTheAir)
+        if (m_IsJumping)
         {
             if (m_nbjumps == 1)
             {
@@ -273,17 +304,15 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 k_KeyboardPressed[4] = true;
 
                 // Jumping 
-                if (m_nbjumps < NB_MAX_JUMPS)
+                if (m_CanJump)
                 {
                     m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_FACTOR);
-                    m_InTheAir = true;
-                    m_CanJump = true;
+                    m_IsJumping = true;
                     m_nbjumps++;
                 }
                 else
                 {
-                    m_CanJump = false;
-                    
+                    m_IsJumping = false;
                 }
             }
         }
@@ -293,13 +322,14 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             {
                 m_WasButtonPressed = false;
                 k_KeyboardPressed[4] = false;
+                m_IsJumping = false;
             }
         }
 		
 		s_Velocity.y = (m_Velocity.y >= 0.0f);
 		
         // Animation to play
-        if (m_InTheAir)
+        if (m_IsJumping)
         {
             if (m_nbjumps == 1)
             {
@@ -359,7 +389,7 @@ void MainCharacter::StartEndGame()
 }
 
 
-void MainCharacter::setInTheAir(TileMap& Tm)
+void MainCharacter::setInElements(TileMap& Tm)
 {
     // Left and right down corners
     sf::Vector2f left_feet = m_Position  + sf::Vector2f(-float(m_BoundingBox.width)/2.0f, float(m_BoundingBox.height)/2.0f); 
@@ -376,13 +406,46 @@ void MainCharacter::setInTheAir(TileMap& Tm)
     // In the air if down neighboors tiles are walkable 
     if (Tm.walkable_tile(nl_feet) && Tm.walkable_tile(nr_feet))
     {
-        m_InTheAir = true; 
+        m_isWalkable = true; 
     }
     else 
     {
-        m_InTheAir = false;
+        m_isWalkable = false;
     }
 
+    // reel type 
+    if (Tm.ElementsTiles(nl_feet) == Tm.ElementsTiles(nr_feet))
+    {
+        switch (Tm.ElementsTiles(nl_feet))
+        {
+        case(0): 
+            m_InTheAir = true;
+            m_InTheWater = false;
+            m_InTheLava  = false;
+            m_InTheVoid  = false; 
+            break;        
+        case(1): 
+            m_InTheAir = false;
+            m_InTheWater = true; 
+            m_InTheLava  = false;
+            m_InTheVoid  = false; 
+            break;
+        case(2):
+            m_InTheAir = false;
+            m_InTheWater = false;
+            m_InTheLava  = true;
+            m_InTheVoid  = true;
+            break;
+        case(3): 
+            m_InTheAir = true;
+            m_InTheWater = false;
+            m_InTheLava  = false;
+            m_InTheVoid  = false;
+            break;
+        default:
+            break;
+        }
+    }
 
 }
 
@@ -419,6 +482,7 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, sho
     } 
 }
 
+// colliding plateforms and dead bodies 
 void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, bool& colliding)
 {
  
@@ -752,7 +816,7 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
         int leftrect = x + a_textsquare_offset.x;
         int sizex = sizetexture.x / 2;
         
-        if (!direction)
+        if (!a_direction)
         {
             leftrect = x + sizetexture.x - a_textsquare_offset.x;
             sizex = - sizetexture.x / 2;
@@ -821,11 +885,11 @@ void MainCharacter::setFacingDirection()
     // direction for animation 
     if (m_Velocity.x < -0.01f)
     {
-        direction = false;
+        a_direction = false;
     }
     else if (m_Velocity.x > 0.01f)
     {
-        direction = true;
+        a_direction = true;
     }
     // else ==0.0f : relies on previous value
 
@@ -838,12 +902,39 @@ void MainCharacter::setFacingDirection()
 
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 {
+    const float TIMER_DEAD_WATER = 2.0f; 
+    
     if (m_Respawning)
     {
         setAliveOrDead(true);
         return getAlive();
     }
     
+    // update elements counters
+    if (m_InTheWater)
+    {
+        m_CounterWater += deltaTime;
+
+        // test counter
+        if ( m_CounterWater > TIMER_DEAD_WATER )
+        {
+            // Die 
+            setAliveOrDead(false);
+            m_CounterWater = 0.0f;
+            m_InTheWater = false;
+            return getAlive();
+        }
+
+    }
+    else
+    {
+        m_CounterWater = 0.0f;
+    }
+
+
+    
+
+
     // check at each frame if it collides against ennemies 
     for (auto const& enm : l_ennemies)
     {
