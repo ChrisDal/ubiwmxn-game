@@ -429,7 +429,7 @@ void MainCharacter::setInElements(TileMap& Tm)
     sf::Vector2f nr_feet = right_feet + sf::Vector2f(0.0f, D_PIXELS);
 
        
-    // In the air if down neighboors tiles are walkable 
+    // Can pass through the tile if true
     if (Tm.walkable_tile(nl_feet) && Tm.walkable_tile(nr_feet))
     {
         m_isWalkable = true; 
@@ -517,9 +517,14 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
     bool k_up = (m_Velocity.y < 0) and (std::abs(m_Velocity.y) != 0.0f);
     bool k_down = (m_Velocity.y > 0) and (std::abs(m_Velocity.y) != 0.0f);
 
+    // all Plateforms = Plateforms + Dead bodies 
+    std::vector<Plateform> all_Pf(Pf);
+    /*for (const DeadBody& dbd : m_deadbodies)
+    {
+        all_Pf.push_back(dbd.get_Plateform());
+    }*/
 
-
-    for (const Plateform& pfmi : Pf)
+    for (const Plateform& pfmi : all_Pf)
     {
         if (this->IsColliding(pfmi)) {
             _colliding_plateforms = true;
