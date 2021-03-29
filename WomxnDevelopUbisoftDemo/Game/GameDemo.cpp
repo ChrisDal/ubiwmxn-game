@@ -34,8 +34,9 @@ GameDemo::GameDemo()
     const std::string texture_name = "Assets\\ennemies_empty3.png"; 
     m_TextureAtlas.loadFromFile(texture_name);
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
+    ObjectsElements::SetTextureAtlas(&m_TextureAtlas);
 
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24);
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects);
     
     // Load main character 
     m_MainCharacter = new MainCharacter(sf::Vector2u(1024, 768), m_Elements.getMainCharacterSpawnPosition());
@@ -77,11 +78,17 @@ void GameDemo::Render(sf::RenderTarget& target)
 	for ( const auto& enm : m_ennemies) 
 	{
 		target.draw(enm); 
+	}	
+    
+    // Elements 
+	for ( const auto& elm : m_objects)
+	{
+		target.draw(elm);
 	}
 	
 
     target.draw(main_Door);
-    target.draw(m_Door);
+    //target.draw(m_Door);
     target.draw(*m_MainCharacter);
 
     if (m_IsFinished)

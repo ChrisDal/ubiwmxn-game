@@ -1,9 +1,10 @@
 #include <stdafx.h>
 #include <Game/TileMap.h>
 #include <Game/Ennemie.h>
+#include <Game/ObjectsElements.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -39,11 +40,13 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 
 				if (m_tiles[k] < 300 && m_tiles[k] > 200){
                     
-					l_ennemies.push_back(Ennemie(spaw, false, coord, tileSize.x, tileSize.y));
+					// Die at touch 
+                    l_ennemies.push_back(Ennemie(spaw, false, coord, tileSize.x, tileSize.y));
 				}
 				else 
 				{
-					l_ennemies.push_back(Ennemie(spaw, true, coord, tileSize.x, tileSize.y));
+					// classical elements
+                    l_objects.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
 				}
 			}
 

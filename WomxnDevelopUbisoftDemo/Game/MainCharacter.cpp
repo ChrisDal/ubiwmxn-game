@@ -255,13 +255,29 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     {
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
-            m_Velocity.x = fmin(m_Velocity.x + SPEED_INC, SPEED_MAX);
+            if (m_InTheWater)
+			{
+				m_Velocity.x = fmin(m_Velocity.x + SPEED_INC, WATER_SPEED_MAX);
+			}
+			else 
+			{
+				m_Velocity.x = fmin(m_Velocity.x + SPEED_INC, SPEED_MAX);
+			}
+			
             k_KeyboardPressed[0] = true;
         }
         else if (Keyboard::isKeyPressed(Keyboard::Left))
         {
-            m_Velocity.x = fmax(m_Velocity.x - SPEED_INC, -SPEED_MAX);
-            k_KeyboardPressed[1] = true;
+			if (m_InTheWater)
+			{
+				m_Velocity.x = fmax(m_Velocity.x - SPEED_INC, -WATER_SPEED_MAX);
+			}
+			else
+			{
+				m_Velocity.x = fmax(m_Velocity.x - SPEED_INC, -SPEED_MAX);
+			}
+            
+			k_KeyboardPressed[1] = true;
         }
         else
         {
@@ -306,9 +322,19 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 // Jumping 
                 if (m_CanJump)
                 {
-                    m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_FACTOR);
-                    m_IsJumping = true;
-                    m_nbjumps++;
+					if (!m_InTheWater)
+					{
+						m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_FACTOR);
+						
+					}
+					else 
+					{
+						m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_WATER_FACTOR);
+					}
+					
+					m_IsJumping = true;
+					m_nbjumps++;
+
                 }
                 else
                 {

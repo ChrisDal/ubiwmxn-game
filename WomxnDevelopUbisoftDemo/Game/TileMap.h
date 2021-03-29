@@ -5,6 +5,7 @@
 #include <fstream>
 #include <Game/Plateform.h>
 #include <Game/Ennemie.h>
+#include <Game/ObjectsElements.h>
 
 enum class TmapType {backplateform, monstobjects};
 
@@ -19,7 +20,7 @@ public:
     // Load and assign to quad
     bool load(const std::string& tileset, sf::Vector2u tileSize, unsigned int width, unsigned int height);
     // Load and create ennemies sprite 
-    std::vector<Ennemie> loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height);
+    std::vector<Ennemie> loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     // Type of tiles 
