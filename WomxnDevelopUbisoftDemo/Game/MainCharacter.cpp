@@ -517,14 +517,8 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
     bool k_up = (m_Velocity.y < 0) and (std::abs(m_Velocity.y) != 0.0f);
     bool k_down = (m_Velocity.y > 0) and (std::abs(m_Velocity.y) != 0.0f);
 
-    // all Plateforms = Plateforms + Dead bodies 
-    std::vector<Plateform> all_Pf(Pf);
-    /*for (const DeadBody& dbd : m_deadbodies)
-    {
-        all_Pf.push_back(dbd.get_Plateform());
-    }*/
-
-    for (const Plateform& pfmi : all_Pf)
+    // Test all Plateforms = Plateforms + Dead bodies 
+    for (const Plateform& pfmi : Pf)
     {
         if (this->IsColliding(pfmi)) {
             _colliding_plateforms = true;
@@ -556,6 +550,43 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
 
         }
     };
+
+    Plateform* p_pfmi = nullptr; 
+    for (DeadBody& dbd : m_deadbodies)
+    {
+        p_pfmi = dbd.get_Plateform();
+
+        if (this->IsColliding(*p_pfmi)) {
+            _colliding_plateforms = true;
+
+            // determine collision side character referentiel
+            c_left = isCollidingLeft(*p_pfmi, k_left);
+            c_right = isCollidingRight(*p_pfmi, k_right);
+            c_up = isCollidingUp(*p_pfmi, k_up);
+            c_down = isCollidingDown(*p_pfmi, k_down);
+
+            m_InTheAir = false;
+            // If collision stops velocity on the direction
+            bool collided_pf_left = c_left and not s_Velocity.x;
+            bool collided_pf_right = c_right and s_Velocity.x;
+
+            // corners bumping against plateforms
+            if ((c_left) or (c_right))
+            {
+                m_InTheAir = true;
+
+                if (collided_pf_left or collided_pf_right)
+                {
+                    m_Velocity.x = 0.0f;
+                }
+
+
+            }
+
+
+        }
+
+    }
 
     if (!_colliding_plateforms)
     {

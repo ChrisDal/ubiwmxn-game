@@ -58,11 +58,17 @@ void DeadBody::DeadToPlateform()
     m_plateform =  Plateform(a, b, c, d);
 }
 
+Plateform* DeadBody::get_Plateform()
+{ 
+	Plateform* pm_plateform = &m_plateform; 
+	return pm_plateform;  
+}
+
 //////////////////
 //   Animation ///
 //////////////////
 
-void DeadBody::Play(AnimAction anim_name, float deltaTime)
+void DeadBody::Play(AnimAction anim_name, float deltaTime, bool loop)
 {
     // Update frame texture 
     setFrameTexture(anim_name, deltaTime);
