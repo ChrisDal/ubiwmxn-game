@@ -7,13 +7,16 @@ class Plateform : public sf::Drawable, public BoxCollideable
 
 public: 
     Plateform(sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::Vector2f d);
-    ~Plateform(); 
+    Plateform();
+    ~Plateform();
+
     
     void Update(float deltaTime); // update si animation
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     bool getWalkable() const;
     sf::Vector2f getPosition() const; 
+    void setPosition(sf::Vector2f new_center);
 
 
 protected: 

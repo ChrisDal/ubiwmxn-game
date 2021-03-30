@@ -1,4 +1,7 @@
 #pragma once
+
+#include <Game/Plateform.h> 
+
 class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
 	// common to dead bodies
@@ -30,21 +33,24 @@ public:
     static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
 	
 	// Animation 
-	void Play(AnimAction anim_name, float deltaTime);
+	void Play(AnimAction anim_name, float deltaTime, bool loop);
 	void setFrameTexture(AnimAction anim_name, float deltaTime);
 
 	// animation
 	inline void setCurrentAnim(AnimAction anim_name) { a_current_anim = anim_name; }
 	void InitAnimType(); 
-	
+	// Plateform attribut
 	void setWalkable(const bool& walkable) { m_isWalkable = walkable; }
 	bool getWalkable() const { return m_isWalkable; }
+	void DeadToPlateform();
+	Plateform* get_Plateform();
 
 private:
 	
 	sf::Vector2f m_Position; 
 	sf::Vector2f m_size; 
 	sf::Sprite m_Sprite;
+	Plateform m_plateform;
 
 	AnimAction a_current_anim{ AnimAction::Idle };
 	AllAnims m_AllAnims;

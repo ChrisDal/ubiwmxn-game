@@ -45,7 +45,7 @@ public:
 	bool isCollidingRight(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingUp(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingDown(const BoxCollideable& other,  bool keypressed) const;
-    void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, bool& colliding);
+    void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf);
     
     //  get
 
@@ -134,6 +134,7 @@ private:
 	
 	// Colliding 
 	bool _colliding_plateforms{false}; 
+	bool _colliding_deadbodies{false}; 
 	// colision side detection on Quad
 	bool c_left; 
 	bool c_right; 

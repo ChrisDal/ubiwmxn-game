@@ -1,12 +1,13 @@
 #include <stdafx.h>
 #include <Game/DeadBody.h>
+#include <Game/Plateform.h>
 
 
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 
 // constructor 
 DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
-    : m_isWalkable{false}, 
+    : m_isWalkable{false}, m_Position{position},
     c_down{false}, c_left{false}, c_up{false}, c_right{false}
 {
 
@@ -16,13 +17,18 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
 
     // Set texture 
     m_Sprite.setTexture(*m_pTextureAtlas);
-    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + 6 * 64, getTextureOffset().y + 4 * 64, m_size.x, m_size.y));
+    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + 0 * 64, getTextureOffset().y + 0 * 64, m_size.x, m_size.y));
     // Set Origin
     m_Sprite.setOrigin(m_size * 0.5f);
     // Set Position
     m_Sprite.setPosition(position);
     // Bounding box : neighboorhood
-    SetBoundingBox(position, m_size * 1.5f);
+    SetBoundingBox(position, sf::Vector2f(20.0f,12.0f));
+
+    if (!m_isWalkable)
+    {
+        DeadToPlateform();
+    }
 
 };
 
@@ -34,17 +40,35 @@ void DeadBody::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void DeadBody::Update(float deltaTime)
 {
-	// Update if any actions of the player on dead body 
+    // Update if any actions of the player on dead body 
+    // m_plateform.setPosition
 
-	
+
+};
+
+
+void DeadBody::DeadToPlateform()
+{   
+
+    sf::FloatRect bbox = GetBoundingBox();
+    sf::Vector2f a(bbox.left, bbox.top);
+	sf::Vector2f b(bbox.left + bbox.width, bbox.top);
+	sf::Vector2f c(bbox.left + bbox.width, bbox.top + bbox.height);
+	sf::Vector2f d(bbox.left, bbox.top + bbox.height);
+    m_plateform =  Plateform(a, b, c, d);
 }
 
+Plateform* DeadBody::get_Plateform()
+{ 
+	Plateform* pm_plateform = &m_plateform; 
+	return pm_plateform;  
+}
 
 //////////////////
 //   Animation ///
 //////////////////
 
-void DeadBody::Play(AnimAction anim_name, float deltaTime)
+void DeadBody::Play(AnimAction anim_name, float deltaTime, bool loop)
 {
     // Update frame texture 
     setFrameTexture(anim_name, deltaTime);

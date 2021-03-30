@@ -21,7 +21,14 @@ Plateform::~Plateform()
 {
 };
 
+Plateform::Plateform() {};
 
+// Update position if needed
+void Plateform::setPosition(sf::Vector2f new_center)
+{
+	m_Rectangle.setPosition(new_center);
+	SetBoundingBox(new_center, m_RectSize);
+}
 
 void Plateform::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
