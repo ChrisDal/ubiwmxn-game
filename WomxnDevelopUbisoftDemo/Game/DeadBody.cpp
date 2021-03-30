@@ -17,13 +17,13 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
 
     // Set texture 
     m_Sprite.setTexture(*m_pTextureAtlas);
-    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + 6 * 64, getTextureOffset().y + 4 * 64, m_size.x, m_size.y));
+    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + 0 * 64, getTextureOffset().y + 0 * 64, m_size.x, m_size.y));
     // Set Origin
     m_Sprite.setOrigin(m_size * 0.5f);
     // Set Position
     m_Sprite.setPosition(position);
     // Bounding box : neighboorhood
-    SetBoundingBox(position, sf::Vector2f(32.0f,18.0f));
+    SetBoundingBox(position, sf::Vector2f(20.0f,12.0f));
 
     if (!m_isWalkable)
     {

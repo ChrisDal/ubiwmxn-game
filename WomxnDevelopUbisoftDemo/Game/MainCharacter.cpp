@@ -61,7 +61,6 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 
     // Reborn init 
     m_RespawnPosition = m_Position; 
-	DeadBody::SetTextureAtlas(&m_Texture); 
     // Animations
     InitAnimType();             // ToDo : make a configuration files for animation's details
    

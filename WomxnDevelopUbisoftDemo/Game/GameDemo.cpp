@@ -35,6 +35,11 @@ GameDemo::GameDemo()
     m_TextureAtlas.loadFromFile(texture_name);
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
     ObjectsElements::SetTextureAtlas(&m_TextureAtlas);
+	
+	// Dead Body Texture
+	const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png"; 
+    m_TextureDead.loadFromFile(dead_texture_name);
+	DeadBody::SetTextureAtlas(&m_TextureDead);
 
     m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects);
     
