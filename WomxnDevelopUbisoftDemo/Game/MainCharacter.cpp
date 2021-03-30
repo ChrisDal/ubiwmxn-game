@@ -105,7 +105,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     setInElements(Tm);
 
     // Alive or not 
-
     bool living = Alive(deltaTime, l_ennemie);
     if (not living)
     {
@@ -141,7 +140,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     bool k_JoystickPressed[8] = { false, false, false, false, false, false, false, false };
 
     // in the Air or on plateforms
-    if (m_isWalkable and m_InTheAir)
+    if (m_isWalkable and ( m_InTheAir || m_InTheVoid ))
     {
         m_Velocity.y = fmin(m_Velocity.y + (GRAVITY * APPLIED_FALL_FACTOR), SPEED_MAX_FALL);
     }
@@ -154,6 +153,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_Velocity.y = NO_GRAVITY;
         m_nbjumps = 0;
     }
+	
+	// on deadbodies = plateform  
+	if (_colliding_deadbodies)
+	{
+		m_Velocity.y = NO_GRAVITY;
+		m_nbjumps = 0;
+	}
 
     // determine if can jump or not 
     m_CanJump = ((m_nbjumps < NB_MAX_JUMPS) and !m_InTheWater) or ((m_nbjumps < 1) and m_InTheWater);
@@ -171,9 +177,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             m_Velocity.x = GetScaledAxis(m_JoystickIndex, Joystick::Axis::X, DEAD_ZONE, SPEED_MAX);
         }
         
-        s_Velocity.x = (m_Velocity.x >= 0.0f);
         setFacingDirection();
-        
 
         // Joystick Index 0 = A, 1 = B , 2 = X , 3 = Y 
         if (Joystick::isButtonPressed(m_JoystickIndex, 0))
@@ -220,36 +224,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 m_IsJumping = false;
             }
         }
-
-        s_Velocity.y = (m_Velocity.y >= 0.0f);
-		
-
-        if (m_IsJumping)
-        {
-            if (m_nbjumps == 1)
-            {
-                Play(AnimName::Jump, deltaTime, true);
-            }
-            else
-            {
-                Play(AnimName::DoubleJump, deltaTime, true);
-            }
-        }
-        else
-        {
-            if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
-            {
-                Play(AnimName::Idle, deltaTime, true);
-            }
-            // moving left right 
-            else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
-            {
-                Play(AnimName::Walk, deltaTime, true);
-            }
-        }
-		
-
-
     }
     else
     {
@@ -293,8 +267,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             k_KeyboardPressed[1] = false;
         }
 		
-		s_Velocity.x = (m_Velocity.x >= 0.0f);
-
 		// facing direction
         setFacingDirection();
 
@@ -351,48 +323,46 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 m_IsJumping = false;
             }
         }
-		
-		s_Velocity.y = (m_Velocity.y >= 0.0f);
-		
-        // Animation to play
-        if (m_IsJumping)
-        {
-            if (m_nbjumps == 1)
-            {
-                Play(AnimName::Jump, deltaTime, true);
-            }
-            else
-            {
-                Play(AnimName::DoubleJump, deltaTime, true);
-            }
-        }
-        else
-        {
-            if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
-            {
-                Play(AnimName::Idle, deltaTime, true);
-            }
-            // moving left right 
-            else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
-            {
-                Play(AnimName::Walk, deltaTime, true);
-            }
-        }
-		
-
 
     }
-
-
-
 
 
     // Test collision with new Position 
     short unsigned int colliding_loop = 0; 
     setPosition(deltaTime, Pf, colliding_loop);
-
+	// Set New position
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
+	
+	s_Velocity.x = (m_Velocity.x >= 0.0f);
+	s_Velocity.y = (m_Velocity.y >= 0.0f);
+	
+
+	// Animation to play
+	if (m_IsJumping)
+	{
+		if (m_nbjumps == 1)
+		{
+			Play(AnimName::Jump, deltaTime, true);
+		}
+		else
+		{
+			Play(AnimName::DoubleJump, deltaTime, true);
+		}
+	}
+	else
+	{
+		if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
+		{
+			Play(AnimName::Idle, deltaTime, true);
+		}
+		// moving left right 
+		else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
+		{
+			Play(AnimName::Walk, deltaTime, true);
+		}
+	}
+	
 }
 
 
@@ -460,13 +430,13 @@ void MainCharacter::setInElements(TileMap& Tm)
             m_InTheAir = false;
             m_InTheWater = false;
             m_InTheLava  = true;
-            m_InTheVoid  = true;
+            m_InTheVoid  = false;
             break;
         case(3): 
-            m_InTheAir = true;
+            m_InTheAir = false;
             m_InTheWater = false;
             m_InTheLava  = false;
-            m_InTheVoid  = false;
+            m_InTheVoid  = true;
             break;
         default:
             break;
@@ -489,13 +459,20 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, sho
 
         // Colliding Check
         _colliding_plateforms = false;
-        isCollidingSolid(new_Position, Pf, _colliding_plateforms);
+        _colliding_deadbodies = false;
+        isCollidingSolid(new_Position, Pf);
 
-        if (!_colliding_plateforms)
+        if ((!_colliding_plateforms) and (!_colliding_deadbodies))
         {
             m_Position = new_Position;
             break;
         }
+		else if (!m_isWalkable and _colliding_deadbodies)
+		{
+			m_Velocity.y = 0.0f;
+			cloop++;
+            setPosition(deltaTime, Pf, cloop);
+		}
         else
         {
             new_Position = m_Position;
@@ -506,10 +483,12 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, sho
         }
         
     } 
+	
+
 }
 
 // colliding plateforms and dead bodies 
-void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, bool& colliding)
+void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf)
 {
  
     bool k_left = (m_Velocity.x < 0) and (std::abs(m_Velocity.x) != 0.0f);
@@ -529,6 +508,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
             c_up    = isCollidingUp(pfmi, k_up);
             c_down  = isCollidingDown(pfmi, k_down);
             
+            m_isWalkable = false;
             m_InTheAir = false;
             // If collision stops velocity on the direction
             bool collided_pf_left = c_left and not s_Velocity.x;
@@ -537,6 +517,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
             // corners bumping against plateforms
             if ((c_left) or (c_right))
             {
+                m_isWalkable = true;
                 m_InTheAir = true;
 
                 if (collided_pf_left or collided_pf_right)
@@ -550,45 +531,21 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
 
         }
     };
-
+	
     Plateform* p_pfmi = nullptr; 
     for (DeadBody& dbd : m_deadbodies)
     {
         p_pfmi = dbd.get_Plateform();
-
+		
         if (this->IsColliding(*p_pfmi)) {
-            _colliding_plateforms = true;
-
-            // determine collision side character referentiel
-            c_left = isCollidingLeft(*p_pfmi, k_left);
-            c_right = isCollidingRight(*p_pfmi, k_right);
-            c_up = isCollidingUp(*p_pfmi, k_up);
-            c_down = isCollidingDown(*p_pfmi, k_down);
-
+            _colliding_deadbodies = true;
+            m_isWalkable = false;
             m_InTheAir = false;
-            // If collision stops velocity on the direction
-            bool collided_pf_left = c_left and not s_Velocity.x;
-            bool collided_pf_right = c_right and s_Velocity.x;
-
-            // corners bumping against plateforms
-            if ((c_left) or (c_right))
-            {
-                m_InTheAir = true;
-
-                if (collided_pf_left or collided_pf_right)
-                {
-                    m_Velocity.x = 0.0f;
-                }
-
-
-            }
-
-
         }
 
     }
 
-    if (!_colliding_plateforms)
+    if ((!_colliding_plateforms) and (!_colliding_deadbodies))
     {
         c_left = false; 
         c_right = false;
@@ -992,10 +949,6 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     {
         m_CounterWater = 0.0f;
     }
-
-
-    
-
 
     // check at each frame if it collides against ennemies 
     for (auto const& enm : l_ennemies)
