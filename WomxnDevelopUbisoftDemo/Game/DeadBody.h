@@ -23,7 +23,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 
 	
 public: 
-	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy);
+	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool& solid);
 	
 	void Update(float deltaTime); 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

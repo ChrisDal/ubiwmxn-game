@@ -72,7 +72,8 @@ public:
 	bool getAlive() const { return m_isAlive; }
 	// define if alive or not
 	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
-    
+    // in elements with associated time counters
+    bool TimerElements(float deltaTime, bool& inelement_flag, const float& limit, float& element_timer);
 
     // Animation 
     void InitAnimType();
@@ -103,8 +104,14 @@ private:
 	
 	// dead bodies 
 	std::vector<DeadBody> m_deadbodies{}; 
+    bool  m_DiedInWater{ false }; 
+    bool  m_DiedInVoid{ false };
+    bool  m_DiedInLava{ false };
 	
-	
+    // amount of time in elements 
+    float m_CounterWater{ 0.0f };
+    float m_CounterVoid{ 0.0f };
+    float m_CounterLava{ 0.0f };
 	
     bool m_IsPlayingEndGame;
 
@@ -115,8 +122,6 @@ private:
     bool m_InTheVoid;
     bool m_InTheLava;
 
-    // amount of time under water 
-    float m_CounterWater{ 0.0f };
 
     // Jumping
     bool m_CanJump; 
@@ -150,6 +155,8 @@ private:
     unsigned int a_framerate = 10; // anim = 10 fps
     const float a_spi = 1.0f / a_framerate; // inverse framerate
 	float sumdeltaTime = 0.0f;
+    // AnimType
+    std::map< AnimName, AnimType > dictAnim;
     AnimName m_current_anim = AnimName::Idle; 
     bool is_PlayingAnim{ false };
     std::vector<AnimName> m_OneTimeAnimations{};

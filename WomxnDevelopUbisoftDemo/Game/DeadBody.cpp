@@ -6,8 +6,8 @@
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 
 // constructor 
-DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
-    : m_isWalkable{false}, m_Position{position},
+DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool& solid)
+    : m_isWalkable{ not solid }, m_Position{position},
     c_down{false}, c_left{false}, c_up{false}, c_right{false}
 {
 
@@ -21,10 +21,12 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy)
     // Set Origin
     m_Sprite.setOrigin(m_size * 0.5f);
     // Set Position
-    m_Sprite.setPosition(position);
+    m_Sprite.setPosition(m_Position);
     // Bounding box : neighboorhood
-    SetBoundingBox(position, sf::Vector2f(20.0f,12.0f));
+    SetBoundingBox(m_Position, sf::Vector2f(25.0f,12.0f));
 
+    // can we pass through the dead body = walk through 
+    // else plateform
     if (!m_isWalkable)
     {
         DeadToPlateform();
@@ -60,7 +62,14 @@ void DeadBody::DeadToPlateform()
 
 Plateform* DeadBody::get_Plateform()
 { 
-	Plateform* pm_plateform = &m_plateform; 
+	
+    Plateform* pm_plateform = nullptr; 
+    
+    if (!m_isWalkable)
+    {
+        pm_plateform = &m_plateform;
+    }
+    
 	return pm_plateform;  
 }
 
