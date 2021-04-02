@@ -81,7 +81,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_Velocity = {0.0f, 0.0f}; 
 		m_Respawning = true; 
         // create dead bodies 
-        bool no_solid = not (m_InTheAir or m_InTheWater) ;
+        bool no_solid = not (m_InTheAir or (not m_InTheWater)) ;
 		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, terrain::Element::Void));
 			
 		// assign position to respawn spot 
