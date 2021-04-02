@@ -40,8 +40,9 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 
 				if (m_tiles[k] < 300 && m_tiles[k] > 200){
                     
+                    bool animated = m_tiles[k] > 270;
 					// Die at touch 
-                    l_ennemies.push_back(Ennemie(spaw, false, coord, tileSize.x, tileSize.y));
+                    l_ennemies.push_back(Ennemie(spaw, false, animated, coord, tileSize.x, tileSize.y));
 				}
 				else 
 				{

@@ -3,6 +3,7 @@
 #include <Game/Plateform.h> 
 #include <Game/Ennemie.h> 
 #include <Game/DeadBody.h> 
+#include <Game/EnumElements.h> 
 
 
 
@@ -40,12 +41,15 @@ public:
     void StartEndGame();
     
     sf::Vector2f getVelocity() const; 
+    // Colliding and position 
 	bool getCollidingPf() const { return _colliding_plateforms;}
 	bool isCollidingLeft(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingRight(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingUp(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingDown(const BoxCollideable& other,  bool keypressed) const;
     void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf);
+    bool OnTopOf(BoxCollideable& other);
+    bool BelowOf(BoxCollideable& other);
     
     //  get
 
@@ -66,13 +70,15 @@ public:
     
     // Jump
     bool isAllowJumping() const { return m_CanJump;}
+    void ResetJumpCounter();
 	
 	// Alive or set dead 
 	void setAliveOrDead(const bool& not_dead) { m_isAlive = not_dead;}
 	bool getAlive() const { return m_isAlive; }
 	// define if alive or not
 	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
-    
+    // in elements with associated time counters
+    bool TimerElements(float deltaTime, bool& inelement_flag, const float& limit, float& element_timer);
 
     // Animation 
     void InitAnimType();
@@ -101,10 +107,17 @@ private:
     // Sign Velocity : true pos, false neg 
     sf::Vector2<bool> s_Velocity = { false, false };
 	
-	// dead bodies 
+	// DEAD BODIES 
 	std::vector<DeadBody> m_deadbodies{}; 
+    // Timers
+    bool  m_DiedInWater{ false }; 
+    bool  m_DiedInVoid{ false };
+    bool  m_DiedInLava{ false };
 	
-	
+    // amount of time in elements 
+    float m_CounterWater{ 0.0f };
+    float m_CounterVoid{ 0.0f };
+    float m_CounterLava{ 0.0f };
 	
     bool m_IsPlayingEndGame;
 
@@ -115,8 +128,6 @@ private:
     bool m_InTheVoid;
     bool m_InTheLava;
 
-    // amount of time under water 
-    float m_CounterWater{ 0.0f };
 
     // Jumping
     bool m_CanJump; 
@@ -150,6 +161,8 @@ private:
     unsigned int a_framerate = 10; // anim = 10 fps
     const float a_spi = 1.0f / a_framerate; // inverse framerate
 	float sumdeltaTime = 0.0f;
+    // AnimType
+    std::map< AnimName, AnimType > dictAnim;
     AnimName m_current_anim = AnimName::Idle; 
     bool is_PlayingAnim{ false };
     std::vector<AnimName> m_OneTimeAnimations{};
@@ -157,6 +170,9 @@ private:
     // Facing direction
     bool a_direction{ false }; // true: right, false: left 
     void setFacingDirection(); 
+
+    // current element : Air / Void / Water 
+    terrain::Element m_current_elem{ terrain::Element::Air };
     
     
 };

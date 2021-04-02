@@ -61,7 +61,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 
     // Reborn init 
     m_RespawnPosition = m_Position; 
-    // Animations
+    // Animations structures and mapping
     InitAnimType();             // ToDo : make a configuration files for animation's details
    
 }
@@ -81,7 +81,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_Velocity = {0.0f, 0.0f}; 
 		m_Respawning = true; 
         // create dead bodies 
-		m_deadbodies.push_back(DeadBody(m_Position, 32, 32)); 
+        bool no_solid = not (m_InTheAir or (not m_InTheWater)) ;
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, m_current_elem));
 			
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
@@ -150,18 +151,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     else
     {
         m_Velocity.y = NO_GRAVITY;
-        m_nbjumps = 0;
+        ResetJumpCounter();
     }
 	
-	// on deadbodies = plateform  
-	if (_colliding_deadbodies)
-	{
-		m_Velocity.y = NO_GRAVITY;
-		m_nbjumps = 0;
-	}
 
     // determine if can jump or not 
-    m_CanJump = ((m_nbjumps < NB_MAX_JUMPS) and !m_InTheWater) or ((m_nbjumps < 1) and m_InTheWater);
+    m_CanJump = m_nbjumps < NB_MAX_JUMPS;
 
     // Velocity and Jumping determination 
     if (m_IsUsingJoystick)
@@ -418,30 +413,39 @@ void MainCharacter::setInElements(TileMap& Tm)
             m_InTheWater = false;
             m_InTheLava  = false;
             m_InTheVoid  = false; 
+            m_current_elem = terrain::Element::Air;
             break;        
         case(1): 
             m_InTheAir = false;
             m_InTheWater = true; 
             m_InTheLava  = false;
             m_InTheVoid  = false; 
+            m_current_elem = terrain::Element::Water;
             break;
         case(2):
             m_InTheAir = false;
             m_InTheWater = false;
             m_InTheLava  = true;
             m_InTheVoid  = false;
+            m_current_elem = terrain::Element::Lava;
             break;
         case(3): 
             m_InTheAir = false;
             m_InTheWater = false;
             m_InTheLava  = false;
             m_InTheVoid  = true;
+            m_current_elem = terrain::Element::Void;
             break;
         default:
             break;
         }
     }
 
+}
+
+void MainCharacter::ResetJumpCounter()
+{
+    m_nbjumps = 0;
 }
 
 void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop)
@@ -466,9 +470,10 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, sho
             m_Position = new_Position;
             break;
         }
-		else if (!m_isWalkable and _colliding_deadbodies)
+		else if ( _colliding_deadbodies)
 		{
-			m_Velocity.y = 0.0f;
+            new_Position = m_Position;
+            m_Velocity.y = 0.0f;
 			cloop++;
             setPosition(deltaTime, Pf, cloop);
 		}
@@ -535,11 +540,25 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
     for (DeadBody& dbd : m_deadbodies)
     {
         p_pfmi = dbd.get_Plateform();
-		
-        if (this->IsColliding(*p_pfmi)) {
+        if (p_pfmi == nullptr)
+        {
+            continue; 
+        }
+
+        if (this->IsColliding(*p_pfmi))
+        {
             _colliding_deadbodies = true;
             m_isWalkable = false;
             m_InTheAir = false;
+
+            // determine collision side character referentiel
+            bool c_down_dead = OnTopOf(*p_pfmi);
+            // We are on top of dead body 
+            if (c_down_dead)
+            {
+                ResetJumpCounter();
+            }
+
         }
 
     }
@@ -657,6 +676,30 @@ bool MainCharacter::isCollidingDown(const BoxCollideable& other, bool keypressed
 }
 
 
+bool MainCharacter::OnTopOf(BoxCollideable& other)
+{
+   
+    const sf::Vector2f center_a = GetCenter(); 
+    const sf::Vector2f center_b = other.GetCenter();
+
+    bool y_top = center_a.y < center_b.y ; 
+    bool neighb_x = std::abs(center_a.x - center_b.x) < 64;
+
+    return y_top && neighb_x;
+}
+
+bool MainCharacter::BelowOf(BoxCollideable& other)
+{
+
+    const sf::Vector2f center_a = GetCenter();
+    const sf::Vector2f center_b = other.GetCenter();
+
+    bool y_down = center_a.y > center_b.y;
+    bool neighb_x = std::abs(center_a.x - center_b.x) < 64;
+
+    return y_down && neighb_x;
+}
+
 //  ---------------------------------
 //              Animation 
 // ----------------------------------
@@ -669,12 +712,11 @@ void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
     {
         Stop(); // reset counters
     }
-    
+    // play once
     if (not loop)
     {
-        // To do : Get by animation name 
-        AnimType next_anim = m_AllAnims.Die; 
-        if (a_framecounttexture == (next_anim.nb_frames_anim-1))
+        // Get next Anim
+        if (a_framecounttexture == (dictAnim[anim_name].nb_frames_anim-1))
         {
             Pause(); 
             a_done_anim = true; 
@@ -726,8 +768,6 @@ void MainCharacter::Stop() {
 
 void MainCharacter::InitAnimType()
 {
-    
-
     m_AllAnims.Idle = { 4, 0, 0, "Idle" };
     m_AllAnims.Walk = { 8, 1, 0, "Walk" };
     m_AllAnims.Jump = { 8, 2, 0, "Jump" };
@@ -738,19 +778,14 @@ void MainCharacter::InitAnimType()
     m_AllAnims.Surprise = { 6, 14, 0, "Surprise" };
     m_AllAnims.Reborn = { 4, 4, 7, "Reborn" };
 
-    
-    /*
-        struct AllAnims {
-        struct AnimType Idle { 4, 0, 0, "Idle" };
-        struct AnimType Walk { 8, 1, 0, "Walk" };
-        struct AnimType Jump { 8, 2, 0, "Jump" };
-        struct AnimType DoubleJump { 6, 2, 2, "DoubleJump" };
-        struct AnimType Die { 7, 4, 0, "Die" };
-        struct AnimType Hurt { 2, 4, 1, "Hurt" };
-        struct AnimType Dodge { 6, 14, 0, "Dodge" };
-        struct AnimType Surprise { 6, 14, 0, "Surprise" };
-        struct AnimType Reborn { 4, 4, 7, "Reborn" };
-    };*/
+    dictAnim[AnimName::Idle]        = m_AllAnims.Idle;
+    dictAnim[AnimName::Walk]        = m_AllAnims.Walk;
+    dictAnim[AnimName::Jump]        = m_AllAnims.Jump;
+    dictAnim[AnimName::DoubleJump]  = m_AllAnims.DoubleJump;
+    dictAnim[AnimName::Die]         = m_AllAnims.Die;
+    dictAnim[AnimName::Dodge]       = m_AllAnims.Dodge;
+    dictAnim[AnimName::Surprise]    = m_AllAnims.Surprise;
+    dictAnim[AnimName::Reborn]      = m_AllAnims.Reborn;
 
 }
 
@@ -855,44 +890,13 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
 std::string MainCharacter::getAnimName()
 {
 
-    std::string animname;
-    switch (m_current_anim)
-    {
-    case AnimName::Idle:
-        animname = "Idle";
-        break;
-    case AnimName::Walk:
-        animname = "Walk";
-        break;
-    case AnimName::Jump:
-        animname = "Jump";
-        break;
-    case AnimName::DoubleJump:
-        animname = "DoubleJump";
-        break;
-    case AnimName::Die:
-        animname = "Die";
-        break;
-    case AnimName::Attack:
-        animname = "Attack";
-        break;
-    case AnimName::Hurt:
-        animname = "Hurt";
-        break;
-    case AnimName::Dodge:
-        animname = "Dodge";
-        break;
-    case AnimName::Surprise:
-        animname = "Surprise";
-        break;
-    case AnimName::Reborn:
-        animname = "Reborn";
-        break;
+    std::string animname = "No anim"; 
 
-    default:
-        animname = "No anim";
-        break;
+    if (dictAnim.find(m_current_anim) != dictAnim.end())
+    {
+        animname = dictAnim[m_current_anim].name;
     }
+    
 
     return animname;
 }
@@ -918,9 +922,35 @@ void MainCharacter::setFacingDirection()
 //                  Gameplay 
 // ----------------------------------------------
 
+// Timer for time consecutively spent in elements tiles
+bool MainCharacter::TimerElements(float deltaTime, bool& inelement_flag, const float& limit, float& element_timer)
+{   
+    bool limit_reaches = false; 
+
+    if (inelement_flag)
+    {
+        element_timer += deltaTime; 
+
+        if (element_timer > limit)
+        {
+            element_timer = 0.0f;
+            inelement_flag = false;
+            limit_reaches = true;
+        }   
+    }
+    else 
+    {
+        element_timer = 0.0f;
+    }
+
+    return limit_reaches;
+}
+
+// Set Alive or Dead
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 {
     const float TIMER_DEAD_WATER = 2.0f; 
+    const float TIMER_DEAD_VOID  = 0.25f; 
     
     if (m_Respawning)
     {
@@ -929,25 +959,15 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     }
     
     // update elements counters
-    if (m_InTheWater)
+    m_DiedInWater = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
+    m_DiedInVoid  = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
+    
+    if (m_DiedInWater or m_DiedInVoid)
     {
-        m_CounterWater += deltaTime;
-
-        // test counter
-        if ( m_CounterWater > TIMER_DEAD_WATER )
-        {
-            // Die 
-            setAliveOrDead(false);
-            m_CounterWater = 0.0f;
-            m_InTheWater = false;
-            return getAlive();
-        }
-
+        setAliveOrDead(false);
+        return getAlive();
     }
-    else
-    {
-        m_CounterWater = 0.0f;
-    }
+
 
     // check at each frame if it collides against ennemies 
     for (auto const& enm : l_ennemies)

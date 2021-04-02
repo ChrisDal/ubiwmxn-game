@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Game/Plateform.h> 
+#include <Game/EnumElements.h>
 
 class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
@@ -23,7 +24,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 
 	
 public: 
-	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy);
+	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem);
 	
 	void Update(float deltaTime); 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -45,13 +46,15 @@ public:
 	void DeadToPlateform();
 	Plateform* get_Plateform();
 
+	
+
 private:
 	
 	sf::Vector2f m_Position; 
 	sf::Vector2f m_size; 
 	sf::Sprite m_Sprite;
 	Plateform m_plateform;
-
+	terrain::Element m_death_element; 
 	AnimAction a_current_anim{ AnimAction::Idle };
 	AllAnims m_AllAnims;
 	// collisions 
