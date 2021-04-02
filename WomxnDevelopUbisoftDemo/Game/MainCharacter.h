@@ -107,8 +107,9 @@ private:
     // Sign Velocity : true pos, false neg 
     sf::Vector2<bool> s_Velocity = { false, false };
 	
-	// dead bodies 
+	// DEAD BODIES 
 	std::vector<DeadBody> m_deadbodies{}; 
+    // Timers
     bool  m_DiedInWater{ false }; 
     bool  m_DiedInVoid{ false };
     bool  m_DiedInLava{ false };
