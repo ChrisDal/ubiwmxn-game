@@ -112,7 +112,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         Play(AnimName::Die, deltaTime, false);
         return;
     }
-		
+	
+    UpdateDeadBodies();
 
 
     const float SPEED_MAX = 150.0f;
@@ -628,6 +629,20 @@ bool MainCharacter::getKeyboardKey(std::string keyname) const
     }
 	
 	return value; 
+
+}
+
+// ----------------------------------------
+//          Dead Bodies & Death
+// ----------------------------------------
+
+void MainCharacter::UpdateDeadBodies()
+{
+    // TO DO : maybe modified type of m_deadbodies => tableau ?
+    if ( m_deadbodies.size() > MAX_DEADBODIES )
+    {
+        m_deadbodies.erase(m_deadbodies.begin());
+    }
 
 }
 

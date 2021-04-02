@@ -46,6 +46,9 @@ public:
 	void DeadToPlateform();
 	Plateform* get_Plateform();
 
+	// Remove and Destructor 
+	~DeadBody() {};
+
 	
 
 private:

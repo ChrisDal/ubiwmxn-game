@@ -79,6 +79,16 @@ public:
 	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
     // in elements with associated time counters
     bool TimerElements(float deltaTime, bool& inelement_flag, const float& limit, float& element_timer);
+    
+    // Death
+    // Death counter 
+    int  DeathCounter() const { return m_death_counter; }
+    void DeathCounterAdd() { m_death_counter += 1; }
+    void DeathCounterReset() { m_death_counter = 0; }
+    // Dead body count
+    void UpdateDeadBodies(); 
+    // 
+    // 
 
     // Animation 
     void InitAnimType();
@@ -113,6 +123,9 @@ private:
     bool  m_DiedInWater{ false }; 
     bool  m_DiedInVoid{ false };
     bool  m_DiedInLava{ false };
+    // counters 
+    int m_death_counter{ 0 };
+    const short unsigned int MAX_DEADBODIES{ 9 };
 	
     // amount of time in elements 
     float m_CounterWater{ 0.0f };
