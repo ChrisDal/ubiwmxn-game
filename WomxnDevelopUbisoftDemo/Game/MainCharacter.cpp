@@ -151,20 +151,9 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     else
     {
         m_Velocity.y = NO_GRAVITY;
-        m_nbjumps = 0;
+        ResetJumpCounter();
     }
 	
-	// on deadbodies = plateform  
-	if (_colliding_deadbodies)
-	{
-
-        m_Velocity.y = NO_GRAVITY;
-		m_nbjumps = 0;
-        if (m_nbjumps >= NB_MAX_JUMPS)
-        {
-            printf("Colliding dead but can no jump ");
-        }
-	}
 
     // determine if can jump or not 
     m_CanJump = m_nbjumps < NB_MAX_JUMPS;
@@ -455,6 +444,11 @@ void MainCharacter::setInElements(TileMap& Tm)
 
 }
 
+void MainCharacter::ResetJumpCounter()
+{
+    m_nbjumps = 0;
+}
+
 void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop)
 {   
 
@@ -477,9 +471,10 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, sho
             m_Position = new_Position;
             break;
         }
-		else if (!m_isWalkable and _colliding_deadbodies)
+		else if ( _colliding_deadbodies)
 		{
-			m_Velocity.y = 0.0f;
+            new_Position = m_Position;
+            m_Velocity.y = 0.0f;
 			cloop++;
             setPosition(deltaTime, Pf, cloop);
 		}
@@ -556,6 +551,15 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
             _colliding_deadbodies = true;
             m_isWalkable = false;
             m_InTheAir = false;
+
+            // determine collision side character referentiel
+            bool c_down_dead = OnTopOf(*p_pfmi);
+            // We are on top of dead body 
+            if (c_down_dead)
+            {
+                ResetJumpCounter();
+            }
+
         }
 
     }
@@ -672,6 +676,30 @@ bool MainCharacter::isCollidingDown(const BoxCollideable& other, bool keypressed
 
 }
 
+
+bool MainCharacter::OnTopOf(BoxCollideable& other)
+{
+   
+    const sf::Vector2f center_a = GetCenter(); 
+    const sf::Vector2f center_b = other.GetCenter();
+
+    bool y_top = center_a.y < center_b.y ; 
+    bool neighb_x = std::abs(center_a.x - center_b.x) < 64;
+
+    return y_top && neighb_x;
+}
+
+bool MainCharacter::BelowOf(BoxCollideable& other)
+{
+
+    const sf::Vector2f center_a = GetCenter();
+    const sf::Vector2f center_b = other.GetCenter();
+
+    bool y_down = center_a.y > center_b.y;
+    bool neighb_x = std::abs(center_a.x - center_b.x) < 64;
+
+    return y_down && neighb_x;
+}
 
 //  ---------------------------------
 //              Animation 

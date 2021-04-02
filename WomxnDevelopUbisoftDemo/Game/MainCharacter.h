@@ -41,12 +41,15 @@ public:
     void StartEndGame();
     
     sf::Vector2f getVelocity() const; 
+    // Colliding and position 
 	bool getCollidingPf() const { return _colliding_plateforms;}
 	bool isCollidingLeft(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingRight(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingUp(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingDown(const BoxCollideable& other,  bool keypressed) const;
     void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf);
+    bool OnTopOf(BoxCollideable& other);
+    bool BelowOf(BoxCollideable& other);
     
     //  get
 
@@ -67,6 +70,7 @@ public:
     
     // Jump
     bool isAllowJumping() const { return m_CanJump;}
+    void ResetJumpCounter();
 	
 	// Alive or set dead 
 	void setAliveOrDead(const bool& not_dead) { m_isAlive = not_dead;}

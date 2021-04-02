@@ -104,6 +104,9 @@
     <ClInclude Include="Game\ObjectsElements.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Game\EnumElements.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">

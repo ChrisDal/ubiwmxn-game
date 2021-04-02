@@ -231,6 +231,7 @@ xcopy /y /d  "$(SolutionDir)external\SFML-2.5.1\bin\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="Game\DeadBody.h" />
     <ClInclude Include="Game\Door.h" />
     <ClInclude Include="Game\Ennemie.h" />
+    <ClInclude Include="Game\EnumElements.h" />
     <ClInclude Include="Game\Exit.h" />
     <ClInclude Include="Game\GameDemo.h" />
     <ClInclude Include="Game\MainCharacter.h" />
