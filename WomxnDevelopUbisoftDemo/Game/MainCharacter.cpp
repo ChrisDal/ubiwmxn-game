@@ -81,8 +81,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_Velocity = {0.0f, 0.0f}; 
 		m_Respawning = true; 
         // create dead bodies 
-        bool solid_dbody = not (m_InTheWater or m_InTheAir); 
-		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, solid_dbody));
+        bool no_solid = not (m_InTheAir or m_InTheWater) ;
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, terrain::Element::Void));
 			
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
@@ -157,7 +157,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	// on deadbodies = plateform  
 	if (_colliding_deadbodies)
 	{
-        printf("Colliding dead ");
+
         m_Velocity.y = NO_GRAVITY;
 		m_nbjumps = 0;
         if (m_nbjumps >= NB_MAX_JUMPS)
@@ -424,26 +424,31 @@ void MainCharacter::setInElements(TileMap& Tm)
             m_InTheWater = false;
             m_InTheLava  = false;
             m_InTheVoid  = false; 
+            m_current_elem = terrain::Element::Air;
             break;        
         case(1): 
             m_InTheAir = false;
             m_InTheWater = true; 
             m_InTheLava  = false;
             m_InTheVoid  = false; 
+            m_current_elem = terrain::Element::Water;
             break;
         case(2):
             m_InTheAir = false;
             m_InTheWater = false;
             m_InTheLava  = true;
             m_InTheVoid  = false;
+            m_current_elem = terrain::Element::Lava;
             break;
         case(3): 
             m_InTheAir = false;
             m_InTheWater = false;
             m_InTheLava  = false;
             m_InTheVoid  = true;
+            m_current_elem = terrain::Element::Void;
             break;
         default:
+            m_current_elem = terrain::Element::Air;
             break;
         }
     }
@@ -918,7 +923,7 @@ bool MainCharacter::TimerElements(float deltaTime, bool& inelement_flag, const f
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 {
     const float TIMER_DEAD_WATER = 2.0f; 
-    const float TIMER_DEAD_VOID  = 0.5f; 
+    const float TIMER_DEAD_VOID  = 0.25f; 
     
     if (m_Respawning)
     {

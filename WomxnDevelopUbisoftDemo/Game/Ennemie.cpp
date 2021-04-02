@@ -1,10 +1,11 @@
 #include <stdafx.h>
 #include <Game/Ennemie.h>
+#include <Game/EnumElements.h>
 
 
 sf::Texture*  Ennemie::m_pTextureAtlas = nullptr;
 
-Ennemie::Ennemie(sf::Vector2f& spawn_pos, bool canmove, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy)
+Ennemie::Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy)
 	: e_Position(spawn_pos), moving(canmove), _colliding_plateforms(false), e_IsPlayingEndGame(false)
 {
 	e_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));

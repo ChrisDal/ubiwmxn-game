@@ -3,6 +3,7 @@
 #include <Game/Plateform.h> 
 #include <Game/Ennemie.h> 
 #include <Game/DeadBody.h> 
+#include <Game/EnumElements.h> 
 
 
 
@@ -164,6 +165,9 @@ private:
     // Facing direction
     bool a_direction{ false }; // true: right, false: left 
     void setFacingDirection(); 
+
+    // current element : Air / Void / Water 
+    terrain::Element m_current_elem{ terrain::Element::Air };
     
     
 };
