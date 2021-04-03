@@ -74,9 +74,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         return;
     }
 
+    // Define if in the air or not 
+    setInElements(Tm);
+
     if (!m_isAlive and not m_Respawning and a_done_anim)
     {
         printf("Is Dying ");
+        ResetElements();
         // call reborn 
         m_Velocity = {0.0f, 0.0f}; 
 		m_Respawning = true; 
@@ -103,9 +107,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         return;
 	}
 
-
-    // Define if in the air or not 
-    setInElements(Tm);
 
     // Alive or not 
     bool living = Alive(deltaTime, l_ennemie);
@@ -160,7 +161,11 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	
 
     // determine if can jump or not 
-    m_CanJump = m_nbjumps < NB_MAX_JUMPS;
+    m_CanJump = (m_nbjumps < NB_MAX_JUMPS);
+    if (m_InTheWater)
+    {
+        m_CanJump = (m_nbjumps < 1);
+    }
 
     // Velocity and Jumping determination 
     if (m_IsUsingJoystick)
@@ -176,6 +181,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
         
         setFacingDirection();
+        
+        
 
         // Joystick Index 0 = A, 1 = B , 2 = X , 3 = Y 
         if (Joystick::isButtonPressed(m_JoystickIndex, 0))
@@ -222,9 +229,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 m_IsJumping = false;
             }
         }
+        s_Velocity.x = (m_Velocity.x >= 0.0f);
+        s_Velocity.y = (m_Velocity.y >= 0.0f);
     }
     else
     {
+        
+
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
             if (m_InTheWater)
@@ -267,6 +278,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		
 		// facing direction
         setFacingDirection();
+        s_Velocity.x = (m_Velocity.x >= 0.0f);
+        
 
         if (Keyboard::isKeyPressed(Keyboard::Down))
         {
@@ -311,6 +324,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                     m_IsJumping = false;
                 }
             }
+            s_Velocity.y = (m_Velocity.y >= 0.0f);
         }
         else
         {
@@ -332,8 +346,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
 	
-	s_Velocity.x = (m_Velocity.x >= 0.0f);
-	s_Velocity.y = (m_Velocity.y >= 0.0f);
+
 	
 
 	// Animation to play
@@ -445,6 +458,16 @@ void MainCharacter::setInElements(TileMap& Tm)
         }
     }
 
+}
+
+
+void MainCharacter::ResetElements()
+{
+    // set Elements 
+    m_InTheAir = false;
+    m_InTheWater = false;
+    m_InTheVoid = false;
+    m_InTheLava = false;
 }
 
 void MainCharacter::ResetJumpCounter()
@@ -952,6 +975,7 @@ bool MainCharacter::TimerElements(float deltaTime, bool& inelement_flag, const f
         if (element_timer > limit)
         {
             element_timer = 0.0f;
+            
             inelement_flag = false;
             limit_reaches = true;
         }   
@@ -1011,6 +1035,7 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     if (m_DiedInWater or m_DiedInVoid)
     {
         setAliveOrDead(false);
+        ResetTimers();
         return getAlive();
     }
 
