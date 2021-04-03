@@ -66,6 +66,7 @@ public:
     // Set 
     void setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop);
     void setInElements(TileMap& Tm); // set air, water, void, lava
+    void ResetElements();
 
     
     // Jump
