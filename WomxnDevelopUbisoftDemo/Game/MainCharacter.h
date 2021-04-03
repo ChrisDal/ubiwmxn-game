@@ -1,11 +1,10 @@
 #pragma once
 #include <Game/TileMap.h>
 #include <Game/Plateform.h> 
-#include <Game/Ennemie.h> 
 #include <Game/DeadBody.h> 
 #include <Game/EnumElements.h> 
 
-
+class Ennemie;
 
 class MainCharacter : public sf::Drawable, public BoxCollideable
 {
@@ -35,7 +34,7 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
 public:	
     MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position);
 
-    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie);
+    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void StartEndGame();
@@ -47,7 +46,7 @@ public:
 	bool isCollidingRight(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingUp(const BoxCollideable& other,  bool keypressed) const;
 	bool isCollidingDown(const BoxCollideable& other,  bool keypressed) const;
-    void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf);
+    void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, std::vector<Ennemie>& l_cactus);
     bool OnTopOf(BoxCollideable& other);
     bool BelowOf(BoxCollideable& other);
     
@@ -64,9 +63,10 @@ public:
 	bool getKeyboardKey(std::string keyname) const;
 
     // Set 
-    void setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop);
+    void setPosition(float deltaTime, std::vector<Plateform>& Pf, std::vector<Ennemie>& l_cactus, short unsigned int& cloop);
     void setInElements(TileMap& Tm); // set air, water, void, lava
     void ResetElements();
+    bool OnFire() const { return m_touched_lava; }
 
     
     // Jump
@@ -145,6 +145,7 @@ private:
     bool m_InTheWater;
     bool m_InTheVoid;
     bool m_InTheLava;
+    bool m_touched_lava{ false }; 
 
 
     // Jumping
@@ -164,6 +165,7 @@ private:
 	// Colliding 
 	bool _colliding_plateforms{false}; 
 	bool _colliding_deadbodies{false}; 
+	bool _colliding_cactus{false}; 
 	// colision side detection on Quad
 	bool c_left; 
 	bool c_right; 

@@ -46,7 +46,7 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 				}
                 else if (m_tiles[k] == 330)
                 {
-                    bool animated = false;
+                    bool animated = true;
                     sf::Vector2u cactus_size(3 * 32, 4 * 32);
                     // match base of cactus with tile lower ypoint 
                     spaw.y += tileSize.y/2.0f - cactus_size.y/2.0f ;

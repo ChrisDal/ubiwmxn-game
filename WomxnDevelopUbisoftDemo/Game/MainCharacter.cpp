@@ -1,5 +1,6 @@
 #include <stdafx.h>
 #include <Game/MainCharacter.h>
+#include <Game/Ennemie.h> 
 
 using namespace sf;
 
@@ -29,6 +30,8 @@ namespace
         return value;
     }
 }
+
+
 
 // constructor
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position)
@@ -67,7 +70,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 }
 
 
-void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie)
+void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus)
 {
     if (m_IsPlayingEndGame)
     {
@@ -119,6 +122,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	
     UpdateDeadBodies();
 
+    if (m_InTheLava)
+    {
+        m_touched_lava = true;
+    }
 
     const float SPEED_MAX = 150.0f;
     const float WATER_SPEED_MAX = SPEED_MAX * 0.3f;
@@ -341,7 +348,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     // Test collision with new Position 
     short unsigned int colliding_loop = 0; 
-    setPosition(deltaTime, Pf, colliding_loop);
+    setPosition(deltaTime, Pf, l_cactus, colliding_loop);
 	// Set New position
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
@@ -468,6 +475,9 @@ void MainCharacter::ResetElements()
     m_InTheWater = false;
     m_InTheVoid = false;
     m_InTheLava = false;
+
+    // 
+    m_touched_lava = false;
 }
 
 void MainCharacter::ResetJumpCounter()
@@ -475,7 +485,7 @@ void MainCharacter::ResetJumpCounter()
     m_nbjumps = 0;
 }
 
-void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, short unsigned int& cloop)
+void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std::vector<Ennemie>& l_cactus, short unsigned int& cloop)
 {   
 
     while (cloop < 20)
@@ -490,26 +500,27 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, sho
         // Colliding Check
         _colliding_plateforms = false;
         _colliding_deadbodies = false;
-        isCollidingSolid(new_Position, Pf);
+        _colliding_cactus = false;
+        isCollidingSolid(new_Position, Pf, l_cactus);
 
-        if ((!_colliding_plateforms) and (!_colliding_deadbodies))
+        if ((!_colliding_plateforms) and (not ( _colliding_deadbodies or _colliding_cactus)))
         {
             m_Position = new_Position;
             break;
         }
-		else if ( _colliding_deadbodies)
+		else if ( _colliding_deadbodies or _colliding_cactus)
 		{
             new_Position = m_Position;
             m_Velocity.y = 0.0f;
 			cloop++;
-            setPosition(deltaTime, Pf, cloop);
+            setPosition(deltaTime, Pf, l_cactus, cloop);
 		}
         else
         {
             new_Position = m_Position;
             m_Velocity.y *= 0.9f;
             cloop++;
-            setPosition(deltaTime, Pf, cloop);
+            setPosition(deltaTime, Pf, l_cactus, cloop);
             
         }
         
@@ -519,7 +530,7 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, sho
 }
 
 // colliding plateforms and dead bodies 
-void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf)
+void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, std::vector<Ennemie>& l_cactus)
 {
  
     bool k_left = (m_Velocity.x < 0) and (std::abs(m_Velocity.x) != 0.0f);
@@ -588,9 +599,22 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
 
         }
 
+    }	
+    
+    for (Ennemie& cac : l_cactus)
+    {
+
+        if (this->IsColliding(cac))
+        {
+            _colliding_cactus = true;
+            m_isWalkable = false;
+            m_InTheAir = false;
+
+        }
+
     }
 
-    if ((!_colliding_plateforms) and (!_colliding_deadbodies))
+    if ((!_colliding_plateforms) and (!_colliding_deadbodies) and (!_colliding_cactus))
     {
         c_left = false; 
         c_right = false;

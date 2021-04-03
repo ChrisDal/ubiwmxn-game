@@ -1,5 +1,8 @@
 #pragma once
 
+
+class MainCharacter;
+
 class Ennemie : public sf::Drawable, public BoxCollideable, public Animation
 {
     static sf::Texture* m_pTextureAtlas;
@@ -14,18 +17,24 @@ class Ennemie : public sf::Drawable, public BoxCollideable, public Animation
         struct AnimType Dodge;
     };
 
+    enum class Fire {None, Red, White, SemiTransp, Transp};
+
 public:
     static const sf::Texture* GetTextureAtlas()  { return m_pTextureAtlas;  }
     static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
 
-    Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy);
+    Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft,
+            unsigned int sx, unsigned int sy);
     ~Ennemie(); 
 
-    void Update(float deltaTime);
+    void Update(float deltaTime, MainCharacter* mchara);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void StartEndGame();
     bool getCanMove() const { return moving; }; 
+
+    // Fire handling 
+    void SetCollidingFire(MainCharacter* mchara);
 
 private:
     
@@ -39,6 +48,18 @@ private:
     // attributes for all types of ennemies
     bool _colliding_plateforms;
     bool moving; 
+    bool is_animated; 
+    bool _colliding_fire;
+    bool _colliding{ false };
+
+    float counter_fire = 0.0f;
+    float a_counter_seconds = 1.0f / 10.0f;
+    Fire m_current_fire = Fire::None;
+    short unsigned int step_fire = 0;
+    std::map<int, Fire> m_fire_steps{ {0, Fire::None}, {1, Fire::Red},  {2, Fire::White},
+                                    {3, Fire::SemiTransp},{4, Fire::Transp}  };
+
+
 
 
 };

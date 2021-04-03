@@ -61,8 +61,14 @@ GameDemo::~GameDemo()
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies);
+    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies, m_cactus);
     m_Door.Update(deltaTime);
+
+    for (Ennemie& cactus : m_cactus)
+    {
+        cactus.Update(deltaTime, m_MainCharacter);
+    }
+
 
 
     if (!m_IsFinished)

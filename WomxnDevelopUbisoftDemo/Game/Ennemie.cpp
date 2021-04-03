@@ -1,12 +1,16 @@
 #include <stdafx.h>
 #include <Game/Ennemie.h>
 #include <Game/EnumElements.h>
+#include <Game/MainCharacter.h> 
+
 
 
 sf::Texture*  Ennemie::m_pTextureAtlas = nullptr;
 
 Ennemie::Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy)
-	: e_Position(spawn_pos), moving(canmove), _colliding_plateforms(false), e_IsPlayingEndGame(false)
+	: e_Position(spawn_pos), moving(canmove), is_animated(is_animated), 
+	_colliding_plateforms(false), e_IsPlayingEndGame(false),
+	_colliding_fire(false)
 {
 	e_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));
 
@@ -35,10 +39,76 @@ void Ennemie::draw(sf::RenderTarget& target, sf::RenderStates states) const
 }
 
 
-void Ennemie::Update(float deltaTime) 
+void Ennemie::SetCollidingFire(MainCharacter* mchara)
+{
+
+	if (IsColliding(*mchara))
+	{
+		_colliding = true;
+
+		if (mchara->OnFire())
+		{
+			_colliding_fire = true;
+		}
+		else 
+		{
+			_colliding_fire = false;
+		}
+		
+	}
+	else 
+	{
+		_colliding_fire = false; 
+		_colliding = false;
+	}
+
+}
+
+void Ennemie::Update(float deltaTime, MainCharacter* mchara) 
 {
 	if (moving)
 	{
 		// Do something to update
+	}
+
+	if (is_animated)
+	{
+		SetCollidingFire(mchara);
+		// Do something to update
+		if (_colliding_fire)
+		{
+			counter_fire += deltaTime;
+			if (counter_fire > a_counter_seconds)
+			{
+				step_fire += 1;
+				counter_fire = 0.0f;
+			}
+
+		}
+		else
+		{
+			counter_fire = 0.0f;
+			step_fire = 0;
+		}
+
+		m_current_fire = m_fire_steps[step_fire];
+		switch (m_current_fire)
+		{
+			case(Fire::Red):
+				e_Sprite.setColor(sf::Color(255, 0, 0));
+				break;
+			case(Fire::White):
+				e_Sprite.setColor(sf::Color(255, 255, 0, 200));
+				break;
+			case(Fire::SemiTransp):
+				e_Sprite.setColor(sf::Color(255, 255, 255, 128));
+				break;
+			case(Fire::Transp):
+				e_Sprite.setColor(sf::Color(255, 255, 255, 0));
+				break;
+			default:
+				break;
+		}
+
 	}
 }; 
