@@ -4,7 +4,7 @@
 #include <Game/ObjectsElements.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -44,7 +44,15 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 					// Die at touch 
                     l_ennemies.push_back(Ennemie(spaw, false, animated, coord, tileSize.x, tileSize.y));
 				}
-				else 
+                else if (m_tiles[k] == 330)
+                {
+                    bool animated = false;
+                    sf::Vector2u cactus_size(3 * 32, 4 * 32);
+                    // match base of cactus with tile lower ypoint 
+                    spaw.y += tileSize.y/2.0f - cactus_size.y/2.0f ;
+                    cactus.push_back(Ennemie(spaw, false, animated, coord, cactus_size.x, cactus_size.y));
+                }
+                else
 				{
 					// classical elements
                     l_objects.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
@@ -115,6 +123,7 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
         return true;
 
 };
+
 
 
 void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const

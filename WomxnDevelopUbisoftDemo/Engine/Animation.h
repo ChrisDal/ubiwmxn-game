@@ -50,7 +50,7 @@ public:
 
 protected:
 
-	sf::Texture* a_spritesheet;
+	sf::Texture* a_spritesheet = nullptr;
 	short unsigned int a_framecount = 0; 			// frame counter
 	short unsigned int a_framerate = 10; 			// anim = 10 fps
 	unsigned int a_frametexture = 0; 			    // index of the frame texture

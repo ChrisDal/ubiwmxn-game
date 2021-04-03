@@ -47,7 +47,7 @@ GameDemo::GameDemo()
     m_TextureDead.loadFromFile(dead_texture_name);
 	DeadBody::SetTextureAtlas(&m_TextureDead);
 
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects);
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects, m_cactus);
     
     // Load main character 
     m_MainCharacter = new MainCharacter(sf::Vector2u(1024, 768), m_Elements.getMainCharacterSpawnPosition());
@@ -89,6 +89,11 @@ void GameDemo::Render(sf::RenderTarget& target)
 	for ( const auto& enm : m_ennemies) 
 	{
 		target.draw(enm); 
+	}		
+    
+    for ( const auto& cac : m_cactus) 
+	{
+		target.draw(cac); 
 	}	
     
     // Elements 
@@ -356,14 +361,14 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         
         if (timer_progress_water < 0.3f)
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
 
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(4.0f / 7.0f, 0.4f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(4.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(188.8f / 360.f, 0.4f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(188.8f / 360.f, 0.7f, 0.7f));
         }
 
         ImGui::ProgressBar(timer_progress_water, ImVec2(70.0f, 0.0f));
@@ -375,14 +380,14 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         float timer_progress_void = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Void);
         if (timer_progress_void < 0.3f)
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
 
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.5f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.5f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.7f, 0.6f));
         }
         ImGui::ProgressBar(timer_progress_void, ImVec2(70.0f, 0.0f));
         ImGui::SameLine(0.0f, 5.0f);
