@@ -961,6 +961,28 @@ bool MainCharacter::TimerElements(float deltaTime, bool& inelement_flag, const f
     return limit_reaches;
 }
 
+
+float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const 
+{
+	// begining 0% = out of element 
+	float pct_time = 0.0f;
+	
+	switch(elem)
+	{
+		case(terrain::Element::Water):
+			pct_time = m_CounterWater / 2.0f;
+			break; 
+		case(terrain::Element::Void):
+			pct_time = m_CounterVoid / 0.25f;
+			break; 
+		default:
+			break; 
+	}
+	return  pct_time;
+	
+}
+
+
 // Set Alive or Dead
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 {

@@ -19,6 +19,12 @@ GameDemo::GameDemo()
 
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
 
+    // Game UI 
+    m_DeathsTextFont.loadFromFile("Assets\\calibrib.ttf");
+    m_TextureTombstone.loadFromFile(".\\Assets\\tombstone.png");
+    m_Tombstone.setTexture(m_TextureTombstone);
+
+
     // map tile 
     m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map.csv");
     // test
@@ -292,7 +298,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
     {
         ImGui::Image(main_Door.GetTexture());   //  allow display an image in the UI  =>  For life bar or display an icon
-        ImGui::SetCursorPosY(0.0f);            // use to put back the cursor on top/left corner of the image to display above it
+        ImGui::SetCursorPosY(static_cast<float>(main_Door.GetTexture().getSize().y));            // use to put back the cursor on top/left corner of the image to display above it
 
         ImGui::Text("Main character velocity");
         ImGui::Separator();
@@ -310,6 +316,81 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::EndPopup();
         }
     }
+    ImGui::End();    
+    
+    // Death Menu overlay 
+    static bool show_UI = true;
+    const float DISTANCE2 = 2.0f;
+    static int corner2 = 0;
+    ImGuiIO& io2 = ImGui::GetIO();
+    ImGuiWindowFlags window_flags2 = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    if (corner2 != -1)
+    {
+        window_flags2 |= ImGuiWindowFlags_NoMove;
+        ImVec2 window_pos2 = ImVec2((corner2 & 1) ? io2.DisplaySize.x - DISTANCE2 : DISTANCE2, (corner2 & 2) ? io2.DisplaySize.y - DISTANCE2 : DISTANCE2);
+        ImVec2 window_pos_pivot2 = ImVec2((corner2 & 1) ? 1.0f : 0.0f, (corner2 & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos2, ImGuiCond_Always, window_pos_pivot2);
+    }
+    ImGui::SetNextWindowBgAlpha(0.65f); // Transparent background
+    if (ImGui::Begin("Game UI", &show_UI, window_flags2))
+    {
+        //ImGui::Image(m_TextureTombstone);   //  allow display an image in the UI  =>  For life bar or display an icon
+        //ImGui::SetCursorPosY(static_cast<float>(m_TextureTombstone.getSize().y / 2.0f));            // use to put back the cursor on top/left corner of the image to display above it
+        //ImGui::SetCursorPosX(static_cast<float>(m_TextureTombstone.getSize().x / 3.0f));  
+        int nb_deaths = m_MainCharacter->DeadBodiesCounter();
+        if (nb_deaths >= 9)// use to put back the cursor on top/left corner of the image to display above it
+        {
+            ImGui::TextColored(ImVec4(230.0f, 168.0f, 0.f, 1.f), "Deaths: %1d / %1d", nb_deaths, m_MainCharacter->DeadBodiesMax());
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(255.0f, 255.0f, 255.f, 1.f), "Deaths: %1d / %1d", nb_deaths, m_MainCharacter->DeadBodiesMax());
+        }
+
+        ImGui::SameLine(0.0f, 20.0f); 
+
+        // Bar for water and void
+
+        
+        float timer_progress_water = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Water);
+        
+        if (timer_progress_water < 0.3f)
+        {
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.5f));
+
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(4.0f / 7.0f, 0.4f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(4.0f / 7.0f, 0.7f, 0.5f));
+        }
+
+        ImGui::ProgressBar(timer_progress_water, ImVec2(70.0f, 0.0f));
+        ImGui::SameLine(0.0f, 5.0f);
+        ImGui::Text("Water Bar");
+        ImGui::PopStyleColor(2);
+
+        ImGui::SameLine(0.0f, 20.0f);
+        float timer_progress_void = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Void);
+        if (timer_progress_void < 0.3f)
+        {
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.5f));
+
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.5f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.7f, 0.5f));
+        }
+        ImGui::ProgressBar(timer_progress_void, ImVec2(70.0f, 0.0f));
+        ImGui::SameLine(0.0f, 5.0f);
+        ImGui::Text("Void Bar");
+        ImGui::PopStyleColor(2);
+
+    }
+
     ImGui::End();
 
 
