@@ -10,6 +10,7 @@
 #include <Game/DeadBody.h>
 #include <Game/Tilemap.h>
 #include <Game/Plateform.h>
+#include <Game/EnumElements.h>
 
 class GameDemo : public Game
 {
@@ -24,8 +25,15 @@ public:
 private:
     sf::Font m_EndgameTextFont;
     sf::Text m_EndgameText;
+    // UI Game
+    sf::Font m_DeathsTextFont;
+    sf::Sprite m_Tombstone;
+    sf::Texture m_TextureTombstone;
+    sf::Text m_DeathsText;
+    sf::SoundBuffer m_GameSoundBuffer;
     sf::SoundBuffer m_EndgameSoundBuffer;
     sf::Sound m_EndgameSound;
+    sf::Sound m_GameSound;
     // Solid Elements
     TileMap m_Tilemap;
     Door m_Door;

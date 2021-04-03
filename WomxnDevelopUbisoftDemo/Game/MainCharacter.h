@@ -79,12 +79,16 @@ public:
 	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
     // in elements with associated time counters
     bool TimerElements(float deltaTime, bool& inelement_flag, const float& limit, float& element_timer);
+    void ResetTimers();
+	float GetPourcentageAllowedTime(terrain::Element elem) const ;
     
     // Death
     // Death counter 
     int  DeathCounter() const { return m_death_counter; }
     void DeathCounterAdd() { m_death_counter += 1; }
     void DeathCounterReset() { m_death_counter = 0; }
+    int  DeadBodiesCounter() const { return m_deadbodies.size() > MAX_DEADBODIES ? MAX_DEADBODIES : m_deadbodies.size();  }
+    int  DeadBodiesMax() const { return MAX_DEADBODIES; }
     // Dead body count
     void UpdateDeadBodies(); 
     // 

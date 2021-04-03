@@ -96,7 +96,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		if (a_done_anim)
 		{
 			m_Respawning = false; 
+
 		}
+        // reset counters 
+        ResetTimers();
         return;
 	}
 
@@ -959,6 +962,34 @@ bool MainCharacter::TimerElements(float deltaTime, bool& inelement_flag, const f
     }
 
     return limit_reaches;
+}
+
+
+float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const 
+{
+	// begining 0% = out of element 
+	float pct_time = 0.0f;
+	
+	switch(elem)
+	{
+		case(terrain::Element::Water):
+			pct_time = m_CounterWater / 2.0f;
+			break; 
+		case(terrain::Element::Void):
+			pct_time = m_CounterVoid / 0.25f;
+			break; 
+		default:
+			break; 
+	}
+	return  pct_time;
+	
+}
+
+void MainCharacter::ResetTimers()
+{
+    m_CounterWater = 0.0f; 
+    m_CounterVoid = 0.0f;
+    m_CounterLava = 0.0f;
 }
 
 // Set Alive or Dead
