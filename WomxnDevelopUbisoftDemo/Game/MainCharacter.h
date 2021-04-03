@@ -79,6 +79,7 @@ public:
 	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
     // in elements with associated time counters
     bool TimerElements(float deltaTime, bool& inelement_flag, const float& limit, float& element_timer);
+    void ResetTimers();
 	float GetPourcentageAllowedTime(terrain::Element elem) const ;
     
     // Death

@@ -96,7 +96,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		if (a_done_anim)
 		{
 			m_Respawning = false; 
+
 		}
+        // reset counters 
+        ResetTimers();
         return;
 	}
 
@@ -982,6 +985,12 @@ float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const
 	
 }
 
+void MainCharacter::ResetTimers()
+{
+    m_CounterWater = 0.0f; 
+    m_CounterVoid = 0.0f;
+    m_CounterLava = 0.0f;
+}
 
 // Set Alive or Dead
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
