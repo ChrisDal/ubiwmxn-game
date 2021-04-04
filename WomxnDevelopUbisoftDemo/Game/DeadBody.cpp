@@ -14,7 +14,7 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     sf::Vector2i offset_texture = sf::Vector2i(12, 22);
     setTextureOffset(offset_texture);
     m_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));
-    sf::Vector2u textdeath{ 0,0 }; /// by line 
+    sf::Vector2u textdeath{ 0,0 }; // texture position
 
     // Set texture 
     m_Sprite.setTexture(*m_pTextureAtlas);
@@ -48,7 +48,10 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
 
     }
 
-    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + textdeath.x * 64, getTextureOffset().y + textdeath.y * 64, m_size.x, m_size.y));
+    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + textdeath.x * 64, 
+                                        getTextureOffset().y + textdeath.y * 64, 
+                                        static_cast<int>(m_size.x), 
+                                        static_cast<int>(m_size.y)));
 
     // Set Origin
     m_Sprite.setOrigin(m_size * 0.5f);
@@ -59,7 +62,6 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
 
     // can we pass through the dead body = walk through 
     // else plateform
-
     if (!m_isWalkable)
     {
         DeadToPlateform();

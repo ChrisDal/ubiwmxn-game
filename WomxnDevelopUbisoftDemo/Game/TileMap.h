@@ -12,8 +12,6 @@ enum class TmapType {backplateform, monstobjects};
 class TileMap : public sf::Drawable, public sf::Transformable
 {
 public:
-    //TileMap(); 
-    //~TileMap();
     // Read external files
     void loadCsvTilemap(const std::string& levelcsv);
     void setTilemapType(bool isbackground);
@@ -22,7 +20,9 @@ public:
     // Load and create ennemies sprite 
     std::vector<Ennemie> loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, 
                                     unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, 
-                                    std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& m_checkpoints);
+                                    std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& m_checkpoints,
+                                    ObjectsElements& exit_sign);
+    
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     // Type of tiles 

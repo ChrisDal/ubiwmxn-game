@@ -15,7 +15,7 @@ Ennemie::Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Ve
 
 	// Set texture 
 	e_Sprite.setTexture(*m_pTextureAtlas);
-	e_Sprite.setTextureRect(sf::IntRect(upperleft.x, upperleft.y, e_size.x, e_size.y));
+	e_Sprite.setTextureRect(sf::IntRect(upperleft.x, upperleft.y, static_cast<int>(e_size.x), static_cast<int>(e_size.y)));
 	// Set Origin
 	e_Sprite.setOrigin(e_size * 0.5f);
 	// Set Position

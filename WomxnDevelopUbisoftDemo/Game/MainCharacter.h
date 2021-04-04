@@ -14,10 +14,10 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
                             Reborn };
 
     struct AnimType {
-        short unsigned int nb_frames_anim;
-        short unsigned int line_anim;
-        short unsigned int a_offset;
-        std::string name;
+        short unsigned int nb_frames_anim{ 0 };
+        short unsigned int line_anim{ 0 };
+        short unsigned int a_offset{ 0 };
+        std::string name{ "" };
     };
 
     struct AllAnims {
@@ -41,7 +41,6 @@ public:
 
     void StartEndGame();
     
-    sf::Vector2f getVelocity() const; 
     // Colliding and position 
 	bool getCollidingPf() const { return _colliding_plateforms;}
 	bool isCollidingLeft(const BoxCollideable& other,  bool keypressed) const;
@@ -54,51 +53,50 @@ public:
     inline bool ToTheLeft(BoxCollideable& other);
     inline bool ToTheRight(BoxCollideable& other);
     
-    //  get
-
+    // Get Colliding 
 	bool getCollidingLeft() const { return c_left;}
 	bool getCollidingRight() const { return c_right;}
 	bool getCollidingUp() const { return c_up;}
 	bool getCollidingDown() const { return c_down;}
-    bool getInTheAir()  const { return m_InTheAir; }
 	
 	// Inputs 
     bool getJoystickPressed(int& btn_indx) const; 
 	bool getKeyboardKey(std::string keyname) const;
 
-    // Set 
+    // Position / Velocity
     void setPosition(float deltaTime, std::vector<Plateform>& Pf, std::vector<Ennemie>& l_cactus, short unsigned int& cloop);
-    void setInElements(TileMap& Tm); // set air, water, void, lava
-    void ResetElements();
-    bool OnFire() const { return m_touched_lava; }
     void setRespawnPosition(const sf::Vector2f& new_respawn);
-
+    sf::Vector2f getVelocity() const;
     
     // Jump
     bool isAllowJumping() const { return m_CanJump;}
     void ResetJumpCounter();
 	
-	// Alive or set dead 
+	// Set and Get Alive
 	void setAliveOrDead(const bool& not_dead) { m_isAlive = not_dead;}
 	bool getAlive() const { return m_isAlive; }
-	// define if alive or not
+	// Define if Alive or not
 	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
-    // in elements with associated time counters
+
+    // Elements with associated time counters
+    void setInElements(TileMap& Tm); // set air, water, void, lava
+    void ResetElements();
     bool TimerElements(float deltaTime, bool& inelement_flag, const float& limit, float& element_timer);
     void ResetTimers();
 	float GetPourcentageAllowedTime(terrain::Element elem) const ;
+    bool OnFire() const { return m_touched_lava; } // Lava set this on fire
+    bool getInTheAir()  const { return m_InTheAir; }
     
-    // Death
+    //  ----- Death
     // Death counter 
     int  DeathCounter() const { return m_death_counter; }
     void DeathCounterAdd() { m_death_counter += 1; }
     void DeathCounterReset() { m_death_counter = 0; }
-    int  DeadBodiesCounter() const { return m_deadbodies.size() > MAX_DEADBODIES ? MAX_DEADBODIES : m_deadbodies.size();  }
+    int  DeadBodiesCounter() const { return m_deadbodies.size() > MAX_DEADBODIES ? MAX_DEADBODIES : static_cast<int>(m_deadbodies.size());  }
     int  DeadBodiesMax() const { return MAX_DEADBODIES; }
     // Dead body count
     void UpdateDeadBodies(); 
-    // 
-    // 
+
 
     // Animation 
     void InitAnimType();

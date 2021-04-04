@@ -21,6 +21,7 @@ public:
     void Update(float deltaTime) override;
     void Render(sf::RenderTarget& target) override;
     void RenderDebugMenu(sf::RenderTarget& target) override;
+    void RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE);
 
 private:
     sf::Font m_EndgameTextFont;
@@ -36,10 +37,9 @@ private:
     sf::Sound m_GameSound;
     // Solid Elements
     TileMap m_Tilemap;
-    Door m_Door;
-    Exit main_Door;
     MainCharacter* m_MainCharacter;
 	std::vector<Plateform> m_plateform = {}; 
+    ObjectsElements m_exit_sign; 
     // Affects life
     TileMap m_Elements; 
     sf::Texture m_TextureAtlas;
@@ -49,6 +49,7 @@ private:
 	std::vector<DeadBody> m_deadbodies = {};
 	std::vector<ObjectsElements> m_objects = {};
 	std::vector<ObjectsElements> m_checkpoints = {};
+
 	
     // Game process
     bool m_IsFinished;
