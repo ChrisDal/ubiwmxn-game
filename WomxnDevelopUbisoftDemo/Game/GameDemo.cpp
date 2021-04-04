@@ -89,7 +89,10 @@ void GameDemo::Update(float deltaTime)
         if (m_checkpoints[k].Contains(m_MainCharacter->GetCenter()))
         {
             m_MainCharacter->setRespawnPosition(m_checkpoints[k].GetCenter());
+            m_checkpoints[k].Update(deltaTime, true);
         }
+
+       
     }
 
 

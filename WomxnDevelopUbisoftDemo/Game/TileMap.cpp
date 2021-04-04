@@ -57,12 +57,12 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
                 else if (m_tiles[k] > 100  && m_tiles[k] < 104)
 				{
 					// classical elements
-                    l_checkpoints.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
+                    l_checkpoints.push_back(ObjectsElements(spaw, true, true, coord, tileSize.x, tileSize.y));
 				}                
                 else
 				{
 					// classical elements
-                    l_objects.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
+                    l_objects.push_back(ObjectsElements(spaw, true, false, coord, tileSize.x, tileSize.y));
 				}
 			}
 
