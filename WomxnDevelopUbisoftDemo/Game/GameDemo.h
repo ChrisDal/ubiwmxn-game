@@ -48,6 +48,7 @@ private:
     std::vector<Ennemie> m_ennemies = {};
 	std::vector<DeadBody> m_deadbodies = {};
 	std::vector<ObjectsElements> m_objects = {};
+	std::vector<ObjectsElements> m_checkpoints = {};
 	
     // Game process
     bool m_IsFinished;

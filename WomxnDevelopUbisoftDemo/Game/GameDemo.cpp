@@ -47,7 +47,7 @@ GameDemo::GameDemo()
     m_TextureDead.loadFromFile(dead_texture_name);
 	DeadBody::SetTextureAtlas(&m_TextureDead);
 
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects, m_cactus);
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects, m_cactus, m_checkpoints);
     
     // Load main character 
     m_MainCharacter = new MainCharacter(sf::Vector2u(1024, 768), m_Elements.getMainCharacterSpawnPosition());
@@ -86,6 +86,7 @@ void GameDemo::Update(float deltaTime)
 
 
 
+
     if (!m_IsFinished)
     {
         //if (m_Door.IsColliding(m_MainCharacter))
@@ -121,6 +122,12 @@ void GameDemo::Render(sf::RenderTarget& target)
 	for ( const auto& elm : m_objects)
 	{
 		target.draw(elm);
+	}
+	
+    // Checkpoints 
+	for ( const auto& ckp : m_checkpoints)
+	{
+		target.draw(ckp);
 	}
 	
 

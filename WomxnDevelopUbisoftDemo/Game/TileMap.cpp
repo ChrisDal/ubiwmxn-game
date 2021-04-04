@@ -4,7 +4,7 @@
 #include <Game/ObjectsElements.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& l_checkpoints)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -54,6 +54,11 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
                     spaw.y += tileSize.y/2.0f - cactus_size.y/2.0f ;
                     cactus.push_back(Ennemie(spaw, false, animated, coord, cactus_size.x, cactus_size.y, weak_against_fire));
                 }
+                else if (m_tiles[k] > 100  && m_tiles[k] < 104)
+				{
+					// classical elements
+                    l_checkpoints.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
+				}                
                 else
 				{
 					// classical elements
