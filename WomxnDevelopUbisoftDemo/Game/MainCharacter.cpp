@@ -88,11 +88,26 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_Velocity = {0.0f, 0.0f}; 
 		m_Respawning = true; 
         // create dead bodies 
-        bool no_solid = not (m_InTheAir or (not m_InTheWater)) ;
-		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, m_current_elem));
+        bool no_solid = not (m_InTheAir or (not m_InTheWater)) or m_DiedInLava;
+        terrain::Element died_element; 
+        if (m_DiedInLava)
+        {
+            died_element = terrain::Element::Lava;
+        }
+        else
+        {
+            died_element = m_current_elem;
+        }
+        
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element));
 			
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
+
+        // Reassign dead flags
+        m_DiedInWater = false;
+        m_DiedInVoid = false;
+        m_DiedInLava = false;
 
 
     } 
@@ -115,34 +130,48 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     bool living = Alive(deltaTime, l_ennemie);
     if (not living)
     {
+        printf(" Not Alive-");
         // Launch dies 
-        Play(AnimName::Die, deltaTime, false);
+        if (m_DiedInLava or m_touched_lava)
+        {
+            printf("Lava ");
+            Play(AnimName::FireEnd, deltaTime, false);
+        }
+        else
+        {
+            printf("Other ");
+            Play(AnimName::Die, deltaTime, false);
+        }
+
         return;
     }
 	
     UpdateDeadBodies();
 
+    // Handling Lava
     if (m_InTheLava)
     {
         m_touched_lava = true;
     }
 
-    const float SPEED_MAX = 150.0f;
-    const float WATER_SPEED_MAX = SPEED_MAX * 0.3f;
-    const float SPEED_MAX_FALL = 800.0f;
-    const float WATER_SPEED_MAX_FALL = SPEED_MAX_FALL / 8.0f;
 
-    const float APPLIED_FACTOR = 0.6f;
-    const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.82f;
-    const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.15f;
-    const float GRAVITY = 98.1f;
-    const float NO_GRAVITY = 0.0f;
-    const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
-    const short unsigned int NB_MAX_JUMPS = 3; 
 
-    const float SPEED_INC = 10.0f;
-    const float DEAD_ZONE = 5.0f;
-    const float SLOWDOWN_RATE = 0.5f;
+    static const float SPEED_MAX = 150.0f;
+    static const float WATER_SPEED_MAX = SPEED_MAX * 0.3f;
+    static const float SPEED_MAX_FALL = 800.0f;
+    static const float WATER_SPEED_MAX_FALL = SPEED_MAX_FALL / 8.0f;
+
+    static const float APPLIED_FACTOR = 0.6f;
+    static const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.82f;
+    static const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.15f;
+    static const float GRAVITY = 98.1f;
+    static const float NO_GRAVITY = 0.0f;
+    static const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
+    static const short unsigned int NB_MAX_JUMPS = 3;
+
+    static const float SPEED_INC = 10.0f;
+    static const float DEAD_ZONE = 5.0f;
+    static const float SLOWDOWN_RATE = 0.5f;
 
     // handling collision : new pos vs old pos 
     const sf::Vector2f old_Position = m_Position;
@@ -357,7 +386,15 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	
 
 	// Animation to play
-	if (m_IsJumping)
+    if (m_InTheLava)
+    {
+        Play(AnimName::FireBegin, deltaTime, false);
+    }
+    else if (m_touched_lava)
+    {
+        Play(AnimName::FireSet, deltaTime, true);  
+    }
+	else if (m_IsJumping)
 	{
 		if (m_nbjumps == 1)
 		{
@@ -471,12 +508,12 @@ void MainCharacter::setInElements(TileMap& Tm)
 void MainCharacter::ResetElements()
 {
     // set Elements 
-    m_InTheAir = false;
-    m_InTheWater = false;
-    m_InTheVoid = false;
-    m_InTheLava = false;
+    m_InTheAir      = false;
+    m_InTheWater    = false;
+    m_InTheVoid     = false;
+    m_InTheLava     = false;
 
-    // 
+    // Siwtch off touched by lava
     m_touched_lava = false;
 }
 
@@ -836,20 +873,22 @@ void MainCharacter::InitAnimType()
     m_AllAnims.Idle = { 4, 0, 0, "Idle" };
     m_AllAnims.Walk = { 8, 1, 0, "Walk" };
     m_AllAnims.Jump = { 8, 2, 0, "Jump" };
-    m_AllAnims.DoubleJump = { 6, 2, 2, "DoubleJump" };
-    m_AllAnims.Die = { 7, 4, 0, "Die" };
-    m_AllAnims.Hurt = { 2, 4, 1, "Hurt" };
-    m_AllAnims.Dodge = { 6, 14, 0, "Dodge" };
-    m_AllAnims.Surprise = { 6, 14, 0, "Surprise" };
-    m_AllAnims.Reborn = { 4, 4, 7, "Reborn" };
+    m_AllAnims.DoubleJump   = { 6, 2, 2, "DoubleJump" };
+    m_AllAnims.Die          = { 7, 4, 0, "Die" };
+    m_AllAnims.Hurt         = { 2, 4, 1, "Hurt" };
+    m_AllAnims.FireSet      = { 5, 11, 4, "FireSet" };
+    m_AllAnims.FireBegin    = { 4, 11, 0, "FireBegin" };
+    m_AllAnims.FireEnd      = { 5, 11, 10, "FireEnd" };
+    m_AllAnims.Reborn       = { 4, 4, 7, "Reborn" };
 
     dictAnim[AnimName::Idle]        = m_AllAnims.Idle;
     dictAnim[AnimName::Walk]        = m_AllAnims.Walk;
     dictAnim[AnimName::Jump]        = m_AllAnims.Jump;
     dictAnim[AnimName::DoubleJump]  = m_AllAnims.DoubleJump;
     dictAnim[AnimName::Die]         = m_AllAnims.Die;
-    dictAnim[AnimName::Dodge]       = m_AllAnims.Dodge;
-    dictAnim[AnimName::Surprise]    = m_AllAnims.Surprise;
+    dictAnim[AnimName::FireSet]     = m_AllAnims.FireSet;
+    dictAnim[AnimName::FireBegin]   = m_AllAnims.FireBegin;
+    dictAnim[AnimName::FireEnd]     = m_AllAnims.FireEnd;
     dictAnim[AnimName::Reborn]      = m_AllAnims.Reborn;
 
 }
@@ -861,6 +900,11 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
     short unsigned int a_offset = 0; // offset frame pour l'animation si besoin
     const sf::Vector2i sizetexture = {64,64};
 	
+    nb_frames_anim = dictAnim[anim_name].nb_frames_anim;
+    line_anim = dictAnim[anim_name].line_anim;
+    a_offset = dictAnim[anim_name].a_offset;
+
+    /* OLD 
     switch (anim_name)
     {
         case AnimName::Idle:      
@@ -898,15 +942,20 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
             line_anim = 4;
             a_offset = 1;
             break;
-        case AnimName::Dodge: 
-            nb_frames_anim = 6;
-            line_anim = 14; 
-            a_offset = 0;
+        case AnimName::FireSet: 
+            nb_frames_anim = 5;
+            line_anim = 11; 
+            a_offset = 4;
             break;
-        case AnimName::Surprise: 
-            nb_frames_anim = 6;
-            line_anim = 14; 
+        case AnimName::FireBegin: 
+            nb_frames_anim = 4;
+            line_anim = 11; 
             a_offset = 0;
+            break;        
+        case AnimName::FireEnd: 
+            nb_frames_anim = 5;
+            line_anim = 11; 
+            a_offset = 9;
             break;
         case AnimName::Reborn: 
             nb_frames_anim = 4;
@@ -919,7 +968,7 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
             line_anim = 4;
             a_offset = 0;
             break;
-    }
+    }*/
 
 
     // DT = 1/ 60.0 APP FRAMERATE 
@@ -1026,6 +1075,9 @@ float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const
 		case(terrain::Element::Void):
 			pct_time = m_CounterVoid / 0.25f;
 			break; 
+		case(terrain::Element::Lava):
+			pct_time = m_CounterLava / 3.0f;
+			break; 
 		default:
 			break; 
 	}
@@ -1036,15 +1088,16 @@ float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const
 void MainCharacter::ResetTimers()
 {
     m_CounterWater = 0.0f; 
-    m_CounterVoid = 0.0f;
-    m_CounterLava = 0.0f;
+    m_CounterVoid  = 0.0f;
+    m_CounterLava  = 0.0f;
 }
 
 // Set Alive or Dead
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 {
-    const float TIMER_DEAD_WATER = 2.0f; 
-    const float TIMER_DEAD_VOID  = 0.25f; 
+    static const float TIMER_DEAD_WATER = 2.0f; 
+    static const float TIMER_DEAD_VOID  = 0.25f;
+    static const float TIMER_DEAD_LAVA  = 3.0f;
     
     if (m_Respawning)
     {
@@ -1055,11 +1108,11 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     // update elements counters
     m_DiedInWater = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
     m_DiedInVoid  = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
+    m_DiedInLava  = TimerElements(deltaTime, m_touched_lava , TIMER_DEAD_LAVA, m_CounterLava);
     
-    if (m_DiedInWater or m_DiedInVoid)
+    if (m_DiedInWater or m_DiedInVoid or m_DiedInLava)
     {
         setAliveOrDead(false);
-        ResetTimers();
         return getAlive();
     }
 

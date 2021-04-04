@@ -40,17 +40,19 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 
 				if (m_tiles[k] < 300 && m_tiles[k] > 200){
                     
-                    bool animated = m_tiles[k] > 270;
+                    static bool animated = m_tiles[k] > 270;
+                    static bool weak_against_fire = false;
 					// Die at touch 
-                    l_ennemies.push_back(Ennemie(spaw, false, animated, coord, tileSize.x, tileSize.y));
+                    l_ennemies.push_back(Ennemie(spaw, false, animated, coord, tileSize.x, tileSize.y, weak_against_fire));
 				}
                 else if (m_tiles[k] == 330)
                 {
-                    bool animated = true;
+                    static bool animated = true;
+                    static bool weak_against_fire = true;
                     sf::Vector2u cactus_size(3 * 32, 4 * 32);
                     // match base of cactus with tile lower ypoint 
                     spaw.y += tileSize.y/2.0f - cactus_size.y/2.0f ;
-                    cactus.push_back(Ennemie(spaw, false, animated, coord, cactus_size.x, cactus_size.y));
+                    cactus.push_back(Ennemie(spaw, false, animated, coord, cactus_size.x, cactus_size.y, weak_against_fire));
                 }
                 else
 				{

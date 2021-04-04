@@ -9,8 +9,9 @@ class Ennemie;
 class MainCharacter : public sf::Drawable, public BoxCollideable
 {
     enum class AnimName { Idle, Walk, Jump, DoubleJump, 
-                            Attack, Hurt, Die, Dodge, 
-                            Surprise, Reborn };
+                            Attack, Hurt, Die, 
+                            FireSet, FireBegin, FireEnd,
+                            Reborn };
 
     struct AnimType {
         short unsigned int nb_frames_anim;
@@ -26,8 +27,9 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
         struct AnimType DoubleJump;
         struct AnimType Die;
         struct AnimType Hurt;
-        struct AnimType Dodge;
-        struct AnimType Surprise;
+        struct AnimType FireSet;
+        struct AnimType FireBegin;
+        struct AnimType FireEnd;
         struct AnimType Reborn;
     };
 

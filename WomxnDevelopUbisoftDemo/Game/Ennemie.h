@@ -18,15 +18,14 @@ class Ennemie : public sf::Drawable, public BoxCollideable, public Animation
         struct AnimType Dodge;
     };
 
-    enum class Fire {None, Red, White, SemiTransp, Transp};
 
 public:
     static const sf::Texture* GetTextureAtlas()  { return m_pTextureAtlas;  }
     static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
 
     Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft,
-            unsigned int sx, unsigned int sy);
-    ~Ennemie(); 
+            unsigned int sx, unsigned int sy, bool weakness_fire);
+    ~Ennemie();
 
     void Update(float deltaTime, MainCharacter* mchara);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -34,8 +33,13 @@ public:
     void StartEndGame();
     bool getCanMove() const { return moving; }; 
 
+    // Death 
+    bool GetIsDead() const { return e_Dead; }
+    void SetDead(); // Return if dead or not
+
     // Fire handling 
     void SetCollidingFire(MainCharacter* mchara);
+    void SetFireAnimation(short unsigned int& steps);
     
 
 protected:
@@ -54,7 +58,9 @@ private:
 
     sf::Vector2f e_Position;
     
+    // Dead 
     bool e_IsPlayingEndGame;
+    bool e_Dead;
 
     // attributes for all types of ennemies
     bool _colliding_plateforms;
@@ -67,6 +73,7 @@ private:
     Ennemie::Neighboorhood _neighb; 
 
     // Fire 
+    bool e_weak_fire;
     float counter_fire = 0.0f;
     float a_counter_seconds = 1.0f / 10.0f;
     Fire m_current_fire = Fire::None;
