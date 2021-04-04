@@ -51,6 +51,8 @@ public:
     void isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>& Pf, std::vector<Ennemie>& l_cactus);
     bool OnTopOf(BoxCollideable& other);
     bool BelowOf(BoxCollideable& other);
+    inline bool ToTheLeft(BoxCollideable& other);
+    inline bool ToTheRight(BoxCollideable& other);
     
     //  get
 

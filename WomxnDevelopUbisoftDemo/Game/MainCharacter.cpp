@@ -166,10 +166,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     static const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.15f;
     static const float GRAVITY = 98.1f;
     static const float NO_GRAVITY = 0.0f;
-    static const float JUMP_HEIGHT = 32.f*13.0f*10.0f;
+    static const float JUMP_HEIGHT = 32.f*12.0f*10.0f;
     static const short unsigned int NB_MAX_JUMPS = 3;
 
-    static const float SPEED_INC = 10.0f;
+    static const float SPEED_INC = 12.0f;
     static const float DEAD_ZONE = 5.0f;
     static const float SLOWDOWN_RATE = 0.5f;
 
@@ -301,13 +301,14 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
         else
         {
-            // if we were going left modify velocity
+            /*// if we were going left modify velocity
             m_Velocity.x = std::abs(m_Velocity.x * SLOWDOWN_RATE);
             if (s_Velocity.x)
             {
                 m_Velocity.x = -m_Velocity.x;
-            }
+            }*/
 
+            m_Velocity.x = 0.0f;
             
             k_KeyboardPressed[0] = false;
             k_KeyboardPressed[1] = false;
@@ -558,14 +559,14 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std
 			cloop++;
             setPosition(deltaTime, Pf, l_cactus, cloop);
 		}
-        else if (_colliding_cactus)
+        /*else if (_colliding_cactus)
         {
             new_Position = m_Position;
             m_Velocity.x = 0.0f;
-            m_Velocity.y = 0.0f;
+            m_Velocity.y *= 0.9f;
             cloop++;
             setPosition(deltaTime, Pf, l_cactus, cloop);
-        }
+        }*/
         else
         {
             new_Position = m_Position;
@@ -662,6 +663,24 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
             _colliding_cactus = true;
             m_isWalkable = false;
             m_InTheAir = false;
+
+            // determine collision side character referentiel
+            bool col_right = ToTheLeft(cac);
+            bool col_left = ToTheRight(cac);
+
+            m_isWalkable = false;
+            m_InTheAir = false;
+            // If collision stops velocity on the direction
+            bool collided_cac_left = col_left and not s_Velocity.x;
+            bool collided_cac_right = col_right and s_Velocity.x;
+
+            if (collided_cac_left or collided_cac_right)
+            {
+                m_Velocity.x = 0.0f;
+                m_isWalkable = true;
+                m_InTheAir = true;
+                printf(" cac col ");
+            }
 
         }
 
@@ -816,6 +835,30 @@ bool MainCharacter::BelowOf(BoxCollideable& other)
     bool neighb_x = std::abs(center_a.x - center_b.x) < 64;
 
     return y_down && neighb_x;
+}
+
+inline bool MainCharacter::ToTheLeft(BoxCollideable& other)
+{
+
+    const sf::Vector2f center_a = GetCenter();
+    const sf::Vector2f center_b = other.GetCenter();
+
+    bool x_left = center_a.x < center_b.x;
+    bool neighb_y = std::abs(center_a.y - center_b.y) < 128;
+
+    return x_left && neighb_y;
+}
+
+inline bool MainCharacter::ToTheRight(BoxCollideable& other)
+{
+
+    const sf::Vector2f center_a = GetCenter();
+    const sf::Vector2f center_b = other.GetCenter();
+
+    bool x_right = center_a.x > center_b.x;
+    bool neighb_y = std::abs(center_a.y - center_b.y) < 128;
+
+    return x_right && neighb_y;
 }
 
 //  ---------------------------------
