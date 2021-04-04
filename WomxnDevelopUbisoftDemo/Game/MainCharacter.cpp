@@ -550,13 +550,21 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std
             m_Position = new_Position;
             break;
         }
-		else if ( _colliding_deadbodies or _colliding_cactus)
+		else if ( _colliding_deadbodies)
 		{
             new_Position = m_Position;
-            m_Velocity.x = 0.0f;
+            m_Velocity.y = 0.0f;
 			cloop++;
             setPosition(deltaTime, Pf, l_cactus, cloop);
 		}
+        else if (_colliding_cactus)
+        {
+            new_Position = m_Position;
+            m_Velocity.x = 0.0f;
+            m_Velocity.y = 0.0f;
+            cloop++;
+            setPosition(deltaTime, Pf, l_cactus, cloop);
+        }
         else
         {
             new_Position = m_Position;
@@ -652,7 +660,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
         {
             _colliding_cactus = true;
             m_isWalkable = false;
-            m_InTheAir = true;
+            m_InTheAir = false;
 
         }
 
