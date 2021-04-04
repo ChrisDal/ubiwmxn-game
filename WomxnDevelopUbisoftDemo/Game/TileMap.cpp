@@ -4,7 +4,7 @@
 #include <Game/ObjectsElements.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& l_checkpoints)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -22,7 +22,7 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
         for (unsigned int j = 0; j < height; ++j)
         {
             unsigned int k = i + j * width;
-            if (m_tiles[k] > 100)
+            if (m_tiles[k] >= 100)
 			{
 				// non movable ennemies 
 				int ntiles = m_tiles[k] - 100;
@@ -32,7 +32,7 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 
                 sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
 
-                if (m_tiles[k] == 101)
+                if (m_tiles[k] == 100)
                 {
                     m_spawnPosition = spaw; 
                     continue;
@@ -54,6 +54,11 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
                     spaw.y += tileSize.y/2.0f - cactus_size.y/2.0f ;
                     cactus.push_back(Ennemie(spaw, false, animated, coord, cactus_size.x, cactus_size.y, weak_against_fire));
                 }
+                else if (m_tiles[k] > 100  && m_tiles[k] < 104)
+				{
+					// classical elements
+                    l_checkpoints.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
+				}                
                 else
 				{
 					// classical elements

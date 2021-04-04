@@ -69,6 +69,7 @@ public:
     void setInElements(TileMap& Tm); // set air, water, void, lava
     void ResetElements();
     bool OnFire() const { return m_touched_lava; }
+    void setRespawnPosition(const sf::Vector2f& new_respawn);
 
     
     // Jump

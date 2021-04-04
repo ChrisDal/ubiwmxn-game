@@ -26,14 +26,14 @@ GameDemo::GameDemo()
 
 
     // map tile 
-    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map.csv");
+    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-tiles.csv");
     // test
     m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 
 	m_plateform = m_Tilemap.getPlateforms(); 
 
     // Ennemies 
-    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map-elements.csv");
+    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-elem.csv");
     m_Elements.setTilemapType(false);
 
     // Get texture 
@@ -47,7 +47,7 @@ GameDemo::GameDemo()
     m_TextureDead.loadFromFile(dead_texture_name);
 	DeadBody::SetTextureAtlas(&m_TextureDead);
 
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects, m_cactus);
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects, m_cactus, m_checkpoints);
     
     // Load main character 
     m_MainCharacter = new MainCharacter(sf::Vector2u(1024, 768), m_Elements.getMainCharacterSpawnPosition());
@@ -82,6 +82,14 @@ void GameDemo::Update(float deltaTime)
     for (int i=0; i < m_cactus.size(); i++)
     {
         m_cactus[i].Update(deltaTime, m_MainCharacter);
+    }
+ 
+    for (int k = 0; k < m_checkpoints.size(); k++)
+    {
+        if (m_checkpoints[k].Contains(m_MainCharacter->GetCenter()))
+        {
+            m_MainCharacter->setRespawnPosition(m_checkpoints[k].GetCenter());
+        }
     }
 
 
@@ -121,6 +129,12 @@ void GameDemo::Render(sf::RenderTarget& target)
 	for ( const auto& elm : m_objects)
 	{
 		target.draw(elm);
+	}
+	
+    // Checkpoints 
+	for ( const auto& ckp : m_checkpoints)
+	{
+		target.draw(ckp);
 	}
 	
 
@@ -308,9 +322,9 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
  
 
     // ImGui example menu overlay 
-    static bool show_app_simple_overlay = true;
+    /*static bool show_app_simple_overlay = true;
     const float DISTANCE = 10.0f;
-    static int corner = 3;
+    static int corner = 2;
     ImGuiIO& io = ImGui::GetIO();
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
     if (corner != -1)
@@ -323,7 +337,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
     {
-        ImGui::Image(main_Door.GetTexture());   //  allow display an image in the UI  =>  For life bar or display an icon
+        //ImGui::Image(main_Door.GetTexture());   //  allow display an image in the UI  =>  For life bar or display an icon
         ImGui::SetCursorPosY(static_cast<float>(main_Door.GetTexture().getSize().y));            // use to put back the cursor on top/left corner of the image to display above it
 
         ImGui::Text("Main character velocity");
@@ -342,7 +356,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::EndPopup();
         }
     }
-    ImGui::End();    
+    ImGui::End();    */
     
     // Death Menu overlay 
     static bool show_UI = true;
