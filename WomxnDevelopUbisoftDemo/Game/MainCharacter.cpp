@@ -517,6 +517,11 @@ void MainCharacter::ResetElements()
     m_touched_lava = false;
 }
 
+void MainCharacter::setRespawnPosition(const sf::Vector2f& new_respawn)
+{
+    m_RespawnPosition = new_respawn;
+}
+
 void MainCharacter::ResetJumpCounter()
 {
     m_nbjumps = 0;

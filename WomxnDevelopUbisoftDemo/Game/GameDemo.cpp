@@ -83,7 +83,14 @@ void GameDemo::Update(float deltaTime)
     {
         m_cactus[i].Update(deltaTime, m_MainCharacter);
     }
-
+ 
+    for (int k = 0; k < m_checkpoints.size(); k++)
+    {
+        if (m_checkpoints[k].Contains(m_MainCharacter->GetCenter()))
+        {
+            m_MainCharacter->setRespawnPosition(m_checkpoints[k].GetCenter());
+        }
+    }
 
 
 
