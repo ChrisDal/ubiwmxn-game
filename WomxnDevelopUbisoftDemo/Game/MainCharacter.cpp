@@ -553,7 +553,7 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std
 		else if ( _colliding_deadbodies or _colliding_cactus)
 		{
             new_Position = m_Position;
-            m_Velocity.y = 0.0f;
+            m_Velocity.x = 0.0f;
 			cloop++;
             setPosition(deltaTime, Pf, l_cactus, cloop);
 		}
@@ -639,6 +639,8 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
                 ResetJumpCounter();
             }
 
+
+
         }
 
     }	
@@ -650,7 +652,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
         {
             _colliding_cactus = true;
             m_isWalkable = false;
-            m_InTheAir = false;
+            m_InTheAir = true;
 
         }
 
