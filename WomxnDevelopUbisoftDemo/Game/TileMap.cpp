@@ -1,10 +1,10 @@
 #include <stdafx.h>
 #include <Game/TileMap.h>
-#include <Game/Ennemie.h>
-#include <Game/ObjectsElements.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& l_checkpoints)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, 
+                                            std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& l_checkpoints, 
+                                            ObjectsElements& exit_sign)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -59,6 +59,11 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 					// classical elements
                     l_checkpoints.push_back(ObjectsElements(spaw, true, true, coord, tileSize.x, tileSize.y));
 				}                
+                else if (m_tiles[k] == 106)
+				{
+					// classical elements
+                    exit_sign = ObjectsElements(spaw, true, false, coord, tileSize.x, tileSize.y);
+				}                
                 else
 				{
 					// classical elements
@@ -80,7 +85,8 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
         return false;
     
     // level given not correctly sized
-    if (m_tiles.size() != (width*height))
+    int surface = width * height;
+    if (m_tiles.size() != surface)
         return false;
 
     // keep in memory tiles level 
@@ -96,14 +102,15 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
         for (unsigned int j = 0; j < height; ++j)
         {
             // get the current tile number
-            int tileNumber = m_tiles[i + j * width];
+            int index = i + j * width;
+            int tileNumber = m_tiles[index];
 
             // find its position in the tileset texture
             int tu = tileNumber % (m_tileset.getSize().x / tileSize.x);
             int tv = tileNumber / (m_tileset.getSize().x / tileSize.x);
 
             // get a pointer to the current tile's quad
-            sf::Vertex* quad = &m_vertices[(i + j * width) * 4];
+            sf::Vertex* quad = &m_vertices[index * 4];
 
             // define its 4 corners
             quad[0].position = sf::Vector2f((float)(i * tileSize.x),         (float)(j * tileSize.y));

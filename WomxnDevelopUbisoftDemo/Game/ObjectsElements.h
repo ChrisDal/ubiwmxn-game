@@ -8,6 +8,7 @@ public:
     static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
 
     ObjectsElements(sf::Vector2f& position, bool canmove, bool animated, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy);
+    ObjectsElements() {};
     ~ObjectsElements(); 
 
     void Update(float deltaTime, bool activated);
@@ -20,13 +21,12 @@ private:
     
     sf::Sprite e_Sprite;
     sf::Vector2f e_size;
-
     sf::Vector2f e_Position;
     
-    bool e_IsPlayingEndGame;
+    bool e_IsPlayingEndGame{ false };
 
     // attributes for all types of ennemies
-    bool _colliding_plateforms;
-    bool moving; 
-    bool _animated;
+    bool _colliding_plateforms{ false };
+    bool moving{ false };
+    bool _animated{ false };
 };

@@ -39,20 +39,21 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
     c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_InTheWater(false), 
     m_InTheVoid(false), m_CanJump(true), a_textsquare_offset(12,22)
 {
-
+    // Texture
     m_Texture.loadFromFile(".\\Assets\\hero\\cat_addon_sprite.png");
+    const sf::Vector2f size(32.0f, 32.0f);
     m_Sprite.setTexture(m_Texture);
-    m_Sprite.setTextureRect(sf::IntRect(a_textsquare_offset.x, a_textsquare_offset.y, 32, 32));
-    //const sf::Vector2f size(static_cast<float>(m_Texture.getSize().x), static_cast<float>(m_Texture.getSize().y));
-    const sf::Vector2f size(static_cast<float>(32), static_cast<float>(32));
-
-
+    m_Sprite.setTextureRect(sf::IntRect(a_textsquare_offset.x, a_textsquare_offset.y, 
+                                        static_cast<int>(size.x), static_cast<int>(size.y)));
+    
+    // Origin
     m_Sprite.setOrigin(size * 0.5f);
+    // Position
     m_Position = spawn_position; 
     m_Sprite.setPosition(m_Position);
-    //m_Sprite.setScale(2.0f, 2.0f);
-
-    SetBoundingBox(m_Position, sf::Vector2f(0.5625*m_Sprite.getScale().x*size.x, 0.9375 * m_Sprite.getScale().y * size.y));
+    // Bounding Box
+    SetBoundingBox(m_Position, sf::Vector2f(0.5625 * static_cast<float>(m_Sprite.getScale().x) * size.x,
+                                            0.9375 * static_cast<float>(m_Sprite.getScale().y) * size.y));
 
     m_IsUsingJoystick = GetFirstJoystickIndex(m_JoystickIndex);
 
@@ -82,7 +83,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     if (!m_isAlive and not m_Respawning and a_done_anim)
     {
-        printf("Is Dying ");
         ResetElements();
         // call reborn 
         m_Velocity = {0.0f, 0.0f}; 
@@ -100,7 +100,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
         
 		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element));
-			
+        DeathCounterAdd();
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
 
@@ -113,7 +113,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     } 
 	else if (m_Respawning)
 	{
-        printf("Is Respawing ");
 		Play(AnimName::Reborn, deltaTime, false); 
 		if (a_done_anim)
 		{
@@ -130,16 +129,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     bool living = Alive(deltaTime, l_ennemie);
     if (not living)
     {
-        printf(" Not Alive-");
         // Launch dies 
         if (m_DiedInLava or m_touched_lava)
         {
-            printf("Lava ");
             Play(AnimName::FireEnd, deltaTime, false);
         }
         else
         {
-            printf("Other ");
             Play(AnimName::Die, deltaTime, false);
         }
 
@@ -679,7 +675,6 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
                 m_Velocity.x = 0.0f;
                 m_isWalkable = true;
                 m_InTheAir = true;
-                printf(" cac col ");
             }
 
         }
@@ -1184,7 +1179,6 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
         if (IsColliding(enm) and m_isAlive)
         {	// Die 
             setAliveOrDead(false);
-            printf("Dieee");
             break;
         }
     }
@@ -1192,6 +1186,3 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 
     return getAlive();
 }
-	
-
-

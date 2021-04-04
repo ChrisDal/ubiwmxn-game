@@ -3,8 +3,6 @@
 
 GameDemo::GameDemo()
     : Game{ "Game Demo" }
-    , m_Door{ 900, 600, 100, 200 }
-    , main_Door{ 900, 100 }
     , m_IsFinished{ false }
 {
     m_EndgameTextFont.loadFromFile("Assets\\arial.ttf");
@@ -15,11 +13,11 @@ GameDemo::GameDemo()
     m_EndgameText.setCharacterSize(24);
     m_EndgameText.setFillColor(sf::Color::Red);
 
-    m_EndgameSoundBuffer.loadFromFile("Assets\\Test.wav");
+    m_EndgameSoundBuffer.loadFromFile("Assets\\Sounds\\Win_sound.wav");
 
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
 
-    // Game UI 
+    // Future Game UI 
     m_DeathsTextFont.loadFromFile("Assets\\calibrib.ttf");
     m_TextureTombstone.loadFromFile(".\\Assets\\tombstone.png");
     m_Tombstone.setTexture(m_TextureTombstone);
@@ -47,10 +45,14 @@ GameDemo::GameDemo()
     m_TextureDead.loadFromFile(dead_texture_name);
 	DeadBody::SetTextureAtlas(&m_TextureDead);
 
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects, m_cactus, m_checkpoints);
+    const sf::Vector2u WINSIZE = { 1024, 768 };
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 
+                                        static_cast<unsigned int>(WINSIZE.x / 32.0f), 
+                                        static_cast<unsigned int>(WINSIZE.y / 32.0f),
+                                        m_objects, m_cactus, m_checkpoints, m_exit_sign);
     
     // Load main character 
-    m_MainCharacter = new MainCharacter(sf::Vector2u(1024, 768), m_Elements.getMainCharacterSpawnPosition());
+    m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
 	
 }
 
@@ -62,7 +64,6 @@ GameDemo::~GameDemo()
 void GameDemo::Update(float deltaTime)
 {
     m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies, m_cactus);
-    m_Door.Update(deltaTime);
 
     // Handling death of cactus
     std::vector<Ennemie>::iterator it_cactus = m_cactus.begin();
@@ -99,14 +100,12 @@ void GameDemo::Update(float deltaTime)
 
     if (!m_IsFinished)
     {
-        //if (m_Door.IsColliding(m_MainCharacter))
-        //if (m_Door.Contains(m_MainCharacter))s
-        if (main_Door.Contains(m_MainCharacter->GetCenter()))
+        if (m_exit_sign.Contains(m_MainCharacter->GetCenter()))
         {
             m_EndgameSound.play();
 
             m_MainCharacter->StartEndGame();
-            main_Door.StartEndGame();
+            m_exit_sign.StartEndGame();
             m_IsFinished = true;
         }
     }
@@ -140,20 +139,89 @@ void GameDemo::Render(sf::RenderTarget& target)
 		target.draw(ckp);
 	}
 	
-
-    target.draw(main_Door);
-    //target.draw(m_Door);
+    // Exit and MC
+    target.draw(m_exit_sign);
     target.draw(*m_MainCharacter);
 
     if (m_IsFinished)
     {
-        target.draw(m_EndgameText);
+        //target.draw(m_EndgameText);
+        sf::Vector2u winsize = { 1024, 768 };
+        RenderEndMenu(target, winsize);
     }
+}
+
+void GameDemo::RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE)
+{
+
+    // ImGui example menu overlay 
+    bool show_app_simple_overlay = true;
+    const float DISTANCE = 10.0f;
+    int corner = 3;
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+    window_flags |= ImGuiWindowFlags_NoMove;
+    ImVec2 window_pos = ImVec2((WINSIZE.x / 2.0f), (WINSIZE.y / 2.0f));
+    ImVec2 window_pos_pivot = ImVec2(0.5f, 0.5f);
+    ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+
+    ImGui::SetNextWindowBgAlpha(0.85f); // Transparent background
+    if (ImGui::Begin("Example: Simple overlay", &show_app_simple_overlay, window_flags))
+    {
+        ImGui::Image(m_TextureTombstone);   //  allow display an image in the UI  =>  For life bar or display an icon
+        ImGui::SetCursorPosX(static_cast<float>(m_TextureTombstone.getSize().x + 10.0f ));            // use to put back the cursor on top/left corner of the image to display above it
+        ImGui::SetCursorPosY(static_cast<float>(m_TextureTombstone.getSize().y / 2.0f));
+        ImGui::Text("Victory !");
+        ImGui::SetCursorPosY(static_cast<float>(m_TextureTombstone.getSize().y + 10.0f));
+        ImGui::Separator();
+        ImGui::Text("Total Number of Deaths : %d ", m_MainCharacter->DeathCounter());
+        if (m_MainCharacter->DeathCounter() < 12)
+        {
+            ImGui::Text("Rank : Cream Puff");
+            ImGui::Text("Oldest Cat to Have Ever Lived");
+        }
+        else if (m_MainCharacter->DeathCounter() < 15)
+        {
+            ImGui::Text("Rank : Felicette");
+            ImGui::Text("RIP : the first Astrocat");
+        }
+        else if (m_MainCharacter->DeathCounter() < 18)
+        {
+            ImGui::Text("Rank : Nyan Cat");
+            ImGui::Text("Cake and rainbow");
+        }
+        else if (m_MainCharacter->DeathCounter() < 22)
+        {
+            ImGui::Text("Rank : Grumpy Cat");
+            ImGui::Text("Just google me");
+        }
+        else if (m_MainCharacter->DeathCounter() < 25)
+        {
+            ImGui::Text("Rank : Colonel Meow");
+            ImGui::Text("The 2014 Guinness World record for the longest fur on a cat");
+        }
+        else if (m_MainCharacter->DeathCounter() < 30)
+        {
+            ImGui::Text("Rank : Tom");
+            ImGui::Text("Without Jerry, try again !");
+        }
+        else
+        {
+            ImGui::Text("Rank : Garfield");
+            ImGui::Text("Lasagna forever");
+        }
+
+
+    }
+    ImGui::End();
+
 }
 
 void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 {
-    ImGui::Begin("Debug Menu");
+    // DEBUG 
+    /*ImGui::Begin("Debug Menu");
     ImGui::Text("Press F1 to close this debug menu");
     ImGui::NewLine();
 
@@ -320,11 +388,10 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
 	
 
-    ImGui::End();
+    ImGui::End();*/
 
- 
 
-    // ImGui example menu overlay 
+    /*// ImGui example menu overlay 
     static bool show_app_simple_overlay = true;
     const float DISTANCE = 10.0f;
     static int corner = 3;
@@ -359,7 +426,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::EndPopup();
         }
     }
-    ImGui::End();  
+    ImGui::End();  */
     
     // Death Menu overlay 
     static bool show_UI = true;
@@ -374,12 +441,9 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         ImVec2 window_pos_pivot2 = ImVec2((corner2 & 1) ? 1.0f : 0.0f, (corner2 & 2) ? 1.0f : 0.0f);
         ImGui::SetNextWindowPos(window_pos2, ImGuiCond_Always, window_pos_pivot2);
     }
-    ImGui::SetNextWindowBgAlpha(0.65f); // Transparent background
+    ImGui::SetNextWindowBgAlpha(0.85f); // Transparent background
     if (ImGui::Begin("Game UI", &show_UI, window_flags2))
     {
-        //ImGui::Image(m_TextureTombstone);   //  allow display an image in the UI  =>  For life bar or display an icon
-        //ImGui::SetCursorPosY(static_cast<float>(m_TextureTombstone.getSize().y / 2.0f));            // use to put back the cursor on top/left corner of the image to display above it
-        //ImGui::SetCursorPosX(static_cast<float>(m_TextureTombstone.getSize().x / 3.0f));  
         int nb_deaths = m_MainCharacter->DeadBodiesCounter();
         if (nb_deaths >= 9)// use to put back the cursor on top/left corner of the image to display above it
         {
@@ -409,7 +473,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
         ImGui::ProgressBar(timer_progress_water, ImVec2(70.0f, 0.0f));
         ImGui::SameLine(0.0f, 5.0f);
-        ImGui::Text("Water Bar");
+        ImGui::Text("Water");
         ImGui::PopStyleColor(2);
         // Bar for Void
         ImGui::SameLine(0.0f, 20.0f);
@@ -427,7 +491,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         }
         ImGui::ProgressBar(timer_progress_void, ImVec2(70.0f, 0.0f));
         ImGui::SameLine(0.0f, 5.0f);
-        ImGui::Text("Void Bar");
+        ImGui::Text("Void");
         ImGui::PopStyleColor(2);
 
         // Bar for Void
@@ -446,7 +510,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         }
         ImGui::ProgressBar(timer_progress_lava, ImVec2(70.0f, 0.0f));
         ImGui::SameLine(0.0f, 5.0f);
-        ImGui::Text("Lava Bar");
+        ImGui::Text("Lava");
         ImGui::PopStyleColor(2);
 
     }
