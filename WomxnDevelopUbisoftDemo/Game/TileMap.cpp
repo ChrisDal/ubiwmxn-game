@@ -22,7 +22,7 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
         for (unsigned int j = 0; j < height; ++j)
         {
             unsigned int k = i + j * width;
-            if (m_tiles[k] > 100)
+            if (m_tiles[k] >= 100)
 			{
 				// non movable ennemies 
 				int ntiles = m_tiles[k] - 100;
@@ -32,7 +32,7 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 
                 sf::Vector2f spaw ((i+1) * tileSize.x - tileSize.x/2.0f, (j +1)* tileSize.y - tileSize.y/2.0f);
 
-                if (m_tiles[k] == 101)
+                if (m_tiles[k] == 100)
                 {
                     m_spawnPosition = spaw; 
                     continue;
