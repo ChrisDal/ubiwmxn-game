@@ -207,22 +207,37 @@ xcopy /y /d  "$(SolutionDir)external\SFML-2.5.1\bin\*.dll" "$(OutDir)"</Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Engine\Animation.cpp" />
     <ClCompile Include="Engine\Collision.cpp" />
     <ClCompile Include="Engine\Game.cpp" />
+    <ClCompile Include="Game\DeadBody.cpp" />
     <ClCompile Include="Game\Door.cpp" />
+    <ClCompile Include="Game\Ennemie.cpp" />
+    <ClCompile Include="Game\Exit.cpp" />
     <ClCompile Include="Game\GameDemo.cpp" />
     <ClCompile Include="Game\MainCharacter.cpp" />
+    <ClCompile Include="Game\ObjectsElements.cpp" />
+    <ClCompile Include="Game\Plateform.cpp" />
+    <ClCompile Include="Game\TileMap.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\external\imgui-master\imgui.h" />
     <ClInclude Include="..\external\imgui-master\imgui_internal.h" />
     <ClInclude Include="..\external\imgui-sfml-master\imgui-SFML.h" />
+    <ClInclude Include="Engine\Animation.h" />
     <ClInclude Include="Engine\Collision.h" />
     <ClInclude Include="Engine\Game.h" />
+    <ClInclude Include="Game\DeadBody.h" />
     <ClInclude Include="Game\Door.h" />
+    <ClInclude Include="Game\Ennemie.h" />
+    <ClInclude Include="Game\EnumElements.h" />
+    <ClInclude Include="Game\Exit.h" />
     <ClInclude Include="Game\GameDemo.h" />
     <ClInclude Include="Game\MainCharacter.h" />
+    <ClInclude Include="Game\ObjectsElements.h" />
+    <ClInclude Include="Game\Plateform.h" />
+    <ClInclude Include="Game\TileMap.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
