@@ -271,6 +271,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     else
     {
         
+        s_Velocity.x = (m_Velocity.x >= 0.0f);
 
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
@@ -314,7 +315,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		
 		// facing direction
         setFacingDirection();
-        s_Velocity.x = (m_Velocity.x >= 0.0f);
+        
         
 
         if (Keyboard::isKeyPressed(Keyboard::Down))
