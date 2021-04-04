@@ -44,6 +44,7 @@ private:
     TileMap m_Elements; 
     sf::Texture m_TextureAtlas;
     sf::Texture m_TextureDead;
+    std::vector<Ennemie> m_cactus = {};
     std::vector<Ennemie> m_ennemies = {};
 	std::vector<DeadBody> m_deadbodies = {};
 	std::vector<ObjectsElements> m_objects = {};

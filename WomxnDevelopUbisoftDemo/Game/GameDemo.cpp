@@ -47,7 +47,7 @@ GameDemo::GameDemo()
     m_TextureDead.loadFromFile(dead_texture_name);
 	DeadBody::SetTextureAtlas(&m_TextureDead);
 
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects);
+    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 32, 24, m_objects, m_cactus);
     
     // Load main character 
     m_MainCharacter = new MainCharacter(sf::Vector2u(1024, 768), m_Elements.getMainCharacterSpawnPosition());
@@ -61,8 +61,29 @@ GameDemo::~GameDemo()
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies);
+    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies, m_cactus);
     m_Door.Update(deltaTime);
+
+    // Handling death of cactus
+    std::vector<Ennemie>::iterator it_cactus = m_cactus.begin();
+    while (it_cactus != m_cactus.end())
+    {
+        if (it_cactus->GetIsDead())
+        {
+            // erase returns following element
+            it_cactus = m_cactus.erase(it_cactus);
+        }
+        else 
+        {
+            ++it_cactus;
+        }
+    }
+    // Update Living cactus
+    for (int i=0; i < m_cactus.size(); i++)
+    {
+        m_cactus[i].Update(deltaTime, m_MainCharacter);
+    }
+
 
 
     if (!m_IsFinished)
@@ -89,6 +110,11 @@ void GameDemo::Render(sf::RenderTarget& target)
 	for ( const auto& enm : m_ennemies) 
 	{
 		target.draw(enm); 
+	}		
+    
+    for ( const auto& cac : m_cactus) 
+	{
+		target.draw(cac); 
 	}	
     
     // Elements 
@@ -349,44 +375,61 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
         ImGui::SameLine(0.0f, 20.0f); 
 
-        // Bar for water and void
-
-        
+        // Bar for water  
         float timer_progress_water = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Water);
         
         if (timer_progress_water < 0.3f)
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
 
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(4.0f / 7.0f, 0.4f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(4.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(188.8f / 360.f, 0.4f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(188.8f / 360.f, 0.7f, 0.7f));
         }
 
         ImGui::ProgressBar(timer_progress_water, ImVec2(70.0f, 0.0f));
         ImGui::SameLine(0.0f, 5.0f);
         ImGui::Text("Water Bar");
         ImGui::PopStyleColor(2);
-
+        // Bar for Void
         ImGui::SameLine(0.0f, 20.0f);
         float timer_progress_void = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Void);
         if (timer_progress_void < 0.3f)
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
 
         }
         else
         {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.5f, 0.5f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.7f, 0.5f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.5f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.7f, 0.6f));
         }
         ImGui::ProgressBar(timer_progress_void, ImVec2(70.0f, 0.0f));
         ImGui::SameLine(0.0f, 5.0f);
         ImGui::Text("Void Bar");
+        ImGui::PopStyleColor(2);
+
+        // Bar for Void
+        ImGui::SameLine(0.0f, 20.0f);
+        float timer_progress_lava = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Lava);
+        if (timer_progress_lava < 0.3f)
+        {
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
+
+        }
+        else
+        {
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.5f / 7.0f, 0.5f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.5f / 7.0f, 0.7f, 0.6f));
+        }
+        ImGui::ProgressBar(timer_progress_lava, ImVec2(70.0f, 0.0f));
+        ImGui::SameLine(0.0f, 5.0f);
+        ImGui::Text("Lava Bar");
         ImGui::PopStyleColor(2);
 
     }

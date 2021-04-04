@@ -4,7 +4,7 @@
 #include <Game/ObjectsElements.h>
 
 
-std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects)
+std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -40,11 +40,21 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 
 				if (m_tiles[k] < 300 && m_tiles[k] > 200){
                     
-                    bool animated = m_tiles[k] > 270;
+                    static bool animated = m_tiles[k] > 270;
+                    static bool weak_against_fire = false;
 					// Die at touch 
-                    l_ennemies.push_back(Ennemie(spaw, false, animated, coord, tileSize.x, tileSize.y));
+                    l_ennemies.push_back(Ennemie(spaw, false, animated, coord, tileSize.x, tileSize.y, weak_against_fire));
 				}
-				else 
+                else if (m_tiles[k] == 330)
+                {
+                    static bool animated = true;
+                    static bool weak_against_fire = true;
+                    sf::Vector2u cactus_size(3 * 32, 4 * 32);
+                    // match base of cactus with tile lower ypoint 
+                    spaw.y += tileSize.y/2.0f - cactus_size.y/2.0f ;
+                    cactus.push_back(Ennemie(spaw, false, animated, coord, cactus_size.x, cactus_size.y, weak_against_fire));
+                }
+                else
 				{
 					// classical elements
                     l_objects.push_back(ObjectsElements(spaw, true, coord, tileSize.x, tileSize.y));
@@ -115,6 +125,7 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
         return true;
 
 };
+
 
 
 void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const

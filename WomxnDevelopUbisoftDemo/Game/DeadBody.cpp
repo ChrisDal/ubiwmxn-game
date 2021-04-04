@@ -37,7 +37,7 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
         textdeath.y = 0;
         break;
     case(terrain::Element::Lava):
-        textdeath.x = 4;
+        textdeath.x = 12;
         textdeath.y = 2;
         break;
     default:
