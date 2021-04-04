@@ -24,6 +24,9 @@ Ennemie::Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Ve
 	// Bounding box
 	SetBoundingBox(e_Position, e_size);
 
+	// neighboorhood 
+	_neighb.setNeighboorhood(this, 5.0f);
+
 };
 
 Ennemie::~Ennemie() {};
@@ -41,8 +44,10 @@ void Ennemie::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Ennemie::SetCollidingFire(MainCharacter* mchara)
 {
+	// colliding with neighboorhood 
+	// as ennemie can be solid or not
 
-	if (IsColliding(*mchara))
+	if (_neighb.IsColliding(*mchara))
 	{
 		_colliding = true;
 
@@ -64,6 +69,14 @@ void Ennemie::SetCollidingFire(MainCharacter* mchara)
 
 }
 
+void Ennemie::Neighboorhood::setNeighboorhood(Ennemie *enm,float dpx)
+{
+
+	sf::Vector2f new_size{enm->GetBoundingBox().width + dpx, enm->GetBoundingBox().height + dpx };
+	this->SetBoundingBox(enm->GetCenter(), new_size);
+
+}
+
 void Ennemie::Update(float deltaTime, MainCharacter* mchara) 
 {
 	if (moving)
@@ -73,6 +86,7 @@ void Ennemie::Update(float deltaTime, MainCharacter* mchara)
 
 	if (is_animated)
 	{
+		const float TIMER_FIRE = 2.0f; // Time in seconds after when destroying objects 
 		SetCollidingFire(mchara);
 		// Do something to update
 		if (_colliding_fire)

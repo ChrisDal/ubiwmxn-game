@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Game/EnumElements.h>
 
 class MainCharacter;
 
@@ -35,6 +36,16 @@ public:
 
     // Fire handling 
     void SetCollidingFire(MainCharacter* mchara);
+    
+
+protected:
+    // Neighboorhood
+    class Neighboorhood : public BoxCollideable 
+    {
+    public: 
+        void setNeighboorhood(Ennemie* enm, float dpx);
+    };
+    
 
 private:
     
@@ -52,6 +63,10 @@ private:
     bool _colliding_fire;
     bool _colliding{ false };
 
+    // Neighboorhood 
+    Ennemie::Neighboorhood _neighb; 
+
+    // Fire 
     float counter_fire = 0.0f;
     float a_counter_seconds = 1.0f / 10.0f;
     Fire m_current_fire = Fire::None;
@@ -59,7 +74,7 @@ private:
     std::map<int, Fire> m_fire_steps{ {0, Fire::None}, {1, Fire::Red},  {2, Fire::White},
                                     {3, Fire::SemiTransp},{4, Fire::Transp}  };
 
-
+    
 
 
 };

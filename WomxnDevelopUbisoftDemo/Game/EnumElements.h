@@ -6,4 +6,7 @@ namespace terrain
 	enum class Element { Air, Void, Water, Lava };
 }
 
+
+enum class Fire { None, Red, White, SemiTransp, Transp };
+
 #endif 
