@@ -2,8 +2,6 @@
 #include <vector> 
 
 #include <Engine/Game.h>
-#include <Game/Door.h>
-#include <Game/Exit.h>
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h>
 #include <Game/ObjectsElements.h>

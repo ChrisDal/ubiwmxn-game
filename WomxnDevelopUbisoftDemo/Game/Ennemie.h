@@ -34,7 +34,7 @@ public:
     bool getCanMove() const { return moving; }; 
 
     // Death 
-    bool GetIsDead() const { return e_Dead; }
+    bool GetIsDead() const { return m_Dead; }
     void SetDead(); // Return if dead or not
 
     // Fire handling 
@@ -53,14 +53,14 @@ protected:
 
 private:
     
-    sf::Sprite e_Sprite;
-    sf::Vector2f e_size;
+    sf::Sprite m_Sprite;
+    sf::Vector2f m_size;
 
-    sf::Vector2f e_Position;
+    sf::Vector2f m_Position;
     
     // Dead 
-    bool e_IsPlayingEndGame;
-    bool e_Dead;
+    bool m_IsPlayingEndGame;
+    bool m_Dead;
 
     // attributes for all types of ennemies
     bool _colliding_plateforms;
@@ -73,7 +73,7 @@ private:
     Ennemie::Neighboorhood _neighb; 
 
     // Fire 
-    bool e_weak_fire;
+    bool m_weak_fire;
     float counter_fire = 0.0f;
     float a_counter_seconds = 1.0f / 10.0f;
     Fire m_current_fire = Fire::None;

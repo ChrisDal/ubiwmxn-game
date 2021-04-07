@@ -23,9 +23,6 @@
     <ClCompile Include="Game\MainCharacter.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Door.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Game.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="Game\TileMap.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Exit.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Plateform.cpp">
@@ -71,9 +65,6 @@
     <ClInclude Include="Game\MainCharacter.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Door.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Game.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -84,9 +75,6 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Game\TileMap.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Exit.h">
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\Plateform.h">

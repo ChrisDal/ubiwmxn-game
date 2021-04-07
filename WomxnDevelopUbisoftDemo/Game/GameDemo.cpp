@@ -445,7 +445,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     if (ImGui::Begin("Game UI", &show_UI, window_flags2))
     {
         int nb_deaths = m_MainCharacter->DeadBodiesCounter();
-        if (nb_deaths >= 9)// use to put back the cursor on top/left corner of the image to display above it
+        if (nb_deaths >= 9)
         {
             ImGui::TextColored(ImVec4(230.0f, 168.0f, 0.f, 1.f), "Deaths: %1d / %1d", nb_deaths, m_MainCharacter->DeadBodiesMax());
         }
