@@ -22,7 +22,7 @@ private:
     sf::Sprite e_Sprite;
     sf::Vector2f e_size;
     sf::Vector2f e_Position;
-    
+
     bool e_IsPlayingEndGame{ false };
 
     // attributes for all types of ennemies
