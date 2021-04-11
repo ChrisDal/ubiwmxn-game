@@ -88,7 +88,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     if (!m_isAlive and not m_Respawning and a_done_anim)
     {
         LOG("[Update] Not Alive & Not Respawning & end anim:\n");
-		ResetElements();
+		
         // call reborn 
         m_Velocity = {0.0f, 0.0f}; 
 		LOG("Is Respawing -");
@@ -96,9 +96,9 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		// Set anim to done 
 		a_done_anim = false;
         // create dead bodies 
-        bool no_solid = not (m_InTheAir or (not m_InTheWater)) or m_DiedInLava;
+        bool no_solid = not (m_InTheAir or (not m_InTheWater)) or m_touched_lava;
         terrain::Element died_element; 
-        if (m_DiedInLava)
+        if (m_touched_lava)
         {
             died_element = terrain::Element::Lava;
         }
@@ -113,11 +113,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
 		
-		LOG("Reset DiedIn Flags\n");
-        // Reassign dead flags
-        m_DiedInWater = false;
-        m_DiedInVoid = false;
-        m_DiedInLava = false;
+
+        // Reset Elements 
+        ResetElements();
+
+
+
+
 
 
     } 
@@ -134,6 +136,14 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		LOG("reset timers\n\n");
         // reset counters 
         ResetTimers();
+        LOG("Reset DiedIn Flags\n");
+        // Reassign dead flags
+        m_DiedInWater = false;
+        m_DiedInVoid = false;
+        m_DiedInLava = false;
+        // Reset Lava switch 
+        m_touched_lava = false;
+
         return;
 	}
 
@@ -171,11 +181,14 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	
     UpdateDeadBodies();
 
-    // Handling Lava
-    if (m_InTheLava)
+    // Handling Lava: One time call per life
+    if (m_InTheLava and (not m_touched_lava))
     {
-        LOG("[Update] TouchedLava True");
+        LOG("[Update] TouchedLava True + Timer");
+        // Keep information on went to lava
 		m_touched_lava = true;
+        // launch timer 
+        m_timer_lava = true;
     }
 
 
@@ -412,14 +425,16 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	
 
 	// Animation to play
-    if (m_InTheLava)
+    if (m_InTheLava and not a_done_anim)
     {
-        LOG("[Update] InLava PlayFireBegin");
-		Play(AnimName::FireBegin, deltaTime, false);
+        LOG("[Update] TouchedLava True"); 
+        m_touched_lava = true;
+        LOG("[Update] InLava PlayFireBegin\n");
+        Play(AnimName::FireBegin, deltaTime, false);
     }
-    else if (m_touched_lava)
+    else if (m_touched_lava or m_InTheLava)
     {
-		LOG("[Update] TouchedLava PlayFireSet");
+		LOG("[Update] TouchedLava PlayFireSet\n");
         Play(AnimName::FireSet, deltaTime, true);  
     }
 	else if (m_IsJumping)
@@ -542,9 +557,6 @@ void MainCharacter::ResetElements()
     m_InTheWater    = false;
     m_InTheVoid     = false;
     m_InTheLava     = false;
-
-    // Siwtch off touched by lava
-    m_touched_lava = false;
 }
 
 void MainCharacter::setRespawnPosition(const sf::Vector2f& new_respawn)
@@ -899,7 +911,8 @@ void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
     if (m_current_anim != anim_name)
     {
         Stop(); // reset counters
-		a_done_anim = false;
+		//if (not loop) // flag anim done valid on not looping animations
+		a_done_anim = false;  
 		LOG("[Play] Change AnimName reset Counters");
     }
     // play once
@@ -1134,10 +1147,11 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     // update elements counters
     m_DiedInWater = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
     m_DiedInVoid  = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
-    m_DiedInLava  = TimerElements(deltaTime, m_touched_lava , TIMER_DEAD_LAVA, m_CounterLava);
+    m_DiedInLava  = TimerElements(deltaTime, m_timer_lava, TIMER_DEAD_LAVA, m_CounterLava);
     
     if (m_DiedInWater or m_DiedInVoid or m_DiedInLava)
     {
+        if (m_DiedInLava) { LOG("[Alive] Set Not Alive Lava"); }
         LOG("[Alive] Set Not Alive");
 		setAliveOrDead(false);
         return getAlive();
@@ -1151,7 +1165,6 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
         
         if (IsColliding(enm) and m_isAlive)
         {	
-			LOG("\n[Alive] Colliding enm");
 			// Die 
             setAliveOrDead(false);
             break;

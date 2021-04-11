@@ -149,6 +149,7 @@ private:
     bool m_InTheVoid;
     bool m_InTheLava;
     bool m_touched_lava{ false }; 
+    bool m_timer_lava{ false }; 
 
 
     // Jumping
