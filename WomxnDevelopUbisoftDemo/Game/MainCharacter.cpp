@@ -96,9 +96,9 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		// Set anim to done 
 		a_done_anim = false;
         // create dead bodies 
-        bool no_solid = not (m_InTheAir or (not m_InTheWater)) or m_touched_lava;
+        bool no_solid = not (m_InTheAir or (not m_InTheWater)) or m_DiedInLava;
         terrain::Element died_element; 
-        if (m_touched_lava)
+        if (m_DiedInLava)
         {
             died_element = terrain::Element::Lava;
         }
@@ -427,10 +427,17 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	// Animation to play
     if (m_InTheLava and not a_done_anim)
     {
-        LOG("[Update] TouchedLava True"); 
-        m_touched_lava = true;
-        LOG("[Update] InLava PlayFireBegin\n");
-        Play(AnimName::FireBegin, deltaTime, false);
+        if (m_current_anim != AnimName::FireSet && m_current_anim != AnimName::FireEnd)
+        {
+            LOG("[Update] InLava PlayFireBegin\n");
+            Play(AnimName::FireBegin, deltaTime, false);
+        }
+        else if (m_current_anim == AnimName::FireSet)
+        {
+            Play(m_current_anim, deltaTime, true);
+        }
+        // else nothing
+
     }
     else if (m_touched_lava or m_InTheLava)
     {
@@ -983,7 +990,7 @@ void MainCharacter::InitAnimType()
     m_AllAnims.Hurt         = { 2, 4, 1, "Hurt" };
     m_AllAnims.FireSet      = { 5, 11, 4, "FireSet" };
     m_AllAnims.FireBegin    = { 4, 11, 0, "FireBegin" };
-    m_AllAnims.FireEnd      = { 5, 11, 10, "FireEnd" };
+    m_AllAnims.FireEnd      = { 4, 11, 10, "FireEnd" };
     m_AllAnims.Reborn       = { 3, 4, 6, "Reborn" };
 
     dictAnim[AnimName::Idle]        = m_AllAnims.Idle;
@@ -1145,9 +1152,13 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     }
     
     // update elements counters
-    m_DiedInWater = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
-    m_DiedInVoid  = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
-    m_DiedInLava  = TimerElements(deltaTime, m_timer_lava, TIMER_DEAD_LAVA, m_CounterLava);
+    bool isDead_Water = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
+    bool isDead_Void = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
+    bool isDead_Lava = TimerElements(deltaTime, m_timer_lava, TIMER_DEAD_LAVA, m_CounterLava);
+
+    if (isDead_Water) { m_DiedInWater = true; }
+    if (isDead_Void)  { m_DiedInVoid  = true; }
+    if (isDead_Lava)  { m_DiedInLava  = true; }
     
     if (m_DiedInWater or m_DiedInVoid or m_DiedInLava)
     {
