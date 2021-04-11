@@ -4,7 +4,12 @@
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h> 
 
-#define LOG(x) std::cout << x  << " "
+#define DEBUG 0 
+#if DEBUG 
+    #define LOG(x) std::cout << x  << " "
+# else
+    #define LOG(x)
+#endif
 
 using namespace sf;
 
@@ -93,10 +98,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_Velocity = {0.0f, 0.0f}; 
 		LOG("Is Respawing -");
 		m_Respawning = true; 
-		// Set anim to done 
+		// Reset Animation flag ending
 		a_done_anim = false;
-        // create dead bodies 
-        bool no_solid = not (m_InTheAir or (not m_InTheWater)) or m_DiedInLava;
+        // create dead bodies : no_solid = go through
+        // Solid : in the air or in the water 
+        // No Solid : in the lava, in the void
+        bool no_solid = not (m_InTheAir or m_InTheWater) or m_DiedInLava;
         terrain::Element died_element; 
         if (m_DiedInLava)
         {
@@ -112,15 +119,9 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         DeathCounterAdd();
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
-		
 
         // Reset Elements 
         ResetElements();
-
-
-
-
-
 
     } 
 	else if (m_Respawning)
