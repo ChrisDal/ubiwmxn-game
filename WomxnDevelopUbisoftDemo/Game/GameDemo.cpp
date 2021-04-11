@@ -221,7 +221,7 @@ void GameDemo::RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE)
 void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 {
     // DEBUG 
-    /*ImGui::Begin("Debug Menu");
+    ImGui::Begin("Debug Menu");
     ImGui::Text("Press F1 to close this debug menu");
     ImGui::NewLine();
 
@@ -388,7 +388,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
 	
 
-    ImGui::End();*/
+    ImGui::End();
 
 
     /*// ImGui example menu overlay 

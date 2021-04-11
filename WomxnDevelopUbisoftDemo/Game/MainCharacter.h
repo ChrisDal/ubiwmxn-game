@@ -104,7 +104,7 @@ public:
     void Pause();
     void Stop();
     void setFrameTexture(AnimName anim_name, float deltaTime);
-    void resetFrameCounter() {a_framecount = 0; a_framecounttexture= 0; };
+    //void resetFrameCounter() {a_framecount = 0; a_framecounttexture= 0; };
     void setCurrentAnim(AnimName anim_name) { m_current_anim = anim_name; };
     bool getPlaying() const { return is_PlayingAnim; };
     void setPlaying(const bool& status) { is_PlayingAnim = status; };
@@ -149,6 +149,7 @@ private:
     bool m_InTheVoid;
     bool m_InTheLava;
     bool m_touched_lava{ false }; 
+    bool m_timer_lava{ false }; 
 
 
     // Jumping
