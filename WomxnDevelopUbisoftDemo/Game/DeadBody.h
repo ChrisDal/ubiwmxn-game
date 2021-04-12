@@ -6,8 +6,8 @@
 class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
 	// common to dead bodies
-	enum class AnimAction { Idle, Stack, Launch, Fire, Iced, Slippy, 
-							Smoked, Swollen, Ladder,Reborn }; 
+	enum class AnimName { Idle, Stack, Launch, Fire, Iced, Void, 
+							Smoked, FireEnd, Ladder,Reborn }; 
 	static sf::Texture*  m_pTextureAtlas;
 	
     struct AllAnims {
@@ -16,15 +16,16 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
         struct AnimType Launch;
         struct AnimType Fire;
         struct AnimType Iced;
-        struct AnimType Slippy;
+        struct AnimType Void;
         struct AnimType Smoked;
-        struct AnimType Swollen;
+        struct AnimType FireEnd;
         struct AnimType Ladder;
     };
-
+	
 	
 public: 
-	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem);
+	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, 
+			bool pass_through, terrain::Element elem, float speedx);
 	
 	void Update(float deltaTime); 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -34,11 +35,12 @@ public:
     static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
 	
 	// Animation 
-	void Play(AnimAction anim_name, float deltaTime, bool loop);
-	void setFrameTexture(AnimAction anim_name, float deltaTime);
+	void Play(AnimName anim_name, float deltaTime);
+	void setFrameTexture(AnimName anim_name, float deltaTime);
+	void setFacingDirection(float speedx) override;
 
 	// animation
-	inline void setCurrentAnim(AnimAction anim_name) { a_current_anim = anim_name; }
+	inline void setCurrentAnim(AnimName anim_name) { a_current_anim = anim_name; }
 	void InitAnimType(); 
 	// Plateform attribut
 	void setWalkable(const bool& walkable) { m_isWalkable = walkable; }
@@ -58,7 +60,7 @@ private:
 	sf::Sprite m_Sprite;
 	Plateform m_plateform;
 	terrain::Element m_death_element; 
-	AnimAction a_current_anim{ AnimAction::Idle };
+	AnimName a_current_anim{ AnimName::Smoked };
 	AllAnims m_AllAnims;
 	// collisions 
 	bool _colliding_plateforms{false}; 
@@ -70,4 +72,7 @@ private:
 
 	// set if walkable or not 
 	bool m_isWalkable;
+	
+	// animation 
+    std::map< AnimName, AnimType > dictAnim;
 };

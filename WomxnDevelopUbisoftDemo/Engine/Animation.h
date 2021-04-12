@@ -2,8 +2,16 @@
 
 class Animation
 {
+
+private:
+	enum class AnimName {
+		Idle, Walk, Jump, DoubleJump,
+		Attack, Hurt, Die, Dodge,
+		Surprise, Reborn
+	};
 	
-public:
+
+protected : 
 
 	struct AnimType {
 		short unsigned int nb_frames_anim; 
@@ -12,13 +20,11 @@ public:
 		std::string name; 
 	};
 	
-	enum class AnimName {
-		Idle, Walk, Jump, DoubleJump,
-		Attack, Hurt, Die, Dodge,
-		Surprise, Reborn
-	};
+
+public:
 
 
+	
 	// entire file for animation
 	void setMainTexture(const sf::Texture charatexture) { *a_spritesheet = charatexture; }
 	sf::Texture* getMainTexture() const { return a_spritesheet; }
@@ -33,8 +39,9 @@ public:
 
 	// Is a animation is playing 
 	inline void setPlaying(const bool& playing) { a_isPlaying = playing; };
+	inline void setDoneAnimation(const bool& done) { a_done_anim = done; }; 
 	// Facing to the right or to the left 
-	void setFacingDirection(float speedx);
+	virtual void setFacingDirection(float speedx);
 	// Set the framerate for animation 
 	inline void setFrameRate(short unsigned int framer) { a_framerate = framer; };
 
@@ -60,6 +67,5 @@ protected:
 	bool a_isPlaying{ false }; 						// Animation is currently playing
 	AnimName a_current_anim{ AnimName::Idle }; 		// animation currently playing
 	bool a_one_time_anim{ false };					// To use for one time animation
-
-
+	bool a_done_anim{false};
 };

@@ -95,7 +95,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         LOG("[Update] Not Alive & Not Respawning & end anim:\n");
 		
         // call reborn 
-        m_Velocity = {0.0f, 0.0f}; 
 		LOG("Is Respawing -");
 		m_Respawning = true; 
 		// Reset Animation flag ending
@@ -115,10 +114,11 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
         
 		LOG("Create Deadbody -");
-		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element));
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element, m_Velocity.x));
         DeathCounterAdd();
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
+        m_Velocity = { 0.0f, 0.0f };
 
         // Reset Elements 
         ResetElements();
@@ -179,8 +179,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		return; 
 	}
 	
-	
-    UpdateDeadBodies();
+	// Updating on Deadbodies 
+    UpdateDeadBodies(deltaTime);
 
     // Handling Lava: One time call per life
     if (m_InTheLava and (not m_touched_lava))
@@ -805,12 +805,18 @@ bool MainCharacter::getKeyboardKey(std::string keyname) const
 //          Dead Bodies & Death
 // ----------------------------------------
 
-void MainCharacter::UpdateDeadBodies()
+void MainCharacter::UpdateDeadBodies(float deltaTime)
 {
     // TO DO : maybe modified type of m_deadbodies => tableau ?
     if ( m_deadbodies.size() > MAX_DEADBODIES )
     {
         m_deadbodies.erase(m_deadbodies.begin());
+    }
+	
+    // Update Living deadbodies
+    for (int i = 0; i < m_deadbodies.size(); i++)
+    {
+        m_deadbodies[i].Update(deltaTime);
     }
 
 }

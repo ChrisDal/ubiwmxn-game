@@ -1,13 +1,20 @@
+#include <iostream>
 #include <stdafx.h>
 #include <Game/DeadBody.h>
 #include <Game/Plateform.h>
 
+#define DEBUG 1 
+#if DEBUG 
+    #define LOG(x) std::cout << x  << " "
+# else
+    #define LOG(x)
+#endif
 
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 
 // constructor 
-DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem)
-    : m_isWalkable(pass_through), m_Position{position},
+DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, float speedx)
+    : m_isWalkable(pass_through), m_Position{position}, 
     c_down{false}, c_left{false}, c_up{false}, c_right{false}
 {
 
@@ -20,6 +27,8 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     m_Sprite.setTexture(*m_pTextureAtlas);
     // According to death terrain draw something
     m_death_element = elem; 
+    setFacingDirection(speedx);
+    LOG("[Constructor] Creation DeadBody construction -");
     switch (elem)
     {
     case(terrain::Element::Air):
@@ -29,11 +38,14 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
         break;
     case(terrain::Element::Water):
         // classical death
-        textdeath.x = 6;
-        textdeath.y = 0;
+        //textdeath.x = 6;
+        textdeath.x = 0;
+        textdeath.y = 4;
+        LOG("Water\n");
         break;
     case(terrain::Element::Void):
-        textdeath.x = 5;
+        //textdeath.x = 5;
+        textdeath.x = 0;
         textdeath.y = 0;
         break;
     case(terrain::Element::Lava):
@@ -48,10 +60,19 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
 
     }
 
-    m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + textdeath.x * 64, 
-                                        getTextureOffset().y + textdeath.y * 64, 
-                                        static_cast<int>(m_size.x), 
-                                        static_cast<int>(m_size.y)));
+    if (!a_direction)
+    {
+        m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + static_cast<int>(m_size.x) + textdeath.x * 64,
+                                            getTextureOffset().y + textdeath.y * 64,
+                                            - static_cast<int>(m_size.x),
+                                            static_cast<int>(m_size.y)));
+    }
+    else {
+        m_Sprite.setTextureRect(sf::IntRect(getTextureOffset().x + textdeath.x * 64,
+                                            getTextureOffset().y + textdeath.y * 64,
+                                            static_cast<int>(m_size.x),
+                                            static_cast<int>(m_size.y)));
+    }
 
     // Set Origin
     m_Sprite.setOrigin(m_size * 0.5f);
@@ -67,6 +88,12 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
         DeadToPlateform();
     }
 
+    // Initial Animation 
+    Stop();         // reset counters
+    InitAnimType(); // set animation data
+
+    LOG("[Constructor] Done \n");
+
 };
 
 
@@ -77,11 +104,36 @@ void DeadBody::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void DeadBody::Update(float deltaTime)
 {
+    
     // Update if any actions of the player on dead body 
     // According to terrain play 
-    // 
-    // 
-    // m_plateform.setPosition
+	if (a_done_anim)
+	{
+		return; 
+	}
+    LOG("[Update]");
+    LOG("Doing\n");
+	switch (m_death_element)
+    {
+    case(terrain::Element::Air):
+        // classical death
+		Play(AnimName::Idle, deltaTime);	
+        break;
+    case(terrain::Element::Water):
+        // classical death
+		Play(AnimName::Idle, deltaTime);
+        break;
+    case(terrain::Element::Void):
+		Play(AnimName::Void, deltaTime);
+        break;
+    case(terrain::Element::Lava):
+		// pas d'animation 
+        break;
+    default:
+        // no animation
+        break; 
+
+    }
 
 
 };
@@ -114,10 +166,23 @@ Plateform* DeadBody::get_Plateform()
 //////////////////
 //   Animation ///
 //////////////////
-
-void DeadBody::Play(AnimAction anim_name, float deltaTime, bool loop)
+// No loop 
+void DeadBody::Play(AnimName anim_name, float deltaTime)
 {
-    // Update frame texture 
+    if (a_done_anim)
+	{
+		return; 
+	}
+	
+	if (a_frametexture == (dictAnim[anim_name].nb_frames_anim-1))
+	{
+		LOG("[Play] Done Anim \n");
+        setDoneAnimation(true);
+		setPlaying(false);
+		Stop();
+		return; 
+	}
+	// Update frame texture 
     setFrameTexture(anim_name, deltaTime);
     // set current
     setCurrentAnim(anim_name);
@@ -125,11 +190,11 @@ void DeadBody::Play(AnimAction anim_name, float deltaTime, bool loop)
 }
 
 
-void DeadBody::setFrameTexture(AnimAction anim_name, float deltaTime)
+void DeadBody::setFrameTexture(AnimName anim_name, float deltaTime)
 {
-    short unsigned int nb_frames_anim=1; 
-    short unsigned int line_anim=0;
-    short unsigned int a_offset = 0; // offset frame pour l'animation si besoin
+    static short unsigned int nb_frames_anim = dictAnim[anim_name].nb_frames_anim; 
+    static short unsigned int line_anim 	= dictAnim[anim_name].line_anim; 
+    static short unsigned int a_offset 		= dictAnim[anim_name].a_offset; // offset frame pour l'animation si besoin
     const sf::Vector2i sizetexture = {64,64};
 	
 	// Animation changes
@@ -137,47 +202,9 @@ void DeadBody::setFrameTexture(AnimAction anim_name, float deltaTime)
 	{
 		// reset counters
         Stop();
+		// flag anim done valid on not looping animations
+		a_done_anim = false; 
 	}
-	
-    switch (anim_name)
-    {
-        case AnimAction::Idle:
-            nb_frames_anim = 4;
-            line_anim = 0;
-            a_offset = 0;
-            break;
-        case AnimAction::Stack:
-            nb_frames_anim = 8;
-            line_anim = 1;
-            a_offset = 0;
-            break;
-        case AnimAction::Launch:
-            nb_frames_anim = 8;
-            line_anim = 2;
-            a_offset = 0;
-            break;
-        case AnimAction::Fire:
-            nb_frames_anim = 6;
-            line_anim = 2;
-            a_offset = 2;
-            break;
-        case AnimAction::Iced:
-            nb_frames_anim = 7;
-            line_anim = 4;
-            a_offset = 0;
-            break;
-        case AnimAction::Slippy:
-            nb_frames_anim = 6;
-            line_anim = 15;
-            a_offset = 0;
-            break;
-        default:
-            nb_frames_anim = 4;
-            line_anim = 4;
-            a_offset = 0;
-            break;
-    };
-
 
     // DT = 1/ 60.0 APP FRAMERATE 
     a_sumdeltaTime += deltaTime;
@@ -187,7 +214,7 @@ void DeadBody::setFrameTexture(AnimAction anim_name, float deltaTime)
     {
         // set texture rectangle
         int y = line_anim * sizetexture.y ;
-        int x = (a_frametexture % (nb_frames_anim)) * sizetexture.x + ( a_offset * sizetexture.x);
+        int x = (a_frametexture % (nb_frames_anim)) * sizetexture.x + (a_offset * sizetexture.x);
         int leftrect = x + a_textsquare_offset.x;
         int sizex = sizetexture.x / 2;
         
@@ -204,21 +231,50 @@ void DeadBody::setFrameTexture(AnimAction anim_name, float deltaTime)
         a_sumdeltaTime = 0.0f;
     }
 
-
+	a_framecount++;
     // ToDo : reset counters before they it the maximum => call Pause
+}
+
+// override 
+void DeadBody::setFacingDirection(float speedx)
+{
+    // direction for animation 
+    if (speedx < -0.01f)
+    {
+        a_direction = false;
+    }
+    else if (speedx > 0.01f)
+    {
+        a_direction = true;
+    }
+    else
+    {
+        a_direction = false;
+    }
+
 }
 
 void DeadBody::InitAnimType()
 {
     
-    m_AllAnims.Idle = { 4, 0, 0, "Idle" };
-    m_AllAnims.Stack = { 8, 1, 0, "Walk" };
-    m_AllAnims.Launch = { 8, 2, 0, "Jump" };
-    m_AllAnims.Fire = { 6, 2, 2, "DoubleJump" };
-    m_AllAnims.Iced = { 7, 4, 0, "Die" };
-    m_AllAnims.Slippy = { 2, 4, 1, "Hurt" };
-    m_AllAnims.Smoked = { 6, 14, 0, "Dodge" };
-    m_AllAnims.Swollen = { 6, 14, 0, "Surprise" };
-    m_AllAnims.Ladder = { 4, 4, 7, "Reborn" };
+    m_AllAnims.Idle 	= { 7, 0, 0, "Idle" };
+    m_AllAnims.Stack 	= { 7, 0, 0, "Stack" };
+    m_AllAnims.Launch 	= { 8, 2, 0, "Launch" };
+    m_AllAnims.Fire 	= { 5, 2, 6, "Fire" };
+    m_AllAnims.Iced 	= { 2, 0, 0, "Iced" };
+    m_AllAnims.Void 	= { 3, 0, 1, "Void" };
+    m_AllAnims.Smoked 	= { 9, 2, 0, "Smoked" };
+    m_AllAnims.FireEnd 	= { 3, 2, 11, "FireEnd" };
+    m_AllAnims.Ladder 	= { 1, 0, 5, "Ladder" };
+	
+	dictAnim[AnimName::Idle]       = m_AllAnims.Idle;
+    dictAnim[AnimName::Stack]      = m_AllAnims.Stack;
+    dictAnim[AnimName::Launch]     = m_AllAnims.Launch;
+    dictAnim[AnimName::Fire]  		= m_AllAnims.Fire;
+    dictAnim[AnimName::Iced]        = m_AllAnims.Iced;
+    dictAnim[AnimName::Void]     	= m_AllAnims.Void;
+    dictAnim[AnimName::Smoked]  	= m_AllAnims.Smoked;
+    dictAnim[AnimName::FireEnd]     = m_AllAnims.FireEnd;
+    dictAnim[AnimName::Ladder]      = m_AllAnims.Ladder;
 
 }
