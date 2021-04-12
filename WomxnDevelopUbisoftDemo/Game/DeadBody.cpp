@@ -13,12 +13,12 @@
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 
 // constructor 
-DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, float speedx)
+DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, bool sidex)
     : m_isWalkable(pass_through), m_Position{position}, 
     c_down{false}, c_left{false}, c_up{false}, c_right{false}
 {
 
-    sf::Vector2i offset_texture = sf::Vector2i(12, 22);
+    sf::Vector2i offset_texture = sf::Vector2i(12, 24);
     setTextureOffset(offset_texture);
     m_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));
     sf::Vector2u textdeath{ 0,0 }; // texture position
@@ -27,7 +27,8 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     m_Sprite.setTexture(*m_pTextureAtlas);
     // According to death terrain draw something
     m_death_element = elem; 
-    setFacingDirection(speedx);
+    // sidex : right(true) or left(false)
+    a_direction = sidex;
     LOG("[Constructor] Creation DeadBody construction -");
     switch (elem)
     {
@@ -111,8 +112,7 @@ void DeadBody::Update(float deltaTime)
 	{
 		return; 
 	}
-    LOG("[Update]");
-    LOG("Doing\n");
+    LOG("[Update] Doing");
 	switch (m_death_element)
     {
     case(terrain::Element::Air):
@@ -221,7 +221,7 @@ void DeadBody::setFrameTexture(AnimName anim_name, float deltaTime)
         // flip texture according to facing direction
         if (!a_direction)
         {
-            leftrect = x + sizetexture.x - a_textsquare_offset.x;
+            leftrect = x + a_textsquare_offset.x + sizetexture.x / 2;
             sizex = - sizetexture.x / 2;
         }
         
@@ -257,7 +257,7 @@ void DeadBody::setFacingDirection(float speedx)
 void DeadBody::InitAnimType()
 {
     
-    m_AllAnims.Idle 	= { 7, 0, 0, "Idle" };
+    m_AllAnims.Idle 	= { 7, 4, 0, "Idle" };
     m_AllAnims.Stack 	= { 7, 0, 0, "Stack" };
     m_AllAnims.Launch 	= { 8, 2, 0, "Launch" };
     m_AllAnims.Fire 	= { 5, 2, 6, "Fire" };

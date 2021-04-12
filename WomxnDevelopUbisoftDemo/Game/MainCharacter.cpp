@@ -114,7 +114,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
         
 		LOG("Create Deadbody -");
-		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element, m_Velocity.x));
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element, a_direction));
         DeathCounterAdd();
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;

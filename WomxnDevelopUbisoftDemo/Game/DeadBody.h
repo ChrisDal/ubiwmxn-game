@@ -25,7 +25,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 	
 public: 
 	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, 
-			bool pass_through, terrain::Element elem, float speedx);
+			bool pass_through, terrain::Element elem, bool sidex);
 	
 	void Update(float deltaTime); 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
