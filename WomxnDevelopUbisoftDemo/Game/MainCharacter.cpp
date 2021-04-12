@@ -180,7 +180,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	}
 	
 	// Updating on Deadbodies 
-    UpdateDeadBodies(deltaTime);
+    UpdateDeadBodies(deltaTime, Tm);
 
     // Handling Lava: One time call per life
     if (m_InTheLava and (not m_touched_lava))
@@ -805,7 +805,7 @@ bool MainCharacter::getKeyboardKey(std::string keyname) const
 //          Dead Bodies & Death
 // ----------------------------------------
 
-void MainCharacter::UpdateDeadBodies(float deltaTime)
+void MainCharacter::UpdateDeadBodies(float deltaTime, TileMap& Tm)
 {
     // TO DO : maybe modified type of m_deadbodies => tableau ?
     if ( m_deadbodies.size() > MAX_DEADBODIES )
@@ -816,7 +816,7 @@ void MainCharacter::UpdateDeadBodies(float deltaTime)
     // Update Living deadbodies
     for (int i = 0; i < m_deadbodies.size(); i++)
     {
-        m_deadbodies[i].Update(deltaTime);
+        m_deadbodies[i].Update(deltaTime, Tm);
     }
 
 }

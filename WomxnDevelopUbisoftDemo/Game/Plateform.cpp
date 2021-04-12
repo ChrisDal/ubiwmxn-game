@@ -14,7 +14,7 @@ Plateform::Plateform(sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::Vector2
 	SetBoundingBox(center, m_RectSize);
 	m_Rectangle.setOrigin(m_RectSize * 0.5f);
 	// other 
-	//m_Rectangle.setFillColor(sf::Color(125,116,65));
+	m_Rectangle.setFillColor(sf::Color(125,116,65, 128));
 }
 
 Plateform::~Plateform()

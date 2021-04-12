@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cmath>
 #include <stdafx.h>
 #include <Game/DeadBody.h>
 #include <Game/Plateform.h>
@@ -14,7 +15,7 @@ sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 
 // constructor 
 DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, bool sidex)
-    : m_isWalkable(pass_through), m_Position{position}, 
+    : m_isWalkable(pass_through), m_Position{position}, m_Velocity{0.0f, 0.0f},
     c_down{false}, c_left{false}, c_up{false}, c_right{false}
 {
 
@@ -82,6 +83,7 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     // Bounding box : neighboorhood
     SetBoundingBox(m_Position, sf::Vector2f(25.0f,12.0f));
 
+
     // can we pass through the dead body = walk through 
     // else plateform
     if (!m_isWalkable)
@@ -101,39 +103,63 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
 void DeadBody::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite);
+    //target.draw(m_plateform);
 }
 
-void DeadBody::Update(float deltaTime)
+void DeadBody::Update(float deltaTime, TileMap& Tm)
 {
     
     // Update if any actions of the player on dead body 
     // According to terrain play 
-	if (a_done_anim)
-	{
-		return; 
-	}
-    LOG("[Update] Doing");
 	switch (m_death_element)
     {
     case(terrain::Element::Air):
         // classical death
 		Play(AnimName::Idle, deltaTime);	
+        m_Velocity.y = 0.0f;
         break;
     case(terrain::Element::Water):
         // classical death
 		Play(AnimName::Idle, deltaTime);
+        // Do get up til air 
+        
+        // In water 
+        if (Tm.ElementsTiles(m_Position) == 1)
+        {
+            // Poussée d'archimede: approximation mvt rectiligne uniforme
+            // 1000 km/m^-3 * 0.02 m^3 * g  
+            //float Pa = - 1000 * 0.008f * 9.81f;
+            m_Velocity.y -=  (1000 * 0.008f * 9.81f) / 32.0f;
+            LOG("[Update] Poussee");
+        }
+        else
+        {
+            m_Velocity.y = 0.0f;
+        }
+
         break;
     case(terrain::Element::Void):
 		Play(AnimName::Void, deltaTime);
+        m_Velocity.y = 0.0f;
         break;
     case(terrain::Element::Lava):
 		// pas d'animation 
+        m_Velocity.y = 0.0f;
         break;
     default:
         // no animation
+        m_Velocity.y = 0.0f;
         break; 
 
     }
+
+    // Set new position brut 
+    m_Position += m_Velocity * deltaTime;
+    // Set New position
+    m_Sprite.setPosition(m_Position);
+    SetCenter(m_Position);
+    // Update plateform position
+    m_plateform.setPosition(m_Position);
 
 
 };

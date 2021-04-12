@@ -2,6 +2,7 @@
 
 #include <Game/Plateform.h> 
 #include <Game/EnumElements.h>
+#include <Game/TileMap.h>
 
 class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
@@ -27,7 +28,7 @@ public:
 	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, 
 			bool pass_through, terrain::Element elem, bool sidex);
 	
-	void Update(float deltaTime); 
+	void Update(float deltaTime, TileMap& Tm);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	
 	// Texture handling 
@@ -56,6 +57,7 @@ public:
 private:
 	
 	sf::Vector2f m_Position; 
+	sf::Vector2f m_Velocity; 
 	sf::Vector2f m_size; 
 	sf::Sprite m_Sprite;
 	Plateform m_plateform;
