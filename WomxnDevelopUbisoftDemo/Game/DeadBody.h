@@ -7,14 +7,14 @@
 class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
 	// common to dead bodies
-	enum class AnimName { Idle, Stack, Launch, Fire, Iced, Void, 
+	enum class AnimName { Idle, Stack, Water, Fire, Iced, Void, 
 							Smoked, FireEnd, Ladder,Reborn }; 
 	static sf::Texture*  m_pTextureAtlas;
 	
     struct AllAnims {
         struct AnimType Idle;
         struct AnimType Stack;
-        struct AnimType Launch;
+        struct AnimType Water;
         struct AnimType Fire;
         struct AnimType Iced;
         struct AnimType Void;
@@ -22,6 +22,8 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
         struct AnimType FireEnd;
         struct AnimType Ladder;
     };
+
+	static const float TIME_DESTRUCTION_WATER;
 	
 	
 public: 
@@ -43,6 +45,12 @@ public:
 	// animation
 	inline void setCurrentAnim(AnimName anim_name) { a_current_anim = anim_name; }
 	void InitAnimType(); 
+
+	// Time
+	void ResetElapsedTime();
+	bool ReachedTime();
+	bool CanBeRemoved();
+	
 	// Plateform attribut
 	void setWalkable(const bool& walkable) { m_isWalkable = walkable; }
 	bool getWalkable() const { return m_isWalkable; }
@@ -77,4 +85,5 @@ private:
 	
 	// animation 
     std::map< AnimName, AnimType > dictAnim;
+	float t_elapsed = 0.0f;
 };

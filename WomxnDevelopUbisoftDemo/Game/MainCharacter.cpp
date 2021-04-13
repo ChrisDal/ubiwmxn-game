@@ -92,17 +92,14 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     if (!m_isAlive and not m_Respawning and a_done_anim)
     {
-        LOG("[Update] Not Alive & Not Respawning & end anim:\n");
-		
         // call reborn 
-		LOG("Is Respawing -");
 		m_Respawning = true; 
 		// Reset Animation flag ending
 		a_done_anim = false;
         // create dead bodies : no_solid = go through
         // Solid : in the air or in the water 
         // No Solid : in the lava, in the void
-        bool no_solid = not (m_InTheAir or m_InTheWater) or m_DiedInLava;
+        bool no_solid = m_DiedInLava or m_DiedInVoid;
         terrain::Element died_element; 
         if (m_DiedInLava)
         {
@@ -112,8 +109,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             died_element = m_current_elem;
         }
-        
-		LOG("Create Deadbody -");
 		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element, a_direction));
         DeathCounterAdd();
 		// assign position to respawn spot 
@@ -126,18 +121,14 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     } 
 	else if (m_Respawning)
 	{
-		LOG("[Update] Respawning:\n");
 		Play(AnimName::Reborn, deltaTime, false); 
 		if (a_done_anim)
 		{
-			LOG("End anim => respawn set to false ");
 			m_Respawning = false; 
 
 		}
-		LOG("reset timers\n\n");
         // reset counters 
         ResetTimers();
-        LOG("Reset DiedIn Flags\n");
         // Reassign dead flags
         m_DiedInWater = false;
         m_DiedInVoid = false;
@@ -153,25 +144,19 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     bool living = Alive(deltaTime, l_ennemie);
     if (not living)
     {
-        LOG("[Update] Not Alive:\n");
 		// Launch dies 
         if (m_DiedInLava or m_touched_lava)
         {
-            LOG("[Update] Lava Death");
 			Play(AnimName::FireEnd, deltaTime, false);
         }
         else
         {
-            LOG("[Update] Classical Death");
 			Play(AnimName::Die, deltaTime, false);
         }
-		LOG("\n");
         return;
     }
 	else if (m_Respawning and living)
 	{
-		
-		LOG("\n\n[Update] Respawing and Alive:  Set new pos ");
 		// No play just set new position
 		m_Velocity = {0.0f, 0.0f};
 		m_Sprite.setPosition(m_Position);
@@ -185,7 +170,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     // Handling Lava: One time call per life
     if (m_InTheLava and (not m_touched_lava))
     {
-        LOG("[Update] TouchedLava True + Timer");
         // Keep information on went to lava
 		m_touched_lava = true;
         // launch timer 
@@ -201,7 +185,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     static const float APPLIED_FACTOR = 0.6f;
     static const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.82f;
-    static const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.15f;
+    static const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.25f;
     static const float GRAVITY = 98.1f;
     static const float NO_GRAVITY = 0.0f;
     static const float JUMP_HEIGHT = 32.f*12.0f*10.0f;
@@ -430,7 +414,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     {
         if (m_current_anim != AnimName::FireSet && m_current_anim != AnimName::FireEnd)
         {
-            LOG("[Update] InLava PlayFireBegin\n");
             Play(AnimName::FireBegin, deltaTime, false);
         }
         else if (m_current_anim == AnimName::FireSet)
@@ -442,19 +425,16 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     }
     else if (m_touched_lava or m_InTheLava)
     {
-		LOG("[Update] TouchedLava PlayFireSet\n");
         Play(AnimName::FireSet, deltaTime, true);  
     }
 	else if (m_IsJumping)
 	{
 		if (m_nbjumps == 1)
 		{
-			LOG("[Update] PlayJump");
 			Play(AnimName::Jump, deltaTime, true);
 		}
 		else
 		{
-			LOG("[Update] PlayDJump");
 			Play(AnimName::DoubleJump, deltaTime, true);
 		}
 	}
@@ -549,6 +529,20 @@ void MainCharacter::setInElements(TileMap& Tm)
             m_InTheLava  = false;
             m_InTheVoid  = true;
             m_current_elem = terrain::Element::Void;
+            break;
+        case(10): // Transition Water => Air
+            m_InTheAir = true;
+            m_InTheWater = false;
+            m_InTheLava = false;
+            m_InTheVoid = false;
+            m_current_elem = terrain::Element::Air;
+            break;
+        case(20): // Transition Lava => Air
+            m_InTheAir = true;
+            m_InTheWater = false;
+            m_InTheLava = false;
+            m_InTheVoid = false;
+            m_current_elem = terrain::Element::Air;
             break;
         default:
             break;
@@ -812,6 +806,21 @@ void MainCharacter::UpdateDeadBodies(float deltaTime, TileMap& Tm)
     {
         m_deadbodies.erase(m_deadbodies.begin());
     }
+
+    // According to the timer for specific element (water)
+    std::vector<DeadBody>::iterator it_dbd = m_deadbodies.begin();
+    while (it_dbd != m_deadbodies.end())
+    {
+        if (it_dbd->CanBeRemoved())
+        {
+            // erase returns following element
+            it_dbd = m_deadbodies.erase(it_dbd);
+        }
+        else
+        {
+            ++it_dbd;
+        }
+    }
 	
     // Update Living deadbodies
     for (int i = 0; i < m_deadbodies.size(); i++)
@@ -927,17 +936,14 @@ void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
         Stop(); // reset counters
 		//if (not loop) // flag anim done valid on not looping animations
 		a_done_anim = false;  
-		LOG("[Play] Change AnimName reset Counters");
     }
     // play once
     if (not loop)
     {
-        LOG("[Play] No loop");
 		// Get next Anim
         if (a_framecounttexture == (dictAnim[anim_name].nb_frames_anim-1))
         {
             Pause(); 
-			LOG("[Play] Done Anim \n");
             a_done_anim = true; 
             setPlaying(false);
             Stop();
@@ -946,7 +952,6 @@ void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
 
         if (not a_done_anim)
         {
-            LOG("[Play] Keep Anim");
 			// Update frame texture 
             setFrameTexture(anim_name, deltaTime);
             // set current
@@ -958,7 +963,6 @@ void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
     } 
     else 
     {
-		LOG("[Play] Keep Anim");
         // Update frame texture 
         setFrameTexture(anim_name, deltaTime);
         // set current
@@ -1122,7 +1126,7 @@ float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const
 	switch(elem)
 	{
 		case(terrain::Element::Water):
-			pct_time = m_CounterWater / 2.0f;
+			pct_time = m_CounterWater / 1.5f;
 			break; 
 		case(terrain::Element::Void):
 			pct_time = m_CounterVoid / 0.25f;
@@ -1147,13 +1151,12 @@ void MainCharacter::ResetTimers()
 // Set Alive or Dead
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 {
-    static const float TIMER_DEAD_WATER = 2.0f; 
+    static const float TIMER_DEAD_WATER = 1.5f; 
     static const float TIMER_DEAD_VOID  = 0.25f;
     static const float TIMER_DEAD_LAVA  = 3.0f;
     
     if (m_Respawning)
     {
-        LOG("[Alive] Is Respawning");
 		setAliveOrDead(true);
         return getAlive();
     }
@@ -1169,8 +1172,6 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     
     if (m_DiedInWater or m_DiedInVoid or m_DiedInLava)
     {
-        if (m_DiedInLava) { LOG("[Alive] Set Not Alive Lava"); }
-        LOG("[Alive] Set Not Alive");
 		setAliveOrDead(false);
         return getAlive();
     }
@@ -1179,8 +1180,6 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     // check at each frame if it collides against ennemies 
     for (auto const& enm : l_ennemies)
     {
-
-        
         if (IsColliding(enm) and m_isAlive)
         {	
 			// Die 

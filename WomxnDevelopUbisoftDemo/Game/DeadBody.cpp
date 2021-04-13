@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include <iostream>
 #include <cmath>
 #include <stdafx.h>
@@ -12,6 +13,7 @@
 #endif
 
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
+const float DeadBody::TIME_DESTRUCTION_WATER = 27.0f;
 
 // constructor 
 DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, bool sidex)
@@ -19,7 +21,7 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     c_down{false}, c_left{false}, c_up{false}, c_right{false}
 {
 
-    sf::Vector2i offset_texture = sf::Vector2i(12, 24);
+    sf::Vector2i offset_texture = sf::Vector2i(12, 23);
     setTextureOffset(offset_texture);
     m_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));
     sf::Vector2u textdeath{ 0,0 }; // texture position
@@ -30,7 +32,6 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     m_death_element = elem; 
     // sidex : right(true) or left(false)
     a_direction = sidex;
-    LOG("[Constructor] Creation DeadBody construction -");
     switch (elem)
     {
     case(terrain::Element::Air):
@@ -43,7 +44,6 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
         //textdeath.x = 6;
         textdeath.x = 0;
         textdeath.y = 4;
-        LOG("Water\n");
         break;
     case(terrain::Element::Void):
         //textdeath.x = 5;
@@ -94,43 +94,100 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     // Initial Animation 
     Stop();         // reset counters
     InitAnimType(); // set animation data
-
-    LOG("[Constructor] Done \n");
-
+	ResetElapsedTime(); 
 };
 
+void DeadBody::ResetElapsedTime()
+{
+	t_elapsed = 0.0f;
+}
+
+// Timer for water
+bool DeadBody::ReachedTime()
+{
+    float timer = 10.0f;
+    switch (m_death_element)
+    {
+    case (terrain::Element::Water): 
+        timer = TIME_DESTRUCTION_WATER; 
+        break; 
+    default: 
+        timer = 60.0f; // removed after 1 min
+        break;
+    }
+    return t_elapsed > timer;
+}
+
+bool DeadBody::CanBeRemoved()
+{
+    bool is_done = ReachedTime(); // More conditions later maybe
+    return is_done; 
+}
 
 void DeadBody::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite);
-    //target.draw(m_plateform);
 }
 
 void DeadBody::Update(float deltaTime, TileMap& Tm)
 {
-    
+    sf::Vector2f new_pos = m_Position - sf::Vector2f(0.0f, 10.0f);
+    float theta = 0.0f;
     // Update if any actions of the player on dead body 
     // According to terrain play 
 	switch (m_death_element)
     {
     case(terrain::Element::Air):
         // classical death
-		Play(AnimName::Idle, deltaTime);	
+		Play(AnimName::Stack, deltaTime);	
         m_Velocity.y = 0.0f;
         break;
     case(terrain::Element::Water):
-        // classical death
-		Play(AnimName::Idle, deltaTime);
+        // death water
+		Play(AnimName::Water, deltaTime);
         // Do get up til air 
+        t_elapsed += deltaTime;
+        // In water or in transition water//air: velocity ++
         
-        // In water 
-        if (Tm.ElementsTiles(m_Position) == 1)
+        if (Tm.ElementsTiles(m_Position) == 1 )
         {
-            // Poussée d'archimede: approximation mvt rectiligne uniforme
-            // 1000 km/m^-3 * 0.02 m^3 * g  
-            //float Pa = - 1000 * 0.008f * 9.81f;
-            m_Velocity.y -=  (1000 * 0.008f * 9.81f) / 32.0f;
-            LOG("[Update] Poussee");
+            // Poussée d'archimede 1000 km/m^-3 * 0.02 m^3 * g 
+            m_Velocity.y -= (1000 * 0.008f * 9.81f) / 32.0f;
+        }
+        else if (Tm.ElementsTiles(new_pos) == 10 and Tm.ElementsTiles(m_Position) == 1)
+        {
+            // Poussée d'archimede 1000 km/m^-3 * 0.02 m^3 * g 
+            m_Velocity.y -= (1000 * 0.008f * 9.81f) / 32.0f;
+            // Ajout rotation
+            float Am0 = 10.0f / t_elapsed;
+            theta = Am0 * cos(2 * M_PI * t_elapsed / (1.0f));
+            if (std::abs(theta) < 1.0f)
+            {
+                theta = 0.0f;
+            }
+        }
+        else if (Tm.ElementsTiles(new_pos) == 10 and Tm.ElementsTiles(m_Position) == 10)
+        {
+            // Poussée d'archimede 1000 km/m^-3 * 0.02 m^3 * g 
+            m_Velocity.y -= (1000 * 0.008f * 9.81f) / 32.0f;
+            // Ajout rotation
+            float Am0 = 10.0f / t_elapsed;
+            theta = Am0 * cos(2 * M_PI * t_elapsed / (1.0f));
+            if (std::abs(theta) < 1.8f)
+            {
+                theta = 0.0f;
+            }
+        }
+        else if (Tm.ElementsTiles(m_Position) == 10 and Tm.ElementsTiles(new_pos) == 0)
+        {
+            m_Velocity.y = 0.0f; 
+            // Ajout rotation
+            float Am0 = 10.0f / t_elapsed;
+            theta = Am0 * cos(2 * M_PI * t_elapsed / (1.0f));
+            if (std::abs(theta) < 1.8f)
+            {
+                theta = 0.0f;
+            }
         }
         else
         {
@@ -158,6 +215,7 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
     // Set New position
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
+    m_Sprite.setRotation(theta);
     // Update plateform position
     m_plateform.setPosition(m_Position);
 
@@ -202,7 +260,6 @@ void DeadBody::Play(AnimName anim_name, float deltaTime)
 	
 	if (a_frametexture == (dictAnim[anim_name].nb_frames_anim-1))
 	{
-		LOG("[Play] Done Anim \n");
         setDoneAnimation(true);
 		setPlaying(false);
 		Stop();
@@ -218,9 +275,9 @@ void DeadBody::Play(AnimName anim_name, float deltaTime)
 
 void DeadBody::setFrameTexture(AnimName anim_name, float deltaTime)
 {
-    static short unsigned int nb_frames_anim = dictAnim[anim_name].nb_frames_anim; 
-    static short unsigned int line_anim 	= dictAnim[anim_name].line_anim; 
-    static short unsigned int a_offset 		= dictAnim[anim_name].a_offset; // offset frame pour l'animation si besoin
+    short unsigned int nb_frames_anim   = dictAnim[anim_name].nb_frames_anim;
+    short unsigned int line_anim 	    = dictAnim[anim_name].line_anim; 
+    short unsigned int a_offset 		= dictAnim[anim_name].a_offset; // offset frame pour l'animation si besoin
     const sf::Vector2i sizetexture = {64,64};
 	
 	// Animation changes
@@ -283,9 +340,9 @@ void DeadBody::setFacingDirection(float speedx)
 void DeadBody::InitAnimType()
 {
     
-    m_AllAnims.Idle 	= { 7, 4, 0, "Idle" };
+    m_AllAnims.Idle 	= { 4, 1, 0, "Idle" };
     m_AllAnims.Stack 	= { 7, 0, 0, "Stack" };
-    m_AllAnims.Launch 	= { 8, 2, 0, "Launch" };
+    m_AllAnims.Water 	= { 7, 4, 0, "Water" };
     m_AllAnims.Fire 	= { 5, 2, 6, "Fire" };
     m_AllAnims.Iced 	= { 2, 0, 0, "Iced" };
     m_AllAnims.Void 	= { 3, 0, 1, "Void" };
@@ -295,7 +352,7 @@ void DeadBody::InitAnimType()
 	
 	dictAnim[AnimName::Idle]       = m_AllAnims.Idle;
     dictAnim[AnimName::Stack]      = m_AllAnims.Stack;
-    dictAnim[AnimName::Launch]     = m_AllAnims.Launch;
+    dictAnim[AnimName::Water]       = m_AllAnims.Water;
     dictAnim[AnimName::Fire]  		= m_AllAnims.Fire;
     dictAnim[AnimName::Iced]        = m_AllAnims.Iced;
     dictAnim[AnimName::Void]     	= m_AllAnims.Void;
