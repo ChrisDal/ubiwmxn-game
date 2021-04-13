@@ -192,13 +192,13 @@ short int TileMap::ElementsTiles(sf::Vector2f& position)
     // 9 < Walkable < 100  
     switch (tiletype)
     {
-        case(10): element = 0; break; 
-        case(11): element = 0; break; 
-        case(12): element = 1; break; 
-        case(13): element = 0; break; 
-        case(14): element = 2; break; 
-        case(15): element = 3; break; 
-        default: element = -1; break;
+        case(10): element = 0;  break;   // Air
+        case(11): element = 10; break;   // Water => Air
+        case(12): element = 1;  break;   // Water
+        case(13): element = 20; break;   // Lava => Air 
+        case(14): element = 2;  break;   // Lava
+        case(15): element = 3;  break;   // Void
+        default: element = -1;  break;
     }
 
     return element;

@@ -95,7 +95,7 @@ public:
     int  DeadBodiesCounter() const { return m_deadbodies.size() > MAX_DEADBODIES ? MAX_DEADBODIES : static_cast<int>(m_deadbodies.size());  }
     int  DeadBodiesMax() const { return MAX_DEADBODIES; }
     // Dead body count
-    void UpdateDeadBodies(); 
+    void UpdateDeadBodies(float deltaTime, TileMap& Tm);
 
 
     // Animation 
@@ -189,7 +189,6 @@ private:
     std::map< AnimName, AnimType > dictAnim;
     AnimName m_current_anim = AnimName::Idle; 
     bool is_PlayingAnim{ false };
-    std::vector<AnimName> m_OneTimeAnimations{};
     AllAnims m_AllAnims;
     // Facing direction
     bool a_direction{ false }; // true: right, false: left 
