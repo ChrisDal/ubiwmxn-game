@@ -84,6 +84,9 @@ void Ennemie::SetCollidingFire(MainCharacter* mchara)
 
 }
 
+// --------------- //
+// Neighboorhood 
+// --------------- //
 void Ennemie::Neighboorhood::setNeighboorhood(Ennemie *enm, float dpx)
 {
 
@@ -92,6 +95,23 @@ void Ennemie::Neighboorhood::setNeighboorhood(Ennemie *enm, float dpx)
 
 }
 
+void Ennemie::Neighboorhood::setNeighboorhoodX(Ennemie *enm, float dpx_x)
+{
+
+	sf::Vector2f new_size{enm->GetBoundingBox().width + dpx_x, enm->GetBoundingBox().height};
+	this->SetBoundingBox(enm->GetCenter(), new_size);
+
+}
+
+void Ennemie::Neighboorhood::setNeighboorhoodY(Ennemie *enm, float dpx_y)
+{
+
+	sf::Vector2f new_size{enm->GetBoundingBox().width, enm->GetBoundingBox().height + dpx_y };
+	this->SetBoundingBox(enm->GetCenter(), new_size);
+
+}
+
+// Update 
 void Ennemie::Update(float deltaTime, MainCharacter* mchara) 
 {
 	
