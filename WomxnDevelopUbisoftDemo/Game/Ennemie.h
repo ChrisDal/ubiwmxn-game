@@ -26,6 +26,7 @@ public:
     Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft,
             unsigned int sx, unsigned int sy, bool weakness_fire);
     ~Ennemie();
+    Ennemie() {};
 
     void Update(float deltaTime, MainCharacter* mchara);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -48,7 +49,19 @@ protected:
     {
     public: 
         void setNeighboorhood(Ennemie* enm, float dpx);
+        void setNeighboorhoodX(Ennemie* enm, float dpx_x);
+        void setNeighboorhoodY(Ennemie* enm, float dpx_y);
     };
+	
+    // attributes for all types of ennemies
+    bool _colliding_plateforms;
+    bool moving; 
+    bool is_animated; 
+    bool _colliding_fire;
+    bool _colliding_water;
+    bool _colliding_void;
+    bool _colliding_lava;
+    bool _colliding{ false };
     
 
 private:
@@ -62,12 +75,7 @@ private:
     bool m_IsPlayingEndGame;
     bool m_Dead;
 
-    // attributes for all types of ennemies
-    bool _colliding_plateforms;
-    bool moving; 
-    bool is_animated; 
-    bool _colliding_fire;
-    bool _colliding{ false };
+
 
     // Neighboorhood 
     Ennemie::Neighboorhood _neighb; 

@@ -50,6 +50,12 @@
     <ClCompile Include="Game\ObjectsElements.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\SequencePath.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\mushroom.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -93,6 +99,12 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\EnumElements.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\SequencePath.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\mushroom.h">
       <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>

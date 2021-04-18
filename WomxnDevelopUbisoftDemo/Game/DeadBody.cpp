@@ -127,6 +127,7 @@ bool DeadBody::CanBeRemoved()
 void DeadBody::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite);
+    //target.draw(m_plateform);
 }
 
 void DeadBody::Update(float deltaTime, TileMap& Tm)

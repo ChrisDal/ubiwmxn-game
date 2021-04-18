@@ -24,14 +24,14 @@ GameDemo::GameDemo()
 
 
     // map tile 
-    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-tiles.csv");
+    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map.csv");
     // test
     m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 
 	m_plateform = m_Tilemap.getPlateforms(); 
 
     // Ennemies 
-    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-elem.csv");
+    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map-elements.csv");
     m_Elements.setTilemapType(false);
 
     // Get texture 
@@ -39,20 +39,28 @@ GameDemo::GameDemo()
     m_TextureAtlas.loadFromFile(texture_name);
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
     ObjectsElements::SetTextureAtlas(&m_TextureAtlas);
+    Mushroom::SetTextureAtlas(&m_TextureAtlas);
 	
 	// Dead Body Texture
 	const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png"; 
     m_TextureDead.loadFromFile(dead_texture_name);
 	DeadBody::SetTextureAtlas(&m_TextureDead);
 
+
     const sf::Vector2u WINSIZE = { 1024, 768 };
     m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 
                                         static_cast<unsigned int>(WINSIZE.x / 32.0f), 
                                         static_cast<unsigned int>(WINSIZE.y / 32.0f),
-                                        m_objects, m_cactus, m_checkpoints, m_exit_sign);
+                                        m_objects, m_cactus, m_checkpoints, m_exit_sign, m_mush);
     
+    // SetUp Mushroom 
+    sf::Vector2f TargetPoint{ m_mush.GetCenter() }; 
+    TargetPoint.x += 32.0f * 5.0f; 
+    m_mush.setPath(m_mush.GetCenter(), TargetPoint); 
+
     // Load main character 
     m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
+
 	
 }
 
@@ -84,7 +92,8 @@ void GameDemo::Update(float deltaTime)
     {
         m_cactus[i].Update(deltaTime, m_MainCharacter);
     }
- 
+    
+    // Check the checkpoints
     for (int k = 0; k < m_checkpoints.size(); k++)
     {
         if (m_checkpoints[k].IsColliding(*m_MainCharacter))
@@ -92,11 +101,22 @@ void GameDemo::Update(float deltaTime)
             m_MainCharacter->setRespawnPosition(m_checkpoints[k].GetCenter());
             m_checkpoints[k].Update(deltaTime, true);
         }
-
-       
     }
 
+    // Check the mushrooms 
+    m_mush.Update(deltaTime); 
+    
 
+    if (m_mush.getIsFinished())
+    {
+        sf::Vector2f TargetPoint{ m_mush.GetCenter() };
+
+        if (m_Animation_AR) { TargetPoint.x -= 32.0f * 5.0f; }
+        else { TargetPoint.x += 32.0f * 5.0f; }
+        // Make AR 
+        m_mush.setPath(m_mush.GetCenter(), TargetPoint);
+        m_Animation_AR = not m_Animation_AR;  
+    }
 
     if (!m_IsFinished)
     {
@@ -141,6 +161,9 @@ void GameDemo::Render(sf::RenderTarget& target)
 	
     // Exit and MC
     target.draw(m_exit_sign);
+    // Msuhroom 
+    target.draw(m_mush);
+    // Main character
     target.draw(*m_MainCharacter);
 
     if (m_IsFinished)
