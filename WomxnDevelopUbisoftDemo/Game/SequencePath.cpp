@@ -1,8 +1,11 @@
 #include <stdafx.h>
 #include <Game/SequencePath.h>
 
+// empty constructor 
+SequencePath::SequencePath(){};
+
 SequencePath::SequencePath(sf::Vector2f A, sf::Vector2f B)
-	: m_isNavigating{ false }, m_StepValidate{ false }, m_IsFinished{ false },
+	: m_isNavigating{ true }, m_IsFinished{ false },
 	  m_Point_BL{ A }, m_Point_ER{ B }
 {
 	// Determine on which axis moving 
@@ -23,12 +26,11 @@ SequencePath::SequencePath(sf::Vector2f A, sf::Vector2f B)
 	// init flag reached
 	m_FlagReached.assign(m_SequencePath.size(), false);
 	// iterator initialisation on point done  in setLinearSequence
-	m_it_path = m_SequencePath.begin();
+	//m_it_path = m_SequencePath.begin();
 	
 	// Set Written Instructions 
 	m_PathInstructions = WrittenInstructions(); 
-	m_it_instr = m_PathInstructions.begin(); 
-	m_CurrentInstruc = *m_it_instr; 
+	m_CurrentInstruc = m_PathInstructions[m_idx_instr];
 }
 
 
@@ -82,8 +84,7 @@ void SequencePath::SetLinearSequencePath(sf::Vector2f StartingPoint, sf::Vector2
 	setTargetPoint(EndingPoint);
 	setAxisMove(); 
 	setDirectionMove();
-	// iterator initialisation on point
-	m_it_path = m_SequencePath.begin();
+
 	
 	if (m_NavX) 
 	{
@@ -137,6 +138,15 @@ void SequencePath::SetLinearSequencePath(sf::Vector2f StartingPoint, sf::Vector2
 	
 	m_SequencePath.push_back(EndingPoint); 
 	
+	// iterator initialisation on point
+	m_idx_path = 0;
+	// Set Written Instructions 
+	m_PathInstructions = WrittenInstructions();
+	m_idx_instr = 0;
+	m_CurrentInstruc = m_PathInstructions[m_idx_instr];
+
+	// Reset 
+	m_IsFinished = false;
 
 }	
 
@@ -147,7 +157,6 @@ void SequencePath::ProcessSequencePath(sf::Vector2f StartingPoint, sf::Vector2f 
 
 bool SequencePath::isAtTargetPoint(BoxCollideable& CollObj)
 {
-
 	if (CollObj.Contains(m_Point_ER))
 	{
 		m_IsFinished = true; 
@@ -165,14 +174,16 @@ bool SequencePath::UpdateFlags(BoxCollideable& CollObj)
 	bool reached = false;  
 	
 	if ((not m_isNavigating) or m_IsFinished)
-		
 		return reached; 
 
 	// Sprite contains intermediate point then update flag
-	if (CollObj.Contains(*m_it_path))
+	if (CollObj.Contains(m_SequencePath[m_idx_path]))
 	{
-		m_FlagReached[std::distance(m_SequencePath.begin(), m_it_path) - 1] = true; 
-		m_it_path++; 
+		m_FlagReached[m_idx_path] = true;
+		if (m_idx_path < m_SequencePath.size())
+			m_idx_path++;
+		else
+			m_isNavigating = false;
 		reached = true;
 	}
 	return reached; 
@@ -181,22 +192,32 @@ bool SequencePath::UpdateFlags(BoxCollideable& CollObj)
 // Get a written instructions for each update of our sprite 
 SequencePath::Instructions SequencePath::GetUpdateInstructions(BoxCollideable& CollObj)
 {
+	
+	// test 
+	bool test = true; 
+
+	if (m_idx_path == m_SequencePath.size())
+	{
+		m_CurrentInstruc = Instructions::Idle;
+		return m_CurrentInstruc; 
+	}
+
 	// check if reach next intermediate point 
 	bool reached_point = UpdateFlags(CollObj);
 	// Reach ending point 
 	if(isAtTargetPoint(CollObj))
 	{
-		m_it_path = m_SequencePath.end() ; 
+		m_idx_path = m_SequencePath.size() ;
 		m_CurrentInstruc = Instructions::Idle;
-		m_it_instr = m_PathInstructions.end(); 
+		m_idx_instr = m_PathInstructions.size();
 		return m_CurrentInstruc;
 	}
 	
 	// get next intermediate point instructions
 	if (reached_point)
 	{
-		m_it_instr++; 
-		m_CurrentInstruc = *m_it_instr; 
+		m_idx_instr++;
+		m_CurrentInstruc = m_PathInstructions[m_idx_instr];
 	}
 	// else keep previous instructions until we reached next point 
 

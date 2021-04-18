@@ -4,6 +4,7 @@
 #include <Engine/Game.h>
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h>
+#include <Game/mushroom.h>
 #include <Game/ObjectsElements.h>
 #include <Game/DeadBody.h>
 #include <Game/Tilemap.h>
@@ -37,11 +38,14 @@ private:
     TileMap m_Tilemap;
     MainCharacter* m_MainCharacter;
 	std::vector<Plateform> m_plateform = {}; 
-    ObjectsElements m_exit_sign; 
     // Affects life
     TileMap m_Elements; 
     sf::Texture m_TextureAtlas;
     sf::Texture m_TextureDead;
+    ObjectsElements m_exit_sign;
+    Mushroom m_mush;
+
+    // struct gameelements m_GameElements;
     std::vector<Ennemie> m_cactus = {};
     std::vector<Ennemie> m_ennemies = {};
 	std::vector<DeadBody> m_deadbodies = {};
@@ -51,5 +55,6 @@ private:
 	
     // Game process
     bool m_IsFinished;
+    bool m_Animation_AR{ true }; // Back and Forth for the mushroom 
 
 };

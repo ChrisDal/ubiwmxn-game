@@ -5,6 +5,7 @@
 #include <fstream>
 #include <Game/Plateform.h>
 #include <Game/Ennemie.h>
+#include <Game/mushroom.h>
 #include <Game/ObjectsElements.h>
 
 enum class TmapType {backplateform, monstobjects};
@@ -21,7 +22,7 @@ public:
     std::vector<Ennemie> loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, 
                                     unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, 
                                     std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& m_checkpoints,
-                                    ObjectsElements& exit_sign);
+                                    ObjectsElements& exit_sign, Mushroom& mush);
     
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 

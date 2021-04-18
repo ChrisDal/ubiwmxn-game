@@ -3,22 +3,22 @@
 #include <vector>
 
 #include <Engine/Collision.h> 
-#include <Game/Tilemap.h> 
 
 class SequencePath
 {
-protected:
-	// get by instructions
-	enum class Instructions {
-		GoToRight, GoToLeft,
-		GoToUp, GoToDown, 
-		GoToJumpLeft, GoToJumpRight, 
-		Idle, NA,
-	};
 
 public:
 	SequencePath(sf::Vector2f A, sf::Vector2f B);
+	SequencePath();
 	~SequencePath() {};
+
+	// get by instructions
+	enum class Instructions {
+		GoToRight, GoToLeft,
+		GoToUp, GoToDown,
+		GoToJumpLeft, GoToJumpRight,
+		Idle, NA, WaitingInstruc,
+	};
 
 	void setTargetPoint(sf::Vector2f target_point);
 	sf::Vector2f getTargetPoint() const { return m_Point_ER; }	
@@ -34,6 +34,7 @@ public:
 
 	// Conditions checked 
 	inline bool isNaviguating() const { return m_isNavigating; }
+	inline bool isFinished() const { return m_IsFinished; }
 	// Check if the position is at a specific distance of the ending point
 	bool isAtTargetPoint(BoxCollideable& CollObj);
 
@@ -52,8 +53,10 @@ public:
 			+ pow(static_cast<double>(A.y) - static_cast<double>(B.y), 2)));
 	};
 
-	float DistanceManhattan(sf::Vector2f A, sf::Vector2f B, TileMap Tilemap);
+	//float DistanceManhattan(sf::Vector2f A, sf::Vector2f B, TileMap Tilemap);
 	void setDeltaPixels(float pixels) { m_DPX = pixels; }
+
+
 	
 
 
@@ -62,12 +65,11 @@ protected:
 	sf::Vector2f m_Point_ER; // ending point 
 	// SequencePath
 	std::vector<sf::Vector2f> m_SequencePath; 			// SequencePath = a list of point
-	std::vector<Instructions> m_PathInstructions;		// SequencePath = a list of point
+	std::vector<Instructions> m_PathInstructions;		// PathInstructions = a list of Instructions
 	std::vector<bool> m_FlagReached; 		  			// is each point reached
 
 	// Naviguation 
 	bool m_isNavigating;	// Do not reach point but is ok
-	bool m_StepValidate;	// NA 
 	bool m_IsFinished;		// Reached point
 	bool m_NavX{true}; 		// naviguate on x axis only 
 	bool m_NavY{false}; 	// naviguate on y axis only 
@@ -75,8 +77,10 @@ protected:
 	
 	// Naviguating 
 	std::vector<sf::Vector2f>::iterator m_it_path; 
+	int m_idx_path = 0;
+	int m_idx_instr = 0;
 	std::vector<Instructions>::iterator m_it_instr; 
-	Instructions m_CurrentInstruc;
+	Instructions m_CurrentInstruc{ Instructions::Idle };
 	
 	// Delta Pixels 
 	float m_DPX = 10.0f;	// Delta pixels 

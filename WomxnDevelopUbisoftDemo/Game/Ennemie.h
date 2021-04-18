@@ -26,6 +26,7 @@ public:
     Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft,
             unsigned int sx, unsigned int sy, bool weakness_fire);
     ~Ennemie();
+    Ennemie() {};
 
     void Update(float deltaTime, MainCharacter* mchara);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
