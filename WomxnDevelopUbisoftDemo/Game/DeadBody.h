@@ -24,6 +24,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
     };
 
 	static const float TIME_DESTRUCTION_WATER;
+	static const float TIME_DESTRUCTION_LAVA;
 	
 	
 public: 
@@ -38,7 +39,7 @@ public:
     static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
 	
 	// Animation 
-	void Play(AnimName anim_name, float deltaTime);
+	void Play(AnimName anim_name, float deltaTime, bool looping);
 	void setFrameTexture(AnimName anim_name, float deltaTime);
 	void setFacingDirection(float speedx) override;
 
@@ -57,6 +58,10 @@ public:
 	void DeadToPlateform();
 	Plateform* get_Plateform();
 
+	// Fire 
+	terrain::Element getDeathTerrain() const { return m_death_element; }
+	bool getIsOnFire() const { return m_isOnFire;  }
+
 	// Remove and Destructor 
 	~DeadBody() {};
 
@@ -70,7 +75,7 @@ private:
 	sf::Sprite m_Sprite;
 	Plateform m_plateform;
 	terrain::Element m_death_element; 
-	AnimName a_current_anim{ AnimName::Smoked };
+	AnimName a_current_anim{ AnimName::Idle };
 	AllAnims m_AllAnims;
 	// collisions 
 	bool _colliding_plateforms{false}; 
@@ -82,6 +87,7 @@ private:
 
 	// set if walkable or not 
 	bool m_isWalkable;
+	bool m_isOnFire; 
 	
 	// animation 
     std::map< AnimName, AnimType > dictAnim;

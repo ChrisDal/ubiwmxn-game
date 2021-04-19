@@ -94,8 +94,9 @@ public:
     void DeathCounterReset() { m_death_counter = 0; }
     int  DeadBodiesCounter() const { return m_deadbodies.size() > MAX_DEADBODIES ? MAX_DEADBODIES : static_cast<int>(m_deadbodies.size());  }
     int  DeadBodiesMax() const { return MAX_DEADBODIES; }
-    // Dead body count
-    void UpdateDeadBodies(float deltaTime, TileMap& Tm);
+    // Dead body 
+    void UpdateDeadBodies(float deltaTime, TileMap& Tm); // count 
+    bool isCollidingDeadBodyLava(); 
 
 
     // Animation 

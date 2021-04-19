@@ -90,6 +90,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     // Define if in the air or not 
     setInElements(Tm);
 
+    // touched deadbodies 
+
     if (!m_isAlive and not m_Respawning and a_done_anim)
     {
         // call reborn 
@@ -167,6 +169,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	// Updating on Deadbodies 
     UpdateDeadBodies(deltaTime, Tm);
 
+
     // Handling Lava: One time call per life
     if (m_InTheLava and (not m_touched_lava))
     {
@@ -175,8 +178,20 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         // launch timer 
         m_timer_lava = true;
     }
+    
+    if (isCollidingDeadBodyLava())
+    {
+        // Keep information on went to lava
+        m_touched_lava = true;
+        // launch timer 
+        m_timer_lava = true;
+    }
 
-
+    if (m_InTheWater and m_touched_lava)
+    {
+        m_timer_lava = false; 
+        m_touched_lava = false; 
+    }
 
     static const float SPEED_MAX = 150.0f;
     static const float WATER_SPEED_MAX = SPEED_MAX * 0.3f;
@@ -745,6 +760,27 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
 
 };
 
+
+// Return true if colliding with deadbody on fire because of lava
+bool MainCharacter::isCollidingDeadBodyLava()
+{
+    // Handling colliding with deadbody in lava 
+    bool lavacolliding = false;
+    for (DeadBody& dbd : m_deadbodies)
+    {
+        if (not dbd.getIsOnFire())
+        {
+            continue;
+        }
+
+        if (dbd.IsColliding(*this))
+        {
+            lavacolliding = true;
+        }
+    }
+
+    return lavacolliding;
+}
 
 
 

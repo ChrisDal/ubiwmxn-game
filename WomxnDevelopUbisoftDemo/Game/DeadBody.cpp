@@ -14,6 +14,7 @@
 
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 const float DeadBody::TIME_DESTRUCTION_WATER = 27.0f;
+const float DeadBody::TIME_DESTRUCTION_LAVA = 9.0f;
 
 // constructor 
 DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, bool sidex)
@@ -32,12 +33,16 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     m_death_element = elem; 
     // sidex : right(true) or left(false)
     a_direction = sidex;
+    // Lava touched = on fire 
+    m_isOnFire = false; 
+    // First texture
     switch (elem)
     {
     case(terrain::Element::Air):
         // classical death
         textdeath.x = 0;
         textdeath.y = 0;
+        LOG("Air");
         break;
     case(terrain::Element::Water):
         // classical death
@@ -53,6 +58,7 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     case(terrain::Element::Lava):
         textdeath.x = 12;
         textdeath.y = 2;
+        m_isOnFire = true; 
         break;
     default:
         // classical death
@@ -110,6 +116,9 @@ bool DeadBody::ReachedTime()
     {
     case (terrain::Element::Water): 
         timer = TIME_DESTRUCTION_WATER; 
+        break;     
+    case (terrain::Element::Lava): 
+        timer = TIME_DESTRUCTION_LAVA; 
         break; 
     default: 
         timer = 60.0f; // removed after 1 min
@@ -120,7 +129,8 @@ bool DeadBody::ReachedTime()
 
 bool DeadBody::CanBeRemoved()
 {
-    bool is_done = ReachedTime(); // More conditions later maybe
+    bool is_done = (ReachedTime() and m_death_element == terrain::Element::Water) ; // More conditions later maybe
+
     return is_done; 
 }
 
@@ -141,12 +151,13 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
     {
     case(terrain::Element::Air):
         // classical death
-		Play(AnimName::Stack, deltaTime);	
+		Play(AnimName::Stack, deltaTime, false);	
         m_Velocity.y = 0.0f;
         break;
+    
     case(terrain::Element::Water):
         // death water
-		Play(AnimName::Water, deltaTime);
+		Play(AnimName::Water, deltaTime, false);
         // Do get up til air 
         t_elapsed += deltaTime;
         // In water or in transition water//air: velocity ++
@@ -197,17 +208,31 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
         }
 
         break;
+    
     case(terrain::Element::Void):
-		Play(AnimName::Void, deltaTime);
+		Play(AnimName::Void, deltaTime, false);
         m_Velocity.y = 0.0f;
         break;
+    
     case(terrain::Element::Lava):
-		// pas d'animation 
         m_Velocity.y = 0.0f;
+        if (not ReachedTime())
+        {
+            t_elapsed += deltaTime;
+            m_isOnFire = true;
+            Play(AnimName::FireEnd, deltaTime, true);
+        }
+        else
+        {
+            m_isOnFire = false; 
+            Play(AnimName::Smoked, deltaTime, false); 
+        }
         break;
+    
     default:
         // no animation
         m_Velocity.y = 0.0f;
+        m_isOnFire = false;
         break; 
 
     }
@@ -253,8 +278,19 @@ Plateform* DeadBody::get_Plateform()
 //   Animation ///
 //////////////////
 // No loop 
-void DeadBody::Play(AnimName anim_name, float deltaTime)
+void DeadBody::Play(AnimName anim_name, float deltaTime, bool looping)
 {
+    
+    if (looping)
+    {
+        // Update frame texture 
+        setFrameTexture(anim_name, deltaTime);
+        // set current
+        setCurrentAnim(anim_name);
+        setPlaying(true);
+        return;
+    }
+
     if (a_done_anim)
 	{
 		return; 
@@ -348,8 +384,8 @@ void DeadBody::InitAnimType()
     m_AllAnims.Fire 	= { 5, 2, 6, "Fire" };
     m_AllAnims.Iced 	= { 2, 0, 0, "Iced" };
     m_AllAnims.Void 	= { 3, 0, 1, "Void" };
-    m_AllAnims.Smoked 	= { 9, 2, 0, "Smoked" };
-    m_AllAnims.FireEnd 	= { 3, 2, 11, "FireEnd" };
+    m_AllAnims.Smoked 	= { 2, 2, 14, "Smoked" };
+    m_AllAnims.FireEnd 	= { 2, 2, 12, "FireEnd" };
     m_AllAnims.Ladder 	= { 1, 0, 5, "Ladder" };
 	
 	dictAnim[AnimName::Idle]       = m_AllAnims.Idle;
