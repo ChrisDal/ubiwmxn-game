@@ -4,7 +4,7 @@
 
 std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, 
                                             std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& l_checkpoints, 
-                                            ObjectsElements& exit_sign, Mushroom& mush)
+                                            ObjectsElements& exit_sign, std::vector<MovableEnnemies>& mush)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -40,7 +40,8 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 
                 if (m_tiles[k] == 280)
                 {
-                    mush = Mushroom(spaw, tileSize.x, tileSize.y, coord);
+                    bool weak_against_fire = true;
+                    mush.push_back(MovableEnnemies(spaw, tileSize.x, tileSize.y, coord));
                     continue; 
                 }
 				else if (m_tiles[k] < 300 && m_tiles[k] > 200)

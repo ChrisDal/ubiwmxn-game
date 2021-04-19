@@ -134,6 +134,7 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
 {
     sf::Vector2f new_pos = m_Position - sf::Vector2f(0.0f, 10.0f);
     float theta = 0.0f;
+
     // Update if any actions of the player on dead body 
     // According to terrain play 
 	switch (m_death_element)
@@ -161,7 +162,7 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
             m_Velocity.y -= (1000 * 0.008f * 9.81f) / 32.0f;
             // Ajout rotation
             float Am0 = 10.0f / t_elapsed;
-            theta = Am0 * cos(2 * M_PI * t_elapsed / (1.0f));
+            theta = Am0 * static_cast<float>(cos(2 * M_PI * t_elapsed / (1.0f)));
             if (std::abs(theta) < 1.0f)
             {
                 theta = 0.0f;
@@ -173,7 +174,7 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
             m_Velocity.y -= (1000 * 0.008f * 9.81f) / 32.0f;
             // Ajout rotation
             float Am0 = 10.0f / t_elapsed;
-            theta = Am0 * cos(2 * M_PI * t_elapsed / (1.0f));
+            theta = Am0 * static_cast<float>(cos(2 * M_PI * t_elapsed / (1.0f)));
             if (std::abs(theta) < 1.8f)
             {
                 theta = 0.0f;
@@ -184,7 +185,7 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
             m_Velocity.y = 0.0f; 
             // Ajout rotation
             float Am0 = 10.0f / t_elapsed;
-            theta = Am0 * cos(2 * M_PI * t_elapsed / (1.0f));
+            theta = Am0 * static_cast<float>(cos(2 * M_PI * t_elapsed / (1.0f)));
             if (std::abs(theta) < 1.8f)
             {
                 theta = 0.0f;

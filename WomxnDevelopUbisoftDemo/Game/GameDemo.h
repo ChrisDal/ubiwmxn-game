@@ -4,7 +4,7 @@
 #include <Engine/Game.h>
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h>
-#include <Game/mushroom.h>
+#include <Game/MovableEnnemies.h>
 #include <Game/ObjectsElements.h>
 #include <Game/DeadBody.h>
 #include <Game/Tilemap.h>
@@ -43,7 +43,7 @@ private:
     sf::Texture m_TextureAtlas;
     sf::Texture m_TextureDead;
     ObjectsElements m_exit_sign;
-    Mushroom m_mush;
+    std::vector<MovableEnnemies> m_mushrooms = {};
 
     // struct gameelements m_GameElements;
     std::vector<Ennemie> m_cactus = {};

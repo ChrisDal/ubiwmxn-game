@@ -1,5 +1,5 @@
 #pragma once
-
+#include <Engine/Neighbourhood.h>
 #include <Game/EnumElements.h>
 
 class MainCharacter;
@@ -44,15 +44,8 @@ public:
     
 
 protected:
-    // Neighboorhood
-    class Neighboorhood : public BoxCollideable 
-    {
-    public: 
-        void setNeighboorhood(Ennemie* enm, float dpx);
-        void setNeighboorhoodX(Ennemie* enm, float dpx_x);
-        void setNeighboorhoodY(Ennemie* enm, float dpx_y);
-    };
-	
+    // Neighboorhood 
+    Neighbourhood m_neighb; 
     // attributes for all types of ennemies
     bool _colliding_plateforms;
     bool moving; 
@@ -68,17 +61,11 @@ private:
     
     sf::Sprite m_Sprite;
     sf::Vector2f m_size;
-
     sf::Vector2f m_Position;
     
     // Dead 
     bool m_IsPlayingEndGame;
     bool m_Dead;
-
-
-
-    // Neighboorhood 
-    Ennemie::Neighboorhood _neighb; 
 
     // Fire 
     bool m_weak_fire;

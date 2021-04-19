@@ -2,7 +2,7 @@
 #include <Game/Ennemie.h> 
 #include <Game/SequencePath.h> 
 
-class Mushroom : public Ennemie
+class MovableEnnemies : public Ennemie
 {
 
 	static sf::Texture* m_pTextureAtlas;
@@ -20,9 +20,9 @@ class Mushroom : public Ennemie
 
 public:
 
-	Mushroom(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft);
-	Mushroom(){};
-	~Mushroom() {};
+	MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft);
+	MovableEnnemies(){};
+	~MovableEnnemies() {};
 
 	static const sf::Texture* GetTextureAtlas() { return m_pTextureAtlas; }
 	static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
@@ -34,16 +34,6 @@ public:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const; 
 	void StartEnd() {};
 
-protected:
-	// Neighboorhood
-	class Neighboorhood : public BoxCollideable
-	{
-	public:
-		void setNeighboorhood(Mushroom* enm, float dpx);
-		void setNeighboorhoodX(Mushroom* enm, float dpx_x);
-		void setNeighboorhoodY(Mushroom* enm, float dpx_y);
-	};
-
 private:
 	sf::Sprite m_Sprite;
 	sf::Vector2f m_size;
@@ -53,9 +43,6 @@ private:
 
 	// Death 
 	bool m_Dead;
-
-	// Neighboorhood 
-	Mushroom::Neighboorhood _neighb;
 
 	// Fire : 
 	bool m_weak_fire;
