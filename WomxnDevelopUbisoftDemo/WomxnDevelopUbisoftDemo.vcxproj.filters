@@ -53,8 +53,11 @@
     <ClCompile Include="Game\SequencePath.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\mushroom.cpp">
+    <ClCompile Include="Game\MovableEnnemies.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Neighbourhood.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,8 +107,11 @@
     <ClInclude Include="Game\SequencePath.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\mushroom.h">
+    <ClInclude Include="Game\MovableEnnemies.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Neighbourhood.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

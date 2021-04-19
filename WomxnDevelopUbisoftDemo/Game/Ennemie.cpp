@@ -23,8 +23,8 @@ Ennemie::Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Ve
 	// Bounding box
 	SetBoundingBox(m_Position, m_size);
 
-	// neighboorhood : delta pixels = 5 px
-	_neighb.setNeighboorhood(this, 5.0f);
+	// Neighbourhood : delta pixels = 5 px
+	m_neighb.setNeighbourhood(this, 5.0f);
 
 	// Weak against : Fire 
 	m_weak_fire = weakness_fire;
@@ -59,10 +59,10 @@ void Ennemie::SetDead()
 
 void Ennemie::SetCollidingFire(MainCharacter* mchara)
 {
-	// colliding with neighboorhood 
+	// colliding with Neighbourhood 
 	// as ennemie can be solid or not
 
-	if (_neighb.IsColliding(*mchara))
+	if (m_neighb.IsColliding(*mchara))
 	{
 		_colliding = true;
 
@@ -84,32 +84,6 @@ void Ennemie::SetCollidingFire(MainCharacter* mchara)
 
 }
 
-// --------------- //
-// Neighboorhood 
-// --------------- //
-void Ennemie::Neighboorhood::setNeighboorhood(Ennemie *enm, float dpx)
-{
-
-	sf::Vector2f new_size{enm->GetBoundingBox().width + dpx, enm->GetBoundingBox().height + dpx };
-	this->SetBoundingBox(enm->GetCenter(), new_size);
-
-}
-
-void Ennemie::Neighboorhood::setNeighboorhoodX(Ennemie *enm, float dpx_x)
-{
-
-	sf::Vector2f new_size{enm->GetBoundingBox().width + dpx_x, enm->GetBoundingBox().height};
-	this->SetBoundingBox(enm->GetCenter(), new_size);
-
-}
-
-void Ennemie::Neighboorhood::setNeighboorhoodY(Ennemie *enm, float dpx_y)
-{
-
-	sf::Vector2f new_size{enm->GetBoundingBox().width, enm->GetBoundingBox().height + dpx_y };
-	this->SetBoundingBox(enm->GetCenter(), new_size);
-
-}
 
 // Update 
 void Ennemie::Update(float deltaTime, MainCharacter* mchara) 
@@ -133,7 +107,7 @@ void Ennemie::Update(float deltaTime, MainCharacter* mchara)
 	{
 		if (m_weak_fire)
 		{
-			// check if main character collide neighboorhood with fire
+			// check if main character collide Neighbourhood with fire
 			SetCollidingFire(mchara);
 			// Handling colliding with fire
 			if (_colliding_fire)

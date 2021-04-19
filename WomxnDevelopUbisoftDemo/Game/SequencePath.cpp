@@ -1,13 +1,24 @@
+#include <iostream>
 #include <stdafx.h>
 #include <Game/SequencePath.h>
 
+#define DEBUG 1 
+#if DEBUG 
+	#define LOG(x) std::cout << x  << " "
+# else
+	#define LOG(x)
+#endif
+
 // empty constructor 
-SequencePath::SequencePath(){};
+SequencePath::SequencePath(){
+	LOG("\n[SequencePath] Default SequencePath constructor.\n");
+};
 
 SequencePath::SequencePath(sf::Vector2f A, sf::Vector2f B)
 	: m_isNavigating{ true }, m_IsFinished{ false },
 	  m_Point_BL{ A }, m_Point_ER{ B }
 {
+	LOG("\n[SequencePath] Nice SequencePath Constructor.\n");
 	// Determine on which axis moving 
 	setAxisMove();
 	// Direction of path
@@ -63,11 +74,22 @@ void SequencePath::setAxisMove()
 // Direction of path
 void SequencePath::setDirectionMove()
 {
-	if (m_NavX) { m_direction = m_Point_ER.x > m_Point_BL.x; }
-	if (m_NavY) { m_direction = m_Point_ER.y > m_Point_BL.y; }
-
-	// handling case not handle 
-	if ((not m_NavX) and (not m_NavY)) {
+	if (m_NavX and not m_NavY)
+	{ 
+		m_direction = m_Point_ER.x > m_Point_BL.x; 
+	}
+	else if (m_NavY and not m_NavX) 
+	{ 
+		m_direction = m_Point_ER.y > m_Point_BL.y; 
+	}
+	else if (m_NavX and m_NavY)
+	{
+		// handling case not handle 
+		m_direction = false;
+	}
+	else
+	{
+		// handling case not handle 
 		m_direction = false;
 	}
 }
@@ -93,6 +115,7 @@ void SequencePath::SetLinearSequencePath(sf::Vector2f StartingPoint, sf::Vector2
 		{
 			while (pointx < EndingPoint.x)
 			{
+				// basic = no check of available tile
 				pointx  += m_resDPX;
 				m_SequencePath.push_back(sf::Vector2f(pointx, StartingPoint.y)); 
 			}
@@ -102,6 +125,7 @@ void SequencePath::SetLinearSequencePath(sf::Vector2f StartingPoint, sf::Vector2
 		{
 			while (pointx > EndingPoint.x)
 			{
+				// basic = no check of available tile
 				pointx  -= m_resDPX;
 				m_SequencePath.push_back(sf::Vector2f(pointx, StartingPoint.y)); 
 			}
@@ -180,11 +204,13 @@ bool SequencePath::UpdateFlags(BoxCollideable& CollObj)
 	if (CollObj.Contains(m_SequencePath[m_idx_path]))
 	{
 		m_FlagReached[m_idx_path] = true;
+		reached = true;
+		// next point
 		if (m_idx_path < m_SequencePath.size())
 			m_idx_path++;
 		else
 			m_isNavigating = false;
-		reached = true;
+			
 	}
 	return reached; 
 }
@@ -207,9 +233,9 @@ SequencePath::Instructions SequencePath::GetUpdateInstructions(BoxCollideable& C
 	// Reach ending point 
 	if(isAtTargetPoint(CollObj))
 	{
-		m_idx_path = m_SequencePath.size() ;
-		m_CurrentInstruc = Instructions::Idle;
-		m_idx_instr = m_PathInstructions.size();
+		m_idx_path = static_cast<int>(m_SequencePath.size());
+		m_CurrentInstruc = Instructions::WaitingInstruc;
+		m_idx_instr = static_cast<int>(m_PathInstructions.size());
 		return m_CurrentInstruc;
 	}
 	

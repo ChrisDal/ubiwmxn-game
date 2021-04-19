@@ -1,10 +1,10 @@
 #include <stdafx.h>
-#include <Game/mushroom.h> 
+#include <Game/MovableEnnemies.h> 
 
-sf::Texture*  Mushroom::m_pTextureAtlas = nullptr;
+sf::Texture*  MovableEnnemies::m_pTextureAtlas = nullptr;
 
 // constructor 
-Mushroom::Mushroom(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft)
+MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft)
 	: m_Position(SpawnPosition), m_weak_fire{ true },
 	_colliding_fire(false), _colliding_plateforms(false), m_Dead(false) 
 {
@@ -23,15 +23,15 @@ Mushroom::Mushroom(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf:
 	SetBoundingBox(m_Position, m_size);
 	// velocity 
 	m_Velocity = { 0.0f, 0.0f };
-	// neighboorhood : delta pixels = 5 px
-	_neighb.setNeighboorhood(this, 5.0f);
+	// Neighbourhood : size character + deltapixels/2 
+	m_neighb.setNeighbourhood(this, 64.0f, 5.0f);
 
 
 };
 
 
 
-bool Mushroom::setPath(sf::Vector2f beginpoint, sf::Vector2f endpoint)
+bool MovableEnnemies::setPath(sf::Vector2f beginpoint, sf::Vector2f endpoint)
 {
 	
 	m_Path = SequencePath(beginpoint, endpoint);
@@ -40,12 +40,12 @@ bool Mushroom::setPath(sf::Vector2f beginpoint, sf::Vector2f endpoint)
 }
 
 
-void Mushroom::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void MovableEnnemies::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite);
 }
 
-void Mushroom::Update(float deltaTime)
+void MovableEnnemies::Update(float deltaTime)
 {
 	static const float VELOCITY_MAX = 100.0f; 
 	static const float NO_VELOCITY  = 0.0f; 
@@ -78,6 +78,11 @@ void Mushroom::Update(float deltaTime)
 		m_Velocity.x = NO_VELOCITY;
 		m_Velocity.y = NO_VELOCITY;
 		break;
+	case(SequencePath::Instructions::WaitingInstruc):
+		// pause
+		m_Velocity.x = NO_VELOCITY;
+		m_Velocity.y = NO_VELOCITY;
+		break;
 	default:
 		// not handle 
 		m_Velocity.x = NO_VELOCITY;
@@ -93,30 +98,3 @@ void Mushroom::Update(float deltaTime)
 	
 }
 
-
-// --------------- //
-// Neighboorhood 
-// --------------- //
-void Mushroom::Neighboorhood::setNeighboorhood(Mushroom* enm, float dpx)
-{
-
-	sf::Vector2f new_size{ enm->GetBoundingBox().width + dpx, enm->GetBoundingBox().height + dpx };
-	this->SetBoundingBox(enm->GetCenter(), new_size);
-
-}
-
-void Mushroom::Neighboorhood::setNeighboorhoodX(Mushroom* enm, float dpx_x)
-{
-
-	sf::Vector2f new_size{ enm->GetBoundingBox().width + dpx_x, enm->GetBoundingBox().height };
-	this->SetBoundingBox(enm->GetCenter(), new_size);
-
-}
-
-void Mushroom::Neighboorhood::setNeighboorhoodY(Mushroom* enm, float dpx_y)
-{
-
-	sf::Vector2f new_size{ enm->GetBoundingBox().width, enm->GetBoundingBox().height + dpx_y };
-	this->SetBoundingBox(enm->GetCenter(), new_size);
-
-}

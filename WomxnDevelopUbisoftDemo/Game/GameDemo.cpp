@@ -39,7 +39,7 @@ GameDemo::GameDemo()
     m_TextureAtlas.loadFromFile(texture_name);
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
     ObjectsElements::SetTextureAtlas(&m_TextureAtlas);
-    Mushroom::SetTextureAtlas(&m_TextureAtlas);
+    MovableEnnemies::SetTextureAtlas(&m_TextureAtlas);
 	
 	// Dead Body Texture
 	const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png"; 
@@ -51,12 +51,17 @@ GameDemo::GameDemo()
     m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 
                                         static_cast<unsigned int>(WINSIZE.x / 32.0f), 
                                         static_cast<unsigned int>(WINSIZE.y / 32.0f),
-                                        m_objects, m_cactus, m_checkpoints, m_exit_sign, m_mush);
+                                        m_objects, m_cactus, m_checkpoints, m_exit_sign, m_mushrooms);
     
-    // SetUp Mushroom 
-    sf::Vector2f TargetPoint{ m_mush.GetCenter() }; 
-    TargetPoint.x += 32.0f * 5.0f; 
-    m_mush.setPath(m_mush.GetCenter(), TargetPoint); 
+    // SetUp Ennemies Path 
+    for (MovableEnnemies& mush : m_mushrooms)
+    {
+        sf::Vector2f TargetPoint{ mush.GetCenter() };
+        TargetPoint.x += 32.0f * 6.0f;
+        mush.setPath(mush.GetCenter(), TargetPoint);
+    } 
+    
+   
 
     // Load main character 
     m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
@@ -71,6 +76,8 @@ GameDemo::~GameDemo()
 
 void GameDemo::Update(float deltaTime)
 {
+
+
     m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies, m_cactus);
 
     // Handling death of cactus
@@ -82,17 +89,24 @@ void GameDemo::Update(float deltaTime)
             // erase returns following element
             it_cactus = m_cactus.erase(it_cactus);
         }
-        else 
+        else
         {
             ++it_cactus;
         }
     }
     // Update Living cactus
-    for (int i=0; i < m_cactus.size(); i++)
+    for (int i = 0; i < m_cactus.size(); i++)
     {
         m_cactus[i].Update(deltaTime, m_MainCharacter);
     }
-    
+
+    // Basic Ennemies 
+    for (int i = 0; i < m_ennemies.size(); i++)
+    {
+        m_ennemies[i].Update(deltaTime, m_MainCharacter);
+    }
+
+
     // Check the checkpoints
     for (int k = 0; k < m_checkpoints.size(); k++)
     {
@@ -104,19 +118,24 @@ void GameDemo::Update(float deltaTime)
     }
 
     // Check the mushrooms 
-    m_mush.Update(deltaTime); 
-    
-
-    if (m_mush.getIsFinished())
+    for (MovableEnnemies& mvenm : m_mushrooms)
     {
-        sf::Vector2f TargetPoint{ m_mush.GetCenter() };
+        mvenm.Update(deltaTime);
+        if (mvenm.getIsFinished())
+        {
+            sf::Vector2f TargetPoint{ mvenm.GetCenter() };
 
-        if (m_Animation_AR) { TargetPoint.x -= 32.0f * 5.0f; }
-        else { TargetPoint.x += 32.0f * 5.0f; }
-        // Make AR 
-        m_mush.setPath(m_mush.GetCenter(), TargetPoint);
-        m_Animation_AR = not m_Animation_AR;  
+            if (m_Animation_AR) { 
+                TargetPoint.x -= 32.0f * 5.0f; 
+            } else { 
+                TargetPoint.x += 32.0f * 5.0f; 
+            }
+            // Make AR 
+            mvenm.setPath(mvenm.GetCenter(), TargetPoint);
+            m_Animation_AR = not m_Animation_AR;
+        }
     }
+
 
     if (!m_IsFinished)
     {
@@ -162,7 +181,10 @@ void GameDemo::Render(sf::RenderTarget& target)
     // Exit and MC
     target.draw(m_exit_sign);
     // Msuhroom 
-    target.draw(m_mush);
+    for (MovableEnnemies& mvenm : m_mushrooms)
+    {
+        target.draw(mvenm);
+    }
     // Main character
     target.draw(*m_MainCharacter);
 
