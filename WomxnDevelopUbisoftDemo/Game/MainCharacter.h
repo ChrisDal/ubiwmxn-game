@@ -36,7 +36,9 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
 public:	
     MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position);
 
-    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus);
+    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, 
+                std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus, 
+                std::vector<MovableEnnemies>& l_mennemies);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void StartEndGame();
@@ -76,7 +78,7 @@ public:
 	void setAliveOrDead(const bool& not_dead) { m_isAlive = not_dead;}
 	bool getAlive() const { return m_isAlive; }
 	// Define if Alive or not
-	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
+	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std::vector<MovableEnnemies> l_mennemies);
 
     // Elements with associated time counters
     void setInElements(TileMap& Tm); // set air, water, void, lava
@@ -105,7 +107,6 @@ public:
     void Pause();
     void Stop();
     void setFrameTexture(AnimName anim_name, float deltaTime);
-    //void resetFrameCounter() {a_framecount = 0; a_framecounttexture= 0; };
     void setCurrentAnim(AnimName anim_name) { m_current_anim = anim_name; };
     bool getPlaying() const { return is_PlayingAnim; };
     void setPlaying(const bool& status) { is_PlayingAnim = status; };
@@ -162,6 +163,9 @@ private:
 	bool m_isAlive{true}; 
 	bool m_Respawning{false}; 
     sf::Vector2f m_RespawnPosition{0.0f,0.f};
+
+    // Cause of death 
+    bool m_HitByEnnemies{ false }; 
 
     // max move window 
     sf::Vector2f WIN_LIMIT_X;

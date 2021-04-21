@@ -8,7 +8,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
 	// common to dead bodies
 	enum class AnimName { Idle, Stack, Water, Fire, Iced, Void, 
-							Smoked, FireEnd, Ladder,Reborn }; 
+							Smoked, FireEnd, Food }; 
 	static sf::Texture*  m_pTextureAtlas;
 	
     struct AllAnims {
@@ -20,7 +20,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
         struct AnimType Void;
         struct AnimType Smoked;
         struct AnimType FireEnd;
-        struct AnimType Ladder;
+        struct AnimType Food;
     };
 
 	static const float TIME_DESTRUCTION_WATER;
@@ -29,7 +29,7 @@ class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 	
 public: 
 	DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, 
-			bool pass_through, terrain::Element elem, bool sidex);
+			bool pass_through, terrain::Element elem, bool sidex, bool killed_by_move);
 	
 	void Update(float deltaTime, TileMap& Tm);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -62,6 +62,10 @@ public:
 	terrain::Element getDeathTerrain() const { return m_death_element; }
 	bool getIsOnFire() const { return m_isOnFire;  }
 
+	// Food Transformation 
+	void setFoodFrame();
+	bool isFoodSet() const { return m_deathfood > 0;  }
+
 	// Remove and Destructor 
 	~DeadBody() {};
 
@@ -77,6 +81,7 @@ private:
 	terrain::Element m_death_element; 
 	AnimName a_current_anim{ AnimName::Idle };
 	AllAnims m_AllAnims;
+	
 	// collisions 
 	bool _colliding_plateforms{false}; 
 	// colision side detection on Quad
@@ -88,8 +93,11 @@ private:
 	// set if walkable or not 
 	bool m_isWalkable;
 	bool m_isOnFire; 
+	bool m_isFood; // will transform into dish
 	
 	// animation 
     std::map< AnimName, AnimType > dictAnim;
 	float t_elapsed = 0.0f;
+	short int m_deathfood = -1; // set final dish if food 
+
 };
