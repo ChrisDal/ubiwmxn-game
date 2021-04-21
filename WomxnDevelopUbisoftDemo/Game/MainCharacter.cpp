@@ -80,7 +80,9 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 }
 
 
-void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus)
+void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, 
+                            std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus, 
+                            std::vector<MovableEnnemies>& l_mennemies)
 {
     if (m_IsPlayingEndGame)
     {
@@ -90,8 +92,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     // Define if in the air or not 
     setInElements(Tm);
 
-    // touched deadbodies 
-
+    // Alive and respawning process
     if (!m_isAlive and not m_Respawning and a_done_anim)
     {
         // call reborn 
@@ -111,7 +112,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             died_element = m_current_elem;
         }
-		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element, a_direction));
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element, a_direction, m_HitByEnnemies));
         DeathCounterAdd();
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
@@ -133,17 +134,20 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         ResetTimers();
         // Reassign dead flags
         m_DiedInWater = false;
-        m_DiedInVoid = false;
-        m_DiedInLava = false;
+        m_DiedInVoid  = false;
+        m_DiedInLava  = false;
         // Reset Lava switch 
         m_touched_lava = false;
+        m_timer_lava = false;
+        // Reset Ennemies hit 
+        m_HitByEnnemies = false; 
 
         return;
 	}
 
 
     // Alive or not 
-    bool living = Alive(deltaTime, l_ennemie);
+    bool living = Alive(deltaTime, l_ennemie, l_mennemies);
     if (not living)
     {
 		// Launch dies 
@@ -179,20 +183,22 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_timer_lava = true;
     }
     
+    // touched deadbodies lava
     if (isCollidingDeadBodyLava())
     {
-        // Keep information on went to lava
+        // Keep information  "went to/ touched lava"
         m_touched_lava = true;
         // launch timer 
         m_timer_lava = true;
     }
-
+    // Firefighter
     if (m_InTheWater and m_touched_lava)
     {
         m_timer_lava = false; 
         m_touched_lava = false; 
     }
 
+    // Position and movement process calculations
     static const float SPEED_MAX = 150.0f;
     static const float WATER_SPEED_MAX = SPEED_MAX * 0.3f;
     static const float SPEED_MAX_FALL = 800.0f;
@@ -338,13 +344,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
         else
         {
-            /*// if we were going left modify velocity
-            m_Velocity.x = std::abs(m_Velocity.x * SLOWDOWN_RATE);
-            if (s_Velocity.x)
-            {
-                m_Velocity.x = -m_Velocity.x;
-            }*/
-
             m_Velocity.x = 0.0f;
             
             k_KeyboardPressed[0] = false;
@@ -422,8 +421,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     SetCenter(m_Position);
 	
 
-	
-
 	// Animation to play
     if (m_InTheLava and not a_done_anim)
     {
@@ -470,7 +467,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
 
 
-
+// draw MainCharacter and its deadbodies
 void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite);
@@ -1158,22 +1155,27 @@ float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const
 {
 	// begining 0% = out of element 
 	float pct_time = 0.0f;
+
+    static const float MAX_TIMER_WATER = 1.5f; 
+    static const float MAX_TIMER_VOID  = 0.25f; 
+    static const float MAX_TIMER_LAVA  = 3.0f; 
 	
 	switch(elem)
 	{
 		case(terrain::Element::Water):
-			pct_time = m_CounterWater / 1.5f;
+			pct_time = m_CounterWater / MAX_TIMER_WATER;
 			break; 
 		case(terrain::Element::Void):
-			pct_time = m_CounterVoid / 0.25f;
+			pct_time = m_CounterVoid / MAX_TIMER_VOID;
 			break; 
 		case(terrain::Element::Lava):
-			pct_time = m_CounterLava / 3.0f;
+			pct_time = m_CounterLava / MAX_TIMER_LAVA;
 			break; 
 		default:
 			break; 
 	}
-	return  pct_time;
+
+	return pct_time;
 	
 }
 
@@ -1185,7 +1187,7 @@ void MainCharacter::ResetTimers()
 }
 
 // Set Alive or Dead
-bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
+bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std::vector<MovableEnnemies> l_mennemies)
 {
     static const float TIMER_DEAD_WATER = 1.5f; 
     static const float TIMER_DEAD_VOID  = 0.25f;
@@ -1220,6 +1222,17 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
         {	
 			// Die 
             setAliveOrDead(false);
+            break;
+        }
+    }
+
+    for (auto const& menm : l_mennemies)
+    {
+        if (IsColliding(menm) and m_isAlive)
+        {
+            // Die 
+            setAliveOrDead(false);
+            m_HitByEnnemies = true;
             break;
         }
     }

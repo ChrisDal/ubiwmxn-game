@@ -24,16 +24,16 @@ GameDemo::GameDemo()
 
 
     // map tile 
-    //m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map.csv");
-    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-tiles.csv");
+    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map.csv");
+    //m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-tiles.csv");
     // test
     m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
 	// define found plateform 
 	m_plateform = m_Tilemap.getPlateforms(); 
 
     // Ennemies 
-    //m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map-elements.csv");
-    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-elem.csv");
+    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-mini-map-elements.csv");
+    //m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-elem.csv");
     m_Elements.setTilemapType(false);
 
     // Get texture 
@@ -80,7 +80,8 @@ void GameDemo::Update(float deltaTime)
 {
 
 
-    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies, m_cactus);
+    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap,
+                            m_ennemies, m_cactus, m_mushrooms);
 
     // Handling death of cactus
     std::vector<Ennemie>::iterator it_cactus = m_cactus.begin();

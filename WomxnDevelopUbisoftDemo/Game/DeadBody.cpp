@@ -16,10 +16,13 @@ sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 const float DeadBody::TIME_DESTRUCTION_WATER = 27.0f;
 const float DeadBody::TIME_DESTRUCTION_LAVA = 9.0f;
 
+
+
+
 // constructor 
-DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, bool sidex)
+DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, bool pass_through, terrain::Element elem, bool sidex, bool killed_by_move)
     : m_isWalkable(pass_through), m_Position{position}, m_Velocity{0.0f, 0.0f},
-    c_down{false}, c_left{false}, c_up{false}, c_right{false}
+    c_down{false}, c_left{false}, c_up{false}, c_right{false}, m_isFood{killed_by_move}
 {
 
     sf::Vector2i offset_texture = sf::Vector2i(12, 23);
@@ -63,9 +66,16 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     default:
         // classical death
         textdeath.x = 0;
-        textdeath.y = 0;
+        textdeath.y = 1;
         break; 
 
+    }
+
+    //killed by an ennemy in movement
+    if (killed_by_move)
+    {
+        textdeath.x = 0;
+        textdeath.y = 5;
     }
 
     if (!a_direction)
@@ -101,6 +111,7 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
     Stop();         // reset counters
     InitAnimType(); // set animation data
 	ResetElapsedTime(); 
+
 };
 
 void DeadBody::ResetElapsedTime()
@@ -150,9 +161,26 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
 	switch (m_death_element)
     {
     case(terrain::Element::Air):
-        // classical death
-		Play(AnimName::Stack, deltaTime, false);	
-        m_Velocity.y = 0.0f;
+        if (not m_isFood)
+        {
+            // classical death
+            Play(AnimName::Stack, deltaTime, false);
+            m_Velocity.y = 0.0f;
+        }
+        else
+        {
+            // // Hit by Movable Ennemues Only branch : transform into food
+            Play(AnimName::Food, deltaTime, false);
+            if (a_done_anim)
+            {
+                if (not isFoodSet()) 
+                { 
+                    // define in what kind of dish deadbody is going to be 
+                    setFoodFrame(); 
+                }
+            }
+        }
+
         break;
     
     case(terrain::Element::Water):
@@ -277,7 +305,7 @@ Plateform* DeadBody::get_Plateform()
 //////////////////
 //   Animation ///
 //////////////////
-// No loop 
+
 void DeadBody::Play(AnimName anim_name, float deltaTime, bool looping)
 {
     
@@ -356,6 +384,35 @@ void DeadBody::setFrameTexture(AnimName anim_name, float deltaTime)
     // ToDo : reset counters before they it the maximum => call Pause
 }
 
+void DeadBody::setFoodFrame()
+{
+    m_deathfood = rand() % 8;  //choose between 8 meals in spritesheet 
+    
+    int rectleft = getTextureOffset().x + static_cast<int>(m_size.x) +
+        (dictAnim[AnimName::Food].nb_frames_anim - 1 + m_deathfood) * 64;
+
+
+    if (!a_direction)
+    {
+        
+        m_Sprite.setTextureRect(sf::IntRect(rectleft,
+                                getTextureOffset().y + dictAnim[AnimName::Food].line_anim * 64,
+                                -static_cast<int>(m_size.x),
+                                static_cast<int>(m_size.y)));
+    }
+    else {
+        m_Sprite.setTextureRect(sf::IntRect(rectleft - static_cast<int>(m_size.x), 
+                                getTextureOffset().y + dictAnim[AnimName::Food].line_anim * 64,
+                                static_cast<int>(m_size.x),
+                                static_cast<int>(m_size.y)));
+    }
+
+    return; 
+
+}
+
+
+
 // override 
 void DeadBody::setFacingDirection(float speedx)
 {
@@ -377,7 +434,14 @@ void DeadBody::setFacingDirection(float speedx)
 
 void DeadBody::InitAnimType()
 {
-    
+    /* Informations 
+    struct AnimType {
+		short unsigned int nb_frames_anim; 
+		short unsigned int line_anim; 
+		short unsigned int a_offset;
+		std::string name; 
+	}; */
+
     m_AllAnims.Idle 	= { 4, 1, 0, "Idle" };
     m_AllAnims.Stack 	= { 7, 0, 0, "Stack" };
     m_AllAnims.Water 	= { 7, 4, 0, "Water" };
@@ -386,7 +450,7 @@ void DeadBody::InitAnimType()
     m_AllAnims.Void 	= { 3, 0, 1, "Void" };
     m_AllAnims.Smoked 	= { 2, 2, 14, "Smoked" };
     m_AllAnims.FireEnd 	= { 2, 2, 12, "FireEnd" };
-    m_AllAnims.Ladder 	= { 1, 0, 5, "Ladder" };
+    m_AllAnims.Food     = { 7, 5, 0, "Food" };
 	
 	dictAnim[AnimName::Idle]       = m_AllAnims.Idle;
     dictAnim[AnimName::Stack]      = m_AllAnims.Stack;
@@ -396,6 +460,6 @@ void DeadBody::InitAnimType()
     dictAnim[AnimName::Void]     	= m_AllAnims.Void;
     dictAnim[AnimName::Smoked]  	= m_AllAnims.Smoked;
     dictAnim[AnimName::FireEnd]     = m_AllAnims.FireEnd;
-    dictAnim[AnimName::Ladder]      = m_AllAnims.Ladder;
+    dictAnim[AnimName::Food]        = m_AllAnims.Food;
 
 }

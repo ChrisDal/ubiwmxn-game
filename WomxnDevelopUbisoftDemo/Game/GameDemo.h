@@ -22,6 +22,7 @@ public:
     void RenderDebugMenu(sf::RenderTarget& target) override;
     void RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE);
 
+
 private:
     sf::Font m_EndgameTextFont;
     sf::Text m_EndgameText;
