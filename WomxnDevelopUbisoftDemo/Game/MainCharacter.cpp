@@ -1,10 +1,9 @@
-
 #include <iostream> 
 #include <stdafx.h>
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h> 
 
-#define DEBUG 0 
+#define DEBUG 1 
 #if DEBUG 
     #define LOG(x) std::cout << x  << " "
 # else
@@ -150,8 +149,11 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     // Alive or not 
     bool living = Alive(deltaTime, l_ennemie, l_mennemies);
+
+    
     if (not living)
     {
+        
 		// Launch dies 
         if (m_DiedInLava or m_touched_lava)
         {
@@ -161,6 +163,21 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
 			Play(AnimName::Die, deltaTime, false);
         }
+
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            std::string death_sound = "Assets\\Sounds\\deaths\\cat_meow_0" + std::to_string(rand() % 5 + 1) + ".wav";
+            LOG(death_sound); 
+            // Assign both animation 
+            LoadStructSound(m_AllSounds.Die, death_sound, false);
+            dictSound[AnimName::Die] = m_AllSounds.Die;
+            LoadStructSound(m_AllSounds.FireEnd, death_sound, false);
+            dictSound[AnimName::FireEnd] = m_AllSounds.FireEnd;
+            // set Buffer and play
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
         return;
     }
 	else if (m_Respawning and living)
@@ -1287,7 +1304,8 @@ void MainCharacter::InitSoundType()
 
     LoadStructSound(m_AllSounds.Jump, "Assets\\Sounds\\jump_03.wav", false); 
     LoadStructSound(m_AllSounds.DoubleJump, "Assets\\Sounds\\jump_water_06.wav", false);
-
+    LoadStructSound(m_AllSounds.Die, "Assets\\Sounds\\deaths\\cat_meow_01.wav", false);
+    // default initialisation for the others
     dictSound[AnimName::Idle] = m_AllSounds.Idle;
     dictSound[AnimName::Walk] = m_AllSounds.Walk;
     dictSound[AnimName::Jump] = m_AllSounds.Jump;
@@ -1308,10 +1326,6 @@ void MainCharacter::setSoundType(AnimName anim)
         m_soundfx.setVolume(GetSFXVolume());
         m_soundfx.setLoop(dictSound[anim].looping);
     }
-
-
-
-
 }
 
 void MainCharacter::playSFX(AnimName anim)
@@ -1324,7 +1338,7 @@ void MainCharacter::playSFX(AnimName anim)
 
 void MainCharacter::resetPlaying()
 {
-
+    // TODO iterate on enum
     dictSound[AnimName::Idle].is_playing = false;
     dictSound[AnimName::Walk].is_playing = false;
     dictSound[AnimName::Jump].is_playing = false;
