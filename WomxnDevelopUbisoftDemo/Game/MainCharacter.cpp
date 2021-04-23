@@ -167,7 +167,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
         {
             std::string death_sound = "Assets\\Sounds\\deaths\\cat_meow_0" + std::to_string(rand() % 5 + 1) + ".wav";
-            LOG(death_sound); 
             // Assign both animation 
             LoadStructSound(m_AllSounds.Die, death_sound, false);
             dictSound[AnimName::Die] = m_AllSounds.Die;
@@ -446,7 +445,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         if (m_current_anim != AnimName::FireSet && m_current_anim != AnimName::FireEnd)
         {
             Play(AnimName::FireBegin, deltaTime, false);
-            setSoundType(AnimName::FireBegin); 
             
         }
         else if (m_current_anim == AnimName::FireSet)
@@ -454,13 +452,25 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             Play(m_current_anim, deltaTime, true);
         }
         // else nothing
-        setSoundType(m_current_anim);
-        playSFX(m_current_anim);
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
 
     }
     else if (m_touched_lava or m_InTheLava)
     {
         Play(AnimName::FireSet, deltaTime, true);  
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
     }
 	else if (m_IsJumping)
 	{
@@ -996,7 +1006,7 @@ inline bool MainCharacter::ToTheRight(BoxCollideable& other)
 //              Animation 
 // ----------------------------------
 
-// 
+// Animation : set Frame (texture)
 void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
 {
     
@@ -1140,7 +1150,8 @@ std::string MainCharacter::getAnimName()
     return animname;
 }
 
-
+// Set the direction that the character is facing : left(false) or right(true), 
+// set a_direction value
 void MainCharacter::setFacingDirection()
 {
     // direction for animation 
@@ -1286,8 +1297,8 @@ void MainCharacter::LoadStructSound(struct SoundType& onesound, const std::strin
 {
     onesound.no_sound = not onesound.s_buffer.loadFromFile(soundpath);
     onesound.is_playing = false;
-    onesound.pathsound = soundpath;
-    onesound.looping = looping; 
+    onesound.pathsound  = soundpath;
+    onesound.looping    = looping; 
 };
 
 void MainCharacter::InitSoundType()
@@ -1305,6 +1316,9 @@ void MainCharacter::InitSoundType()
     LoadStructSound(m_AllSounds.Jump, "Assets\\Sounds\\jump_03.wav", false); 
     LoadStructSound(m_AllSounds.DoubleJump, "Assets\\Sounds\\jump_water_06.wav", false);
     LoadStructSound(m_AllSounds.Die, "Assets\\Sounds\\deaths\\cat_meow_01.wav", false);
+    LoadStructSound(m_AllSounds.FireEnd, "Assets\\Sounds\\deaths\\cat_meow_02.wav", false);
+    LoadStructSound(m_AllSounds.FireBegin, "Assets\\Sounds\\lava.flac", false);
+    LoadStructSound(m_AllSounds.FireSet, "Assets\\Sounds\\ignition.flac", false);
     // default initialisation for the others
     dictSound[AnimName::Idle] = m_AllSounds.Idle;
     dictSound[AnimName::Walk] = m_AllSounds.Walk;
