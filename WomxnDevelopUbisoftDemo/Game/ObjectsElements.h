@@ -3,30 +3,56 @@
 class ObjectsElements : public sf::Drawable, public BoxCollideable, public Animation
 {
     static sf::Texture* m_pTextureAtlas;
+    static float m_SFX_volume; 
+
 public:
     static const sf::Texture* GetTextureAtlas()  { return m_pTextureAtlas;  }
     static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
 
-    ObjectsElements(sf::Vector2f& position, bool canmove, bool animated, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy);
+    static void SetSFXVolume(float percentage) { m_SFX_volume = percentage;  }
+    static const float GetSFXVolume() { return m_SFX_volume;  }
+
+    ObjectsElements(sf::Vector2f& position, bool canmove, bool animated, sf::Vector2u& upperleft, unsigned int sx, unsigned int sy, unsigned int elem_type);
     ObjectsElements() {};
     ~ObjectsElements(); 
 
     void Update(float deltaTime, bool activated);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	
+	void Activate(); 
+	void setObjType(unsigned int elemtype); 
 
     void StartEndGame();
     bool getCanMove() const { return moving; }; 
+	
+	// Sound handling 
+	void setSoundType(); 
+	inline void playSFX(); 
+	bool getPlayStatusSFX() const { return m_soundfx.getStatus(); }
+
+protected: 
+	
+	enum class ObjectType { checkpoint, panneau, box, decor }; 
 
 private:
     
-    sf::Sprite e_Sprite;
-    sf::Vector2f e_size;
-    sf::Vector2f e_Position;
+    sf::Sprite m_Sprite;
+    sf::Vector2f m_size;
+    sf::Vector2f m_Position;
+	
+	ObjectType m_objtype; 
+	
+	// sound 
+	sf::Sound m_soundfx; 
+	sf::SoundBuffer m_sbuff; 
+	bool m_NoSound{true};  // buffer not assigned 
+    std::string m_soundrpath = "";
 
-    bool e_IsPlayingEndGame{ false };
+    bool m_IsPlayingEndGame{ false };
 
     // attributes for all types of ennemies
     bool _colliding_plateforms{ false };
     bool moving{ false };
-    bool _animated{ false };
+    bool m_animated{ false };
+    bool m_activated{ false };  // one time activation
 };
