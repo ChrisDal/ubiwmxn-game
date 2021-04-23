@@ -28,7 +28,6 @@ ObjectsElements::ObjectsElements(sf::Vector2f& spawn_pos, bool canmove, bool ani
 	// Object Type : checkpoint or bomb or box
 	setObjType(elem_type);
 	// Sound assignment 
-	
 	setSoundType();
 
 };

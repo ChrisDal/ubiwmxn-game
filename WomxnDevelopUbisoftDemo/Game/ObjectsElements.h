@@ -30,8 +30,7 @@ public:
 	inline void playSFX(); 
 	bool getPlayStatusSFX() const { return m_soundfx.getStatus(); }
 
-protected: 
-	
+protected:
 	enum class ObjectType { checkpoint, panneau, box, decor }; 
 
 private:
