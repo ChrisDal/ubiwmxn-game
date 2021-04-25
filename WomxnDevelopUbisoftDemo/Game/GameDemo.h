@@ -22,6 +22,13 @@ public:
     void RenderDebugMenu(sf::RenderTarget& target) override;
     void RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE);
 
+    inline bool IsBGMusicPlaying() 
+    {
+        return m_bgmusic.getStatus() == sf::SoundSource::Status::Playing ;
+    }
+
+    void setMusicVolume(float percentage) { m_bgmusic.setVolume(percentage); }
+    float getMusicVolume() const { return m_bgmusic.getVolume(); }
 
 private:
     sf::Font m_EndgameTextFont;
@@ -31,10 +38,19 @@ private:
     sf::Sprite m_Tombstone;
     sf::Texture m_TextureTombstone;
     sf::Text m_DeathsText;
+    sf::Sprite m_icoMusic; 
+    sf::Texture m_TextureIcoMusic;
+    sf::Texture m_TextureIcoNoMusic;
+    sf::Sprite m_icoSFX;
+    sf::Texture m_TextureIcoSound;
+    sf::Texture m_TextureIcoNoSound;
+    // Sound
     sf::SoundBuffer m_GameSoundBuffer;
     sf::SoundBuffer m_EndgameSoundBuffer;
     sf::Sound m_EndgameSound;
     sf::Sound m_GameSound;
+    sf::Music m_bgmusic; 
+    bool m_noMusic{ false };    // background music loaded 
     // Solid Elements
     TileMap m_Tilemap;
     MainCharacter* m_MainCharacter;
