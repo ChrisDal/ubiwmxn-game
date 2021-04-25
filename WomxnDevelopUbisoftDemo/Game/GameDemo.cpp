@@ -618,9 +618,19 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 			ImGui::Text("Volume");
 			ImGui::SliderInt("", &slider_music, 0, 100, "%d", ImGuiSliderFlags_None);
 			ImGui::EndPopup();
-			this->setMusicVolume((float)slider_music);
+            this->setMusicVolume((float)slider_music);
 		}
-		
+        if (this->getMusicVolume() == 0.0f)
+        {
+            m_icoMusic.setTexture(m_TextureIcoNoMusic);
+        }
+        else
+        {
+            if (m_icoMusic.getTexture() != &m_TextureIcoMusic)
+            {
+                m_icoMusic.setTexture(m_TextureIcoMusic);
+            }
+        }
 		
 		// Enable Disable music on right click 
         /*if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
@@ -675,6 +685,17 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 			ImGui::EndPopup();
 		}
 		m_MainCharacter->SetSFXVolume((float)slider_i);
+        if (m_MainCharacter->GetSFXVolume() == 0.0f)
+        {
+            m_icoSFX.setTexture(m_TextureIcoNoSound);
+        }
+        else
+        {
+            if (m_icoSFX.getTexture() != &m_TextureIcoSound)
+            {
+                m_icoSFX.setTexture(m_TextureIcoSound);
+            }
+        }
         ImGui::PopID();
 
     }
