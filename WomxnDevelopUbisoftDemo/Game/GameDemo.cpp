@@ -57,6 +57,7 @@ GameDemo::GameDemo()
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
     ObjectsElements::SetTextureAtlas(&m_TextureAtlas);
     MovableEnnemies::SetTextureAtlas(&m_TextureAtlas);
+    VFX::SetTextureAtlas(&m_TextureAtlas);
 	
 	// Dead Body Texture
 	const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png"; 

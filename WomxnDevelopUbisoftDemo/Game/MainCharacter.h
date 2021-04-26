@@ -3,6 +3,7 @@
 #include <Game/Plateform.h> 
 #include <Game/DeadBody.h> 
 #include <Game/EnumElements.h> 
+#include <Game/Vfx.h>
 
 class Ennemie;
 
@@ -239,6 +240,7 @@ private:
 
     // current element : Air / Void / Water 
     terrain::Element m_current_elem{ terrain::Element::Air };
+
     
     
 };

@@ -2,6 +2,12 @@
 #include <iostream>
 #include <Game/ObjectsElements.h>
 
+#define DEBUG 1 
+#if DEBUG 
+#define LOG(x) std::cout << x  << " "
+# else
+#define LOG(x)
+#endif
 
 sf::Texture*  ObjectsElements::m_pTextureAtlas = nullptr;
 float ObjectsElements::m_SFX_volume = 20.0f;
@@ -29,6 +35,18 @@ ObjectsElements::ObjectsElements(sf::Vector2f& spawn_pos, bool canmove, bool ani
 	setObjType(elem_type);
 	// Sound assignment 
 	setSoundType();
+
+	// VFX 
+	m_vfx = VFX(m_Position);
+	m_vfx.InitAnimType();
+
+	setVFXmirrored(true); 
+
+	if (m_vfx_mirrored)
+	{
+		m_vfx_mirror = VFX(m_Position);
+		m_vfx_mirror.InitAnimType();
+	}
 
 };
 
@@ -78,10 +96,8 @@ void ObjectsElements::setSoundType()
 				m_soundfx.setLoop(false);
 			}
 			break;
-			
 		default: 
 			m_NoSound = true;
-
 	}
 	
 }
@@ -95,6 +111,12 @@ void ObjectsElements::StartEndGame()
 void ObjectsElements::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(m_Sprite);
+	if (m_vfx.getCurrentAnim() != VFX::AnimName::Idle)
+	{
+		target.draw(m_vfx);
+		target.draw(m_vfx_mirror);
+	}
+	
 }
 
 // Play Sound FX
@@ -105,21 +127,53 @@ void ObjectsElements::playSFX()
 	m_soundfx.play(); 
 }
 
-// Activate Elements : One time activation
-void ObjectsElements::Activate()
+// Play vfx animations associated to m_vfx (mirrored)
+void ObjectsElements::playVFX(float deltaTime)
 {
-	switch(m_objtype)
+	sf::Vector2f right_pos = { 0.0f, 0.0f };
+	sf::Vector2f left_pos = { 0.0f, 0.0f };
+	// visual
+	right_pos.x = this->GetCenter().x + this->m_BoundingBox.width;
+	right_pos.y = this->GetCenter().y - this->m_BoundingBox.height / 3.0f;
+
+	m_vfx.setSpriteParameters(right_pos, 0.0f, sf::Vector2f(2.0f, 2.0f));
+
+	// Update animations
+	m_vfx.Update(deltaTime, VFX::AnimName::DemiCircularActivation, true);
+
+	if (m_vfx_mirrored)
 	{
-	case(ObjectType::checkpoint): 
-		m_Sprite.setColor(sf::Color(0, 255, 0));
-		playSFX();
-		m_activated = true;
+		left_pos.x = this->GetCenter().x - this->m_BoundingBox.width;
+		left_pos.y = this->GetCenter().y - this->m_BoundingBox.height / 3.0f;
+
+		m_vfx_mirror.setSpriteParameters(left_pos, 0.0f, sf::Vector2f(2.0f, 2.0f));
+		m_vfx_mirror.Update(deltaTime, VFX::AnimName::DemiCircularActivation, false);
+	}
+
+
+};
+
+// Activate Elements : One time activation
+void ObjectsElements::Activate(float deltaTime)
+{
+	//bool not_vfx_call = m_activated and (!m_vfx.isPlaying());
+	switch (m_objtype)
+	{
+	case(ObjectType::checkpoint):
+		// VFX time dependant
+		playVFX(deltaTime);
+		if (not m_activated)
+		{
+			m_Sprite.setColor(sf::Color(0, 255, 0));
+			// sound 
+			playSFX();
+			m_activated = true;
+		}
 		break;
-	default: 
+	default:
 		m_Sprite.setColor(sf::Color(0, 255, 0));
-		break;
-	}	
-}
+	};
+};
 
 
 void ObjectsElements::Update(float deltaTime, bool activated) 
@@ -131,9 +185,9 @@ void ObjectsElements::Update(float deltaTime, bool activated)
 
 	if (m_animated)
 	{
-		if (activated and (not m_activated))
+		if (activated)
 		{
-			Activate();
+			Activate(deltaTime);
 		}
 	}
 }; 
