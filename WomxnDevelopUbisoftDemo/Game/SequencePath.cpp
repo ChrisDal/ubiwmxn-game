@@ -2,7 +2,7 @@
 #include <stdafx.h>
 #include <Game/SequencePath.h>
 
-#define DEBUG 1 
+#define DEBUG 0 
 #if DEBUG 
 	#define LOG(x) std::cout << x  << " "
 # else

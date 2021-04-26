@@ -20,6 +20,14 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
         std::string name{ "" };
     };
 
+    struct SoundType {
+        sf::SoundBuffer s_buffer;       // sound buffer 
+        bool is_playing{ false };       // sound is playing
+        bool no_sound{ true };          // = sound not loaded
+        std::string pathsound{ "" };    // path to wav sound file 
+        bool looping{ false };          // looping or not 
+    };
+
     struct AllAnims {
         struct AnimType Idle;
         struct AnimType Walk;
@@ -31,7 +39,22 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
         struct AnimType FireBegin;
         struct AnimType FireEnd;
         struct AnimType Reborn;
+    };    
+    
+    struct AllSounds {
+        struct SoundType Idle;
+        struct SoundType Walk;
+        struct SoundType Jump;
+        struct SoundType DoubleJump;
+        struct SoundType Die;
+        struct SoundType Hurt;
+        struct SoundType FireSet;
+        struct SoundType FireBegin;
+        struct SoundType FireEnd;
+        struct SoundType Reborn;
     };
+
+    static float m_SFX_volume;
 
 public:	
     MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position);
@@ -113,6 +136,17 @@ public:
     std::string getAnimName(); 
     bool a_done_anim{ false }; 
 
+    // Sound 
+    void InitSoundType();
+    void LoadStructSound(struct SoundType& onesound, const std::string soundpath, bool looping);
+    inline void setSoundType(AnimName anim);
+    inline void playSFX(AnimName anim);
+    bool getPlayStatusSFX() const { return m_soundfx.getStatus(); }
+    void resetPlaying();
+
+    static void SetSFXVolume(float percentage) { m_SFX_volume = percentage; }
+    static const float GetSFXVolume() { return m_SFX_volume; }
+
 
 private:
     sf::Texture m_Texture;
@@ -181,6 +215,10 @@ private:
 	bool c_up; 
 	bool c_down; 
 
+    // Sound
+    sf::Sound m_soundfx;
+    std::map< AnimName, SoundType > dictSound;
+    AllSounds m_AllSounds; 
 
     // animation texure 
     sf::Vector2u a_textsquare_offset;

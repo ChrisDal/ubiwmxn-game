@@ -2,7 +2,7 @@
 #include "GameDemo.h"
 
 GameDemo::GameDemo()
-    : Game{ "Game Demo" }
+    : Game{ "9Lives" }
     , m_IsFinished{ false }
 {
     m_EndgameTextFont.loadFromFile("Assets\\arial.ttf");
@@ -13,14 +13,29 @@ GameDemo::GameDemo()
     m_EndgameText.setCharacterSize(24);
     m_EndgameText.setFillColor(sf::Color::Red);
 
+    // Sounds
     m_EndgameSoundBuffer.loadFromFile("Assets\\Sounds\\Win_sound.wav");
-
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
+    // Music
+    if (!m_bgmusic.openFromFile("Assets\\Sounds\\music\\7-Dark Fantasy Studio-Tribe.wav"))
+    {
+        if (!m_bgmusic.openFromFile("Assets\\Sounds\\music\\2-Dark Fantasy Studio-Angry bull.wav"))
+            m_noMusic = true;
+    }
+    m_bgmusic.setLoop(true);
+
 
     // Future Game UI 
     m_DeathsTextFont.loadFromFile("Assets\\calibrib.ttf");
     m_TextureTombstone.loadFromFile(".\\Assets\\tombstone.png");
     m_Tombstone.setTexture(m_TextureTombstone);
+    // Sound
+	m_TextureIcoMusic.loadFromFile(".\\Assets\\icons\\musicOn.png"); 
+	m_TextureIcoNoMusic.loadFromFile(".\\Assets\\icons\\musicOff.png"); 
+	m_icoMusic.setTexture(m_TextureIcoMusic);
+	m_TextureIcoSound.loadFromFile(".\\Assets\\icons\\audioOn.png"); 
+	m_TextureIcoNoSound.loadFromFile(".\\Assets\\icons\\audioOff.png"); 
+	m_icoSFX.setTexture(m_TextureIcoSound);
 
 
     // map tile 
@@ -68,6 +83,9 @@ GameDemo::GameDemo()
     // Load main character 
     m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
 
+    // Set sound volume 
+    m_MainCharacter->SetSFXVolume(50.0f); 
+    this->setMusicVolume(m_MainCharacter->GetSFXVolume()/10.0f);
 	
 }
 
@@ -79,6 +97,14 @@ GameDemo::~GameDemo()
 void GameDemo::Update(float deltaTime)
 {
 
+    if (not m_noMusic)
+    {
+        if ( not IsBGMusicPlaying())
+        {
+            // if pause or stopped => play
+            m_bgmusic.play(); 
+        }
+    }
 
     m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap,
                             m_ennemies, m_cactus, m_mushrooms);
@@ -293,6 +319,12 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         }
     }
 	
+	if (ImGui::CollapsingHeader("Sound status"))
+    {
+		ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(this->getMusicVolume())).c_str());		
+		ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(m_MainCharacter->GetSFXVolume())).c_str());
+    }
+	
 	if (ImGui::CollapsingHeader("MainCharacter Status"))
     {
         if (m_MainCharacter->getCollidingPf())
@@ -375,6 +407,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Dead");
         }
+		
 
     }
     
@@ -560,6 +593,114 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         ImGui::SameLine(0.0f, 5.0f);
         ImGui::Text("Lava");
         ImGui::PopStyleColor(2);
+		
+		
+		
+		// Parameters 
+		ImGui::SetCursorPosX(1024.0f - 150.0f);
+		ImGui::SetCursorPosY(0.0f);
+		// music 
+		ImGui::PushID(10);
+        bool click_music = ImGui::ImageButton(*m_icoMusic.getTexture(), 
+											    sf::Vector2f(m_icoMusic.getTexture()->getSize()), 
+                                                0,  sf::Color(0,0,0,255), sf::Color(255,255,255) );
+		if (ImGui::IsItemHovered()) 
+			ImGui::SetTooltip("Music Volume");	
+			
+		int slider_music = this->getMusicVolume();
+		if (click_music)
+		{
+			ImGui::OpenPopup("music_popup");	
+		}
+
+		if (ImGui::BeginPopup("music_popup", ImGuiWindowFlags_NoMove))
+		{
+			ImGui::Text("Volume");
+			ImGui::SliderInt("", &slider_music, 0, 100, "%d", ImGuiSliderFlags_None);
+			ImGui::EndPopup();
+            this->setMusicVolume((float)slider_music);
+		}
+        if (this->getMusicVolume() == 0.0f)
+        {
+            m_icoMusic.setTexture(m_TextureIcoNoMusic);
+        }
+        else
+        {
+            if (m_icoMusic.getTexture() != &m_TextureIcoMusic)
+            {
+                m_icoMusic.setTexture(m_TextureIcoMusic);
+            }
+        }
+		
+		// Enable Disable music on right click 
+        /*if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        {
+            if (m_icoMusic.getTexture() == &m_TextureIcoMusic)
+            {
+                m_icoMusic.setTexture(m_TextureIcoNoMusic);
+                this->setMusicVolume(0.0f);
+            }
+            else
+            {
+                m_icoMusic.setTexture(m_TextureIcoMusic);
+                this->setMusicVolume(m_MainCharacter->GetSFXVolume() / 10.f);
+            }
+        }*/
+		
+        ImGui::PopID();
+		ImGui::SameLine(0.0f, 5.0f);
+		// SFX
+        ImGui::PushID(11);
+        bool click_sfx = ImGui::ImageButton(*m_icoSFX.getTexture(), 
+                                            sf::Vector2f(m_icoSFX.getTexture()->getSize()),
+                                            0, sf::Color(0, 0, 0, 255), sf::Color(255, 255, 255));
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Modify SFX Volume");
+        }
+			
+		// Enable Disable SFX 
+        /*if (click_sfx)
+        {
+            if (m_icoSFX.getTexture() == &m_TextureIcoSound)
+            {
+                m_icoSFX.setTexture(m_TextureIcoNoSound);
+                m_MainCharacter->SetSFXVolume(0.0f);
+            }
+            else
+            {
+                m_icoSFX.setTexture(m_TextureIcoSound);
+                m_MainCharacter->SetSFXVolume(50.0f);
+            }
+        }*/
+		
+		// Handling Volume
+		int slider_i = m_MainCharacter->GetSFXVolume();
+		if (click_sfx)
+		{
+			ImGui::OpenPopup("my_volume_popup");
+		}
+		
+		if (ImGui::BeginPopup("my_volume_popup", ImGuiWindowFlags_NoMove))
+		{
+			ImGui::Text("Volume");
+			ImGui::SliderInt("", &slider_i, 0, 100, "%d", ImGuiSliderFlags_None);
+			ImGui::EndPopup();
+            m_MainCharacter->SetSFXVolume((float)slider_i);
+		}
+		
+        if (m_MainCharacter->GetSFXVolume() == 0.0f)
+        {
+            m_icoSFX.setTexture(m_TextureIcoNoSound);
+        }
+        else
+        {
+            if (m_icoSFX.getTexture() != &m_TextureIcoSound)
+            {
+                m_icoSFX.setTexture(m_TextureIcoSound);
+            }
+        }
+        ImGui::PopID();
 
     }
 

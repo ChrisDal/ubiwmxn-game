@@ -1,10 +1,9 @@
-
 #include <iostream> 
 #include <stdafx.h>
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h> 
 
-#define DEBUG 0 
+#define DEBUG 1 
 #if DEBUG 
     #define LOG(x) std::cout << x  << " "
 # else
@@ -12,6 +11,8 @@
 #endif
 
 using namespace sf;
+
+float MainCharacter::m_SFX_volume = 18.0f;
 
 // Joystick helpers
 namespace
@@ -76,7 +77,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
     m_RespawnPosition = m_Position; 
     // Animations structures and mapping
     InitAnimType();             // ToDo : make a configuration files for animation's details
-   
+    InitSoundType();
 }
 
 
@@ -148,8 +149,11 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     // Alive or not 
     bool living = Alive(deltaTime, l_ennemie, l_mennemies);
+
+    
     if (not living)
     {
+        
 		// Launch dies 
         if (m_DiedInLava or m_touched_lava)
         {
@@ -159,6 +163,20 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
 			Play(AnimName::Die, deltaTime, false);
         }
+
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            std::string death_sound = "Assets\\Sounds\\deaths\\cat_meow_0" + std::to_string(rand() % 5 + 1) + ".wav";
+            // Assign both animation 
+            LoadStructSound(m_AllSounds.Die, death_sound, false);
+            dictSound[AnimName::Die] = m_AllSounds.Die;
+            LoadStructSound(m_AllSounds.FireEnd, death_sound, false);
+            dictSound[AnimName::FireEnd] = m_AllSounds.FireEnd;
+            // set Buffer and play
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
         return;
     }
 	else if (m_Respawning and living)
@@ -427,17 +445,32 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         if (m_current_anim != AnimName::FireSet && m_current_anim != AnimName::FireEnd)
         {
             Play(AnimName::FireBegin, deltaTime, false);
+            
         }
         else if (m_current_anim == AnimName::FireSet)
         {
             Play(m_current_anim, deltaTime, true);
         }
         // else nothing
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
 
     }
     else if (m_touched_lava or m_InTheLava)
     {
         Play(AnimName::FireSet, deltaTime, true);  
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
     }
 	else if (m_IsJumping)
 	{
@@ -449,6 +482,12 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		{
 			Play(AnimName::DoubleJump, deltaTime, true);
 		}
+
+        // Sound when Anim is defined 
+        setSoundType(m_current_anim);
+        // Leap authorized = sound
+        if (k_KeyboardPressed[4] or k_JoystickPressed[0])
+            playSFX(m_current_anim);
 	}
 	else
 	{
@@ -462,6 +501,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 			Play(AnimName::Walk, deltaTime, true);
 		}
 	}
+
+
+
+    if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+    {
+        resetPlaying();
+    }
 	
 }
 
@@ -960,7 +1006,7 @@ inline bool MainCharacter::ToTheRight(BoxCollideable& other)
 //              Animation 
 // ----------------------------------
 
-// 
+// Animation : set Frame (texture)
 void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
 {
     
@@ -1104,7 +1150,8 @@ std::string MainCharacter::getAnimName()
     return animname;
 }
 
-
+// Set the direction that the character is facing : left(false) or right(true), 
+// set a_direction value
 void MainCharacter::setFacingDirection()
 {
     // direction for animation 
@@ -1239,4 +1286,80 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std:
 
 
     return getAlive();
+}
+
+// ----------------- //
+//      Sound        //
+// ----------------- //
+
+
+void MainCharacter::LoadStructSound(struct SoundType& onesound, const std::string soundpath, bool looping)
+{
+    onesound.no_sound = not onesound.s_buffer.loadFromFile(soundpath);
+    onesound.is_playing = false;
+    onesound.pathsound  = soundpath;
+    onesound.looping    = looping; 
+};
+
+void MainCharacter::InitSoundType()
+{
+    /*
+    struct SoundType {
+        sf::SoundBuffer s_buffer;       // sound buffer 
+        bool is_playing{ false };       // sound is playing
+        bool no_sound{ true };          // = sound not loaded
+        std::string pathsound{ "" };    // path to wav sound file 
+        bool looping{ false };          // looping or not
+    };
+    */
+
+    LoadStructSound(m_AllSounds.Jump, "Assets\\Sounds\\jump_03.wav", false); 
+    LoadStructSound(m_AllSounds.DoubleJump, "Assets\\Sounds\\jump_water_06.wav", false);
+    LoadStructSound(m_AllSounds.Die, "Assets\\Sounds\\deaths\\cat_meow_01.wav", false);
+    LoadStructSound(m_AllSounds.FireEnd, "Assets\\Sounds\\deaths\\cat_meow_02.wav", false);
+    LoadStructSound(m_AllSounds.FireBegin, "Assets\\Sounds\\lava.flac", false);
+    LoadStructSound(m_AllSounds.FireSet, "Assets\\Sounds\\ignition.flac", false);
+    // default initialisation for the others
+    dictSound[AnimName::Idle] = m_AllSounds.Idle;
+    dictSound[AnimName::Walk] = m_AllSounds.Walk;
+    dictSound[AnimName::Jump] = m_AllSounds.Jump;
+    dictSound[AnimName::DoubleJump] = m_AllSounds.DoubleJump;
+    dictSound[AnimName::Die] = m_AllSounds.Die;
+    dictSound[AnimName::FireSet] = m_AllSounds.FireSet;
+    dictSound[AnimName::FireBegin] = m_AllSounds.FireBegin;
+    dictSound[AnimName::FireEnd] = m_AllSounds.FireEnd;
+    dictSound[AnimName::Reborn] = m_AllSounds.Reborn;
+
+}
+
+void MainCharacter::setSoundType(AnimName anim)
+{
+    if (not dictSound[anim].no_sound)
+    {
+        m_soundfx.setBuffer(dictSound[anim].s_buffer);
+        m_soundfx.setVolume(GetSFXVolume());
+        m_soundfx.setLoop(dictSound[anim].looping);
+    }
+}
+
+void MainCharacter::playSFX(AnimName anim)
+{
+    if (dictSound[anim].no_sound) { return; }
+    m_soundfx.setBuffer(dictSound[anim].s_buffer); // re-set buffer 
+    m_soundfx.play();
+    dictSound[anim].is_playing = true; 
+}
+
+void MainCharacter::resetPlaying()
+{
+    // TODO iterate on enum
+    dictSound[AnimName::Idle].is_playing = false;
+    dictSound[AnimName::Walk].is_playing = false;
+    dictSound[AnimName::Jump].is_playing = false;
+    dictSound[AnimName::DoubleJump].is_playing = false;
+    dictSound[AnimName::Die].is_playing = false;
+    dictSound[AnimName::FireSet].is_playing = false;
+    dictSound[AnimName::FireBegin].is_playing = false;
+    dictSound[AnimName::FireEnd].is_playing = false;
+    dictSound[AnimName::Reborn].is_playing = false;
 }
