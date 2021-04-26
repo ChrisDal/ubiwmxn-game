@@ -114,7 +114,11 @@ void ObjectsElements::draw(sf::RenderTarget& target, sf::RenderStates states) co
 	if (m_vfx.getCurrentAnim() != VFX::AnimName::Idle)
 	{
 		target.draw(m_vfx);
-		target.draw(m_vfx_mirror);
+		if (m_vfx_mirrored)
+		{
+			target.draw(m_vfx_mirror);
+		}
+		
 	}
 	
 }
