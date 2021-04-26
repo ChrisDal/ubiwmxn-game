@@ -654,8 +654,11 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         bool click_sfx = ImGui::ImageButton(*m_icoSFX.getTexture(), 
                                             sf::Vector2f(m_icoSFX.getTexture()->getSize()),
                                             0, sf::Color(0, 0, 0, 255), sf::Color(255, 255, 255));
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Modify SFX Volume");	
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Modify SFX Volume");
+        }
+			
 		// Enable Disable SFX 
         /*if (click_sfx)
         {
@@ -683,8 +686,9 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 			ImGui::Text("Volume");
 			ImGui::SliderInt("", &slider_i, 0, 100, "%d", ImGuiSliderFlags_None);
 			ImGui::EndPopup();
+            m_MainCharacter->SetSFXVolume((float)slider_i);
 		}
-		m_MainCharacter->SetSFXVolume((float)slider_i);
+		
         if (m_MainCharacter->GetSFXVolume() == 0.0f)
         {
             m_icoSFX.setTexture(m_TextureIcoNoSound);
