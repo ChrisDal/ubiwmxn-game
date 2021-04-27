@@ -148,11 +148,6 @@ public:
     static void SetSFXVolume(float percentage) { m_SFX_volume = percentage; }
     static const float GetSFXVolume() { return m_SFX_volume; }
 
-    // Visual effects parameters
-    void SetVFX();
-    void SetVFX(VFX::AnimName anim);
-    void SetVFX(VFX::AnimName anim, sf::Vector2f pos, bool sidex);
-
 
 private:
     sf::Texture m_Texture;
@@ -227,7 +222,6 @@ private:
     AllSounds m_AllSounds; 
     // VFX 
     VFX m_vfx;
-    VFX::AnimName m_vfxname{ VFX::AnimName::EmptyFrame };
 
     // animation texure 
     sf::Vector2u a_textsquare_offset;
