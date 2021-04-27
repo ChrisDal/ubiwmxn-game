@@ -44,6 +44,9 @@ VFX::VFX(const sf::Vector2f position, bool animate_once)
 	
 }
 
+// ------------------------------------------------------------------
+// Parameters for animation 
+// ---------------------------
 
 void VFX::setSpriteParameters(sf::Vector2f position, float rot, sf::Vector2f scale)
 {
@@ -52,41 +55,101 @@ void VFX::setSpriteParameters(sf::Vector2f position, float rot, sf::Vector2f sca
 	m_Sprite.setScale(scale);
 }
 
+// Parameters settings
+// -------------------
+// Default: Rotation, scale, direction to default
+// Set position 
+void VFX::setParamVFX(sf::Vector2f position)
+{
+    setSpriteParameters(position, 0.0f, sf::Vector2f(1.0f, 1.0f)); 
+    setDirection(true);	// default direction
+}
+
+// Parameters settings
+// -------------------
+// Default: Rotation, scale, direction to default
+// Set position 
+void VFX::setParamVFX(AnimName anim)
+{
+	// animation already finished or new animation
+    if (a_current_anim != anim or (not a_isPlaying))
+    {
+        // reset flag animation finished
+		resetCurrentAnim(anim);
+    }
+}
+
+
+// Parameters settings
+// -------------------
+// Default: Rotation, scale, direction to default
+// Set position and animation
+void VFX::setParamVFX(AnimName anim, sf::Vector2f position)
+{
+	// animation already finished or new animation
+    setParamVFX(anim);
+    setParamVFX(position);
+}
+
+
+// Parameters settings
+// -------------------
+// Default: Rotation, scale, direction to default
+// Set position and animation
+void VFX::setParamVFX(AnimName anim, sf::Vector2f position, bool right_oriented)
+{
+    setParamVFX(anim);
+    setPosition(position);
+    setDirection(right_oriented);
+}
+
+
+
+
+// ------------------------------------------------------------------
+// Update Method to be externally called
+// ----------------------------------------
+
 // moving along a position
 void VFX::Update(float deltaTime, sf::Vector2f position, float rot, sf::Vector2f scale, AnimName vname, bool sidex)
 {
-	
 	setSpriteParameters(position, rot, scale);
 	// side : as spritesheet true, inverted false 
-	SetDirection(sidex);
+	setDirection(sidex);
 	// Play VFX
 	Play(vname, deltaTime);
-	
 }
 
 // Position/rotation/scale already fixed 
 // Call play VFX 
 void VFX::Update(float deltaTime, AnimName vname, bool sidex)
 {
-	LOG("[VFX] Update");
-	// side : as spritesheet true, inverted false 
-	SetDirection(sidex);
+	setDirection(sidex); // side : as spritesheet true (right), inverted false (left)
 	Play(vname, deltaTime);
 }
 
+
+// Main Update 
+// ------------
+// Update when all parameters have been set 
 void VFX::Update(float deltaTime)
 {
 	Play(a_current_anim, deltaTime); 
 }
 
+
+// draw only if animation is not EmptyFrame
 void VFX::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	LOG("[VFX] Draw"); 
+	if (a_current_anim == AnimName::EmptyFrame) 
+	{ 
+		return; 
+	}
 	target.draw(m_Sprite);
 }
 
 
-// reset counters
+// Change Current animation
 void VFX::resetCurrentAnim(AnimName anim_name) 
 {
 	a_current_anim = anim_name;
@@ -98,13 +161,11 @@ void VFX::resetCurrentAnim(AnimName anim_name)
 // Play VFX then when anim done set to a transparent frame and set done
 void VFX::Play(AnimName anim_name, float deltaTime)
 {
-	LOG("[VFX] Play -");
 	if (a_one_time_anim)
 	{
 		if (a_current_anim == AnimName::EmptyFrame and a_done_anim and (not a_isPlaying))
 		{
 			// idle = none 
-			LOG("return not play");
 			return;
 		}
 	}
@@ -130,12 +191,10 @@ void VFX::Play(AnimName anim_name, float deltaTime)
 	
 	if (a_frametexture == (m_dictvfxs[anim_name].nb_frames_anim-1))
 	{
-		LOG("Done animating");
 		setDoneAnimation(true);
 		Stop();
 		return; 
 	}
-	LOG("animating"); 
 	// Update frame texture 
     setFrameTexture(anim_name, deltaTime);
     // set current
@@ -146,7 +205,7 @@ void VFX::Play(AnimName anim_name, float deltaTime)
 
 void VFX::setFrameTexture(AnimName anim_name, float deltaTime)
 {
-   short unsigned int nb_frames_anim    = m_dictvfxs[anim_name].nb_frames_anim;
+    short unsigned int nb_frames_anim    = m_dictvfxs[anim_name].nb_frames_anim;
     short unsigned int line_anim 	    = m_dictvfxs[anim_name].line_anim; 
     short unsigned int a_offset 		= m_dictvfxs[anim_name].a_offset; // offset frame
     static const sf::Vector2i sizetexture = sf::Vector2i(m_Size); // size texture = size of animated

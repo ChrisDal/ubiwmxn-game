@@ -111,16 +111,11 @@ void ObjectsElements::StartEndGame()
 void ObjectsElements::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(m_Sprite);
-	if (m_vfx.getCurrentAnim() != VFX::AnimName::EmptyFrame)
+	target.draw(m_vfx);
+	if (m_vfx_mirrored)
 	{
-		target.draw(m_vfx);
-		if (m_vfx_mirrored)
-		{
-			target.draw(m_vfx_mirror);
-		}
-		
+		target.draw(m_vfx_mirror);
 	}
-	
 }
 
 // Play Sound FX
@@ -132,7 +127,7 @@ void ObjectsElements::playSFX()
 }
 
 // Play vfx animations associated to m_vfx (mirrored)
-void ObjectsElements::playVFX(float deltaTime)
+void ObjectsElements::setVFX()
 {
 	sf::Vector2f right_pos = { 0.0f, 0.0f };
 	sf::Vector2f left_pos = { 0.0f, 0.0f };
@@ -142,19 +137,13 @@ void ObjectsElements::playVFX(float deltaTime)
 
 	m_vfx.setSpriteParameters(right_pos, 0.0f, sf::Vector2f(2.0f, 2.0f));
 
-	// Update animations
-	m_vfx.Update(deltaTime, m_vfxname, true);
-
 	if (m_vfx_mirrored)
 	{
 		left_pos.x = this->GetCenter().x - this->m_BoundingBox.width;
 		left_pos.y = this->GetCenter().y - this->m_BoundingBox.height / 3.0f;
 
 		m_vfx_mirror.setSpriteParameters(left_pos, 0.0f, sf::Vector2f(2.0f, 2.0f));
-		m_vfx_mirror.Update(deltaTime, m_vfxname, false);
 	}
-
-
 };
 
 // Activate Elements : One time activation
@@ -164,14 +153,21 @@ void ObjectsElements::Activate(float deltaTime)
 	switch (m_objtype)
 	{
 	case(ObjectType::checkpoint):
-		// VFX time dependant
-		playVFX(deltaTime);
+		
 		if (not m_activated)
 		{
 			m_Sprite.setColor(sf::Color(0, 255, 0));
 			// sound 
 			playSFX();
+			// set parameters for VFX
+			setVFX();
 			m_activated = true;
+		}
+		// VFX time dependant
+		m_vfx.Update(deltaTime, m_vfxname, true); 
+		if (m_vfx_mirrored)
+		{
+			m_vfx_mirror.Update(deltaTime, m_vfxname, false);
 		}
 		break;
 	default:

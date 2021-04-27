@@ -31,7 +31,7 @@ public:
 	void setFXType();
 	inline void playSFX();
 	bool getPlayStatusSFX() const { return m_soundfx.getStatus(); }
-    void playVFX(float deltaTime);
+    void setVFX();
     bool getPlayStatusVFX() const { return m_vfx.isPlaying(); }
 
 protected:

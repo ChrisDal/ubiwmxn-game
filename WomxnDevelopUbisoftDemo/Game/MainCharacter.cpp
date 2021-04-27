@@ -122,8 +122,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		m_Position = m_RespawnPosition;
         m_Velocity = { 0.0f, 0.0f };
 
-        //VFX
-        SetVFX(VFX::AnimName::Reborn);
+        // VFX
+        m_vfx.setParamVFX(VFX::AnimName::Reborn, m_Position);
 
         // Reset Elements 
         ResetElements();
@@ -149,7 +149,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         m_timer_lava = false;
         // Reset Ennemies hit 
         m_HitByEnnemies = false; 
-
         return;
 	}
 
@@ -171,11 +170,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 			Play(AnimName::Die, deltaTime, false);
         }
         // VFX
-        if (m_vfxname != VFX::AnimName::Death)
-        {
-            m_vfxname = VFX::AnimName::Death;
-            SetVFX(m_vfxname);
-        }
+        m_vfx.setParamVFX(VFX::AnimName::Death, m_Position);
         m_vfx.Update(deltaTime);
 
         if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
@@ -460,7 +455,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     SetCenter(m_Position);
 	
     // VFX Settings 
-    m_vfx.SetDirection(a_direction);
+    m_vfx.setDirection(a_direction);
 
 	// Animation to play
     if (m_InTheLava and not a_done_anim)
@@ -468,13 +463,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         if (m_current_anim != AnimName::FireSet && m_current_anim != AnimName::FireEnd)
         {
             Play(AnimName::FireBegin, deltaTime, false);
-            SetVFX(VFX::AnimName::EmptyFrame);
+            m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
             
         }
         else if (m_current_anim == AnimName::FireSet)
         {
             Play(m_current_anim, deltaTime, true);
-            SetVFX(VFX::AnimName::EmptyFrame);
+            m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
         }
         // else nothing
 
@@ -487,8 +482,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
         if (m_IsJumping)
         {
-            // VFX 
-            m_vfx.resetCurrentAnim(VFX::AnimName::DustJump);
+            // VFX: jumping position already set
+            m_vfx.setParamVFX(VFX::AnimName::DustJump);
         }
 
 
@@ -505,8 +500,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
         if (m_IsJumping)
         {
-            // VFX 
-            m_vfx.resetCurrentAnim(VFX::AnimName::DustJump);
+            // VFX: jumping position already set
+            m_vfx.setParamVFX(VFX::AnimName::DustJump);
         }
 
     }
@@ -524,7 +519,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		}
 
         // VFX 
-        m_vfx.Update(deltaTime, VFX::AnimName::DustJump,  a_direction);
+        m_vfx.setParamVFX(VFX::AnimName::DustJump);
 
         // Sound when Anim is defined 
         setSoundType(m_current_anim);
@@ -537,7 +532,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
 		{
 			Play(AnimName::Idle, deltaTime, true);
-            SetVFX(VFX::AnimName::EmptyFrame);
+            m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
 		}
 		// moving left right 
 		else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
@@ -551,7 +546,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 dustpos += sf::Vector2f(std::abs(m_Sprite.getTextureRect().width) / 1.3f, 2.0f);
             }
             
-            SetVFX(VFX::AnimName::DustTrail, dustpos, a_direction);
+            m_vfx.setParamVFX(VFX::AnimName::DustTrail, dustpos);
 		}
 	}
 
@@ -580,10 +575,7 @@ void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) cons
         target.draw(dbd);
     }
 
-    if (m_vfxname != VFX::AnimName::EmptyFrame)
-    {
-        target.draw(m_vfx);
-    }
+    target.draw(m_vfx);
 }
 
 void MainCharacter::StartEndGame()
@@ -1403,36 +1395,3 @@ void MainCharacter::resetPlaying()
     dictSound[AnimName::Reborn].is_playing = false;
 }
 
-// set VFX pos to Main Character position
-void MainCharacter::SetVFX()
-{
-    m_vfx.setSpriteParameters(m_Position, 0.0f, sf::Vector2f(1.0f, 1.0f)); 
-    m_vfx.SetDirection(true);
-    return; 
-}
-
-// Set anim with default position = main character
-void MainCharacter::SetVFX(VFX::AnimName anim)
-{
-    if (m_vfxname != anim or (not m_vfx.isPlaying()))
-    {
-        m_vfxname = anim;
-        m_vfx.resetCurrentAnim(m_vfxname);
-    }
-    SetVFX();
-    return;
-}
-
-void MainCharacter::SetVFX(VFX::AnimName anim, sf::Vector2f pos, bool sidex)
-{
-    if (m_vfxname != anim or (not m_vfx.isPlaying()))
-    {
-        m_vfxname = anim;
-        m_vfx.resetCurrentAnim(m_vfxname);
-    }
-
-    m_vfx.setPosition(pos);
-    m_vfx.SetDirection(sidex);
-
-    return;
-}
