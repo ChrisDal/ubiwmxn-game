@@ -1414,7 +1414,7 @@ void MainCharacter::SetVFX()
 // Set anim with default position = main character
 void MainCharacter::SetVFX(VFX::AnimName anim)
 {
-    if (m_vfxname != anim)
+    if (m_vfxname != anim or (not m_vfx.isPlaying()))
     {
         m_vfxname = anim;
         m_vfx.resetCurrentAnim(m_vfxname);
@@ -1425,7 +1425,7 @@ void MainCharacter::SetVFX(VFX::AnimName anim)
 
 void MainCharacter::SetVFX(VFX::AnimName anim, sf::Vector2f pos, bool sidex)
 {
-    if (m_vfxname != anim)
+    if (m_vfxname != anim or (not m_vfx.isPlaying()))
     {
         m_vfxname = anim;
         m_vfx.resetCurrentAnim(m_vfxname);
