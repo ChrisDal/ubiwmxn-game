@@ -59,6 +59,9 @@
     <ClCompile Include="Engine\Neighbourhood.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="Game\Vfx.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -112,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Neighbourhood.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Vfx.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

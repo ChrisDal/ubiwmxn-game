@@ -10,6 +10,7 @@
 #include <Game/Tilemap.h>
 #include <Game/Plateform.h>
 #include <Game/EnumElements.h>
+#include <Game/Vfx.h>
 
 class GameDemo : public Game
 {

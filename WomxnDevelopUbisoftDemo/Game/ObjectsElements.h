@@ -1,4 +1,5 @@
 #pragma once
+#include <Game/Vfx.h>
 
 class ObjectsElements : public sf::Drawable, public BoxCollideable, public Animation
 {
@@ -19,16 +20,19 @@ public:
     void Update(float deltaTime, bool activated);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	
-	void Activate(); 
+	void Activate(float deltaTime); 
 	void setObjType(unsigned int elemtype); 
+    void setVFXmirrored(bool is_symetric) { m_vfx_mirrored = is_symetric;  }
 
     void StartEndGame();
     bool getCanMove() const { return moving; }; 
 	
-	// Sound handling 
-	void setSoundType(); 
-	inline void playSFX(); 
+	// FX handling 
+	void setFXType();
+	inline void playSFX();
 	bool getPlayStatusSFX() const { return m_soundfx.getStatus(); }
+    void playVFX(float deltaTime);
+    bool getPlayStatusVFX() const { return m_vfx.isPlaying(); }
 
 protected:
 	enum class ObjectType { checkpoint, panneau, box, decor }; 
@@ -46,6 +50,12 @@ private:
 	sf::SoundBuffer m_sbuff; 
 	bool m_NoSound{true};  // buffer not assigned 
     std::string m_soundrpath = "";
+
+    // VFX 
+    VFX m_vfx; 
+    VFX m_vfx_mirror;
+    bool m_vfx_mirrored{ true }; // if vfx is mirrored 
+    VFX::AnimName m_vfxname{ VFX::AnimName::EmptyFrame };
 
     bool m_IsPlayingEndGame{ false };
 

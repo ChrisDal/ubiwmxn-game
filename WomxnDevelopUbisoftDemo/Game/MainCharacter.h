@@ -3,6 +3,7 @@
 #include <Game/Plateform.h> 
 #include <Game/DeadBody.h> 
 #include <Game/EnumElements.h> 
+#include <Game/Vfx.h>
 
 class Ennemie;
 
@@ -147,6 +148,11 @@ public:
     static void SetSFXVolume(float percentage) { m_SFX_volume = percentage; }
     static const float GetSFXVolume() { return m_SFX_volume; }
 
+    // Visual effects parameters
+    void SetVFX();
+    void SetVFX(VFX::AnimName anim);
+    void SetVFX(VFX::AnimName anim, sf::Vector2f pos, bool sidex);
+
 
 private:
     sf::Texture m_Texture;
@@ -219,6 +225,9 @@ private:
     sf::Sound m_soundfx;
     std::map< AnimName, SoundType > dictSound;
     AllSounds m_AllSounds; 
+    // VFX 
+    VFX m_vfx;
+    VFX::AnimName m_vfxname{ VFX::AnimName::EmptyFrame };
 
     // animation texure 
     sf::Vector2u a_textsquare_offset;
@@ -237,8 +246,11 @@ private:
     bool a_direction{ false }; // true: right, false: left 
     void setFacingDirection(); 
 
+
+
     // current element : Air / Void / Water 
     terrain::Element m_current_elem{ terrain::Element::Air };
+
     
     
 };
