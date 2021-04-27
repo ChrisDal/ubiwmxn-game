@@ -608,7 +608,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 		if (ImGui::IsItemHovered()) 
 			ImGui::SetTooltip("Music Volume");	
 			
-		int slider_music = this->getMusicVolume();
+		int slider_music = static_cast<int>(this->getMusicVolume());
 		if (click_music)
 		{
 			ImGui::OpenPopup("music_popup");	
@@ -676,7 +676,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         }*/
 		
 		// Handling Volume
-		int slider_i = m_MainCharacter->GetSFXVolume();
+		int slider_i = static_cast<int>(m_MainCharacter->GetSFXVolume());
 		if (click_sfx)
 		{
 			ImGui::OpenPopup("my_volume_popup");

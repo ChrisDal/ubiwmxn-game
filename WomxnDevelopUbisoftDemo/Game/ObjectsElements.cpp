@@ -33,20 +33,10 @@ ObjectsElements::ObjectsElements(sf::Vector2f& spawn_pos, bool canmove, bool ani
 	
 	// Object Type : checkpoint or bomb or box
 	setObjType(elem_type);
-	// Sound assignment 
-	setSoundType();
+	// Sound and Visual assignment 
+	setFXType();
 
-	// VFX 
-	m_vfx = VFX(m_Position);
-	m_vfx.InitAnimType();
 
-	setVFXmirrored(true); 
-
-	if (m_vfx_mirrored)
-	{
-		m_vfx_mirror = VFX(m_Position);
-		m_vfx_mirror.InitAnimType();
-	}
 
 };
 
@@ -74,12 +64,12 @@ void ObjectsElements::setObjType(unsigned int elemtype)
 	
 }
 
-void ObjectsElements::setSoundType()
+void ObjectsElements::setFXType()
 {
 	switch(m_objtype)
 	{
 		case(ObjectType::checkpoint): 
-			
+			// SOUND
 			m_NoSound = false;
 			m_soundrpath = "Assets\\Sounds\\checkpoint_01.wav";
 			// load sound 
@@ -95,9 +85,19 @@ void ObjectsElements::setSoundType()
 				m_soundfx.setVolume(GetSFXVolume());
 				m_soundfx.setLoop(false);
 			}
+			// VISUAL 
+			m_vfx = VFX(m_Position, true);
+			m_vfx_mirrored = true;
+			if (m_vfx_mirrored) { m_vfx_mirror = VFX(m_Position, true); }
+			m_vfxname = VFX::AnimName::DemiCircularActivation; 
 			break;
 		default: 
 			m_NoSound = true;
+			// empty fx
+			m_vfx = VFX(m_Position, true);
+			m_vfx_mirrored = false;
+			m_vfxname = VFX::AnimName::EmptyFrame;
+			
 	}
 	
 }
@@ -111,7 +111,7 @@ void ObjectsElements::StartEndGame()
 void ObjectsElements::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(m_Sprite);
-	if (m_vfx.getCurrentAnim() != VFX::AnimName::Idle)
+	if (m_vfx.getCurrentAnim() != VFX::AnimName::EmptyFrame)
 	{
 		target.draw(m_vfx);
 		if (m_vfx_mirrored)
@@ -143,7 +143,7 @@ void ObjectsElements::playVFX(float deltaTime)
 	m_vfx.setSpriteParameters(right_pos, 0.0f, sf::Vector2f(2.0f, 2.0f));
 
 	// Update animations
-	m_vfx.Update(deltaTime, VFX::AnimName::DemiCircularActivation, true);
+	m_vfx.Update(deltaTime, m_vfxname, true);
 
 	if (m_vfx_mirrored)
 	{
@@ -151,7 +151,7 @@ void ObjectsElements::playVFX(float deltaTime)
 		left_pos.y = this->GetCenter().y - this->m_BoundingBox.height / 3.0f;
 
 		m_vfx_mirror.setSpriteParameters(left_pos, 0.0f, sf::Vector2f(2.0f, 2.0f));
-		m_vfx_mirror.Update(deltaTime, VFX::AnimName::DemiCircularActivation, false);
+		m_vfx_mirror.Update(deltaTime, m_vfxname, false);
 	}
 
 

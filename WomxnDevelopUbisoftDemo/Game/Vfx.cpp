@@ -20,7 +20,7 @@ VFX::VFX()
 
 
 
-VFX::VFX(const sf::Vector2f position) 
+VFX::VFX(const sf::Vector2f position, bool animate_once)
 	: m_Position(position), m_Scale{1.0f, 1.0f}, m_Rotation{ 0.0f }
 {
 	m_Size = sf::Vector2f(32.0f, 32.0f); 
@@ -37,6 +37,10 @@ VFX::VFX(const sf::Vector2f position)
     m_Sprite.setRotation(m_Rotation);
 	// set Frame Rate for vfx 
 	setFrameRate(10);
+	// Load anim informations
+	InitAnimType(); 
+
+	setOneTimeAnim(animate_once);
 	
 }
 
@@ -54,7 +58,7 @@ void VFX::Update(float deltaTime, sf::Vector2f position, float rot, sf::Vector2f
 	
 	setSpriteParameters(position, rot, scale);
 	// side : as spritesheet true, inverted false 
-	a_direction = sidex; 
+	SetDirection(sidex);
 	// Play VFX
 	Play(vname, deltaTime);
 	
@@ -64,31 +68,63 @@ void VFX::Update(float deltaTime, sf::Vector2f position, float rot, sf::Vector2f
 // Call play VFX 
 void VFX::Update(float deltaTime, AnimName vname, bool sidex)
 {
+	LOG("[VFX] Update");
 	// side : as spritesheet true, inverted false 
-	a_direction = sidex; 
+	SetDirection(sidex);
 	Play(vname, deltaTime);
+}
+
+void VFX::Update(float deltaTime)
+{
+	Play(a_current_anim, deltaTime); 
 }
 
 void VFX::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
+	LOG("[VFX] Draw"); 
 	target.draw(m_Sprite);
 }
 
 
+// reset counters
+void VFX::resetCurrentAnim(AnimName anim_name) 
+{
+	a_current_anim = anim_name;
+	Stop(); // reset counters
+	a_done_anim = false; // reset a_done flag 
+}
 
 
+// Play VFX then when anim done set to a transparent frame and set done
 void VFX::Play(AnimName anim_name, float deltaTime)
 {
-	if (a_current_anim == AnimName::Idle and a_done_anim)
+	LOG("[VFX] Play -");
+	if (a_one_time_anim)
 	{
-		// idle = none 
-		return; 
+		if (a_current_anim == AnimName::EmptyFrame and a_done_anim and (not a_isPlaying))
+		{
+			// idle = none 
+			LOG("return not play");
+			return;
+		}
 	}
-
+	
+	if (a_current_anim != anim_name)
+	{
+		Stop(); // reset counters
+		// reset a_done flag
+		a_done_anim = false;
+	}
 	
 	if (a_done_anim)
 	{
-		setCurrentAnim(AnimName::Idle);
+		// Frame to empty 
+		setFrameTexture(AnimName::EmptyFrame, deltaTime);
+		// set current state to Empty
+		setCurrentAnim(AnimName::EmptyFrame);
+		// animation done but not playing anymore 
+		setDoneAnimation(true);
+		setPlaying(false);
 		return; 
 	}
 	
@@ -96,7 +132,6 @@ void VFX::Play(AnimName anim_name, float deltaTime)
 	{
 		LOG("Done animating");
 		setDoneAnimation(true);
-		setPlaying(false);
 		Stop();
 		return; 
 	}
@@ -171,16 +206,24 @@ void VFX::InitAnimType()
 		std::string name;
 	}; */
 
-	m_vfxs.Idle		= { 1, 30, 0, "Idle" };
+	m_vfxs.EmptyFrame		= { 1, 30, 0, "EmptyFrame" };
 	m_vfxs.DemiCircularActivation = { 3, 30, 1, "DemiCircularActivation" };
-	m_vfxs.DustJump = { 3, 30, 4, "DustJump" };
-	m_vfxs.Reborn	= { 7, 31, 0, "Reborn" };
+	m_vfxs.DustJump = { 5, 30, 5, "DustJump" };
+	m_vfxs.Reborn	= { 5, 34, 0, "Reborn" };
+	m_vfxs.Death	= { 8, 31, 0, "Death" };
 	m_vfxs.Fire		= { 1, 31, 6, "Fire" };
+	m_vfxs.HitPurple= { 6, 33, 0, "HitPurple" };
+	m_vfxs.HitCyan	= { 6, 34, 0, "HitCyan" };
+	m_vfxs.DustTrail	= { 6, 32, 0, "DustTrail" };
 
-	m_dictvfxs[AnimName::Idle] = m_vfxs.Idle;
+	m_dictvfxs[AnimName::EmptyFrame] = m_vfxs.EmptyFrame;
 	m_dictvfxs[AnimName::DemiCircularActivation] = m_vfxs.DemiCircularActivation;
 	m_dictvfxs[AnimName::DustJump] = m_vfxs.DustJump;
 	m_dictvfxs[AnimName::Reborn] = m_vfxs.Reborn;
+	m_dictvfxs[AnimName::Death] = m_vfxs.Death;
 	m_dictvfxs[AnimName::Fire] = m_vfxs.Fire;
+	m_dictvfxs[AnimName::HitPurple] = m_vfxs.HitPurple;
+	m_dictvfxs[AnimName::HitCyan] = m_vfxs.HitCyan;
+	m_dictvfxs[AnimName::DustTrail] = m_vfxs.DustTrail;
 
 };

@@ -3,7 +3,7 @@
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h> 
 
-#define DEBUG 1 
+#define DEBUG 0 
 #if DEBUG 
     #define LOG(x) std::cout << x  << " "
 # else
@@ -78,6 +78,8 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
     // Animations structures and mapping
     InitAnimType();             // ToDo : make a configuration files for animation's details
     InitSoundType();
+    // Visual Effects
+    m_vfx = VFX(m_Position, false);
 }
 
 
@@ -100,6 +102,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		m_Respawning = true; 
 		// Reset Animation flag ending
 		a_done_anim = false;
+        
         // create dead bodies : no_solid = go through
         // Solid : in the air or in the water 
         // No Solid : in the lava, in the void
@@ -119,6 +122,9 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		m_Position = m_RespawnPosition;
         m_Velocity = { 0.0f, 0.0f };
 
+        //VFX
+        SetVFX(VFX::AnimName::Reborn);
+
         // Reset Elements 
         ResetElements();
 
@@ -126,6 +132,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 	else if (m_Respawning)
 	{
 		Play(AnimName::Reborn, deltaTime, false); 
+        m_vfx.Update(deltaTime);
 		if (a_done_anim)
 		{
 			m_Respawning = false; 
@@ -163,6 +170,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
 			Play(AnimName::Die, deltaTime, false);
         }
+        // VFX
+        if (m_vfxname != VFX::AnimName::Death)
+        {
+            m_vfxname = VFX::AnimName::Death;
+            SetVFX(m_vfxname);
+        }
+        m_vfx.Update(deltaTime);
 
         if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
         {
@@ -185,6 +199,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		m_Velocity = {0.0f, 0.0f};
 		m_Sprite.setPosition(m_Position);
 		SetCenter(m_Position);
+        m_vfx.setPosition(m_Position);
 		return; 
 	}
 	
@@ -297,12 +312,16 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                         m_InTheAir = true;
                         m_IsJumping = true;
                         m_nbjumps++;
+                        // Get Jumping Position
+                        m_vfx.setPosition(m_Position);
                     }
                     else if (m_InTheWater)
                     {
                         m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_WATER_FACTOR);
                         m_IsJumping = true;
                         m_nbjumps++;
+                        // Get Jumping Position
+                        m_vfx.setPosition(m_Position);
                     }
                     else
                     {
@@ -409,6 +428,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 					
 					m_IsJumping = true;
 					m_nbjumps++;
+                    // Get Jumping Position
+                    m_vfx.setPosition(m_Position);
 
                 }
                 else
@@ -438,6 +459,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
 	
+    // VFX Settings 
+    m_vfx.SetDirection(a_direction);
 
 	// Animation to play
     if (m_InTheLava and not a_done_anim)
@@ -445,18 +468,27 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         if (m_current_anim != AnimName::FireSet && m_current_anim != AnimName::FireEnd)
         {
             Play(AnimName::FireBegin, deltaTime, false);
+            SetVFX(VFX::AnimName::EmptyFrame);
             
         }
         else if (m_current_anim == AnimName::FireSet)
         {
             Play(m_current_anim, deltaTime, true);
+            SetVFX(VFX::AnimName::EmptyFrame);
         }
         // else nothing
+
         if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
         {
             // Sound when Anim is defined 
             setSoundType(m_current_anim);
             playSFX(m_current_anim);
+        }
+
+        if (m_IsJumping)
+        {
+            // VFX 
+            m_vfx.resetCurrentAnim(VFX::AnimName::DustJump);
         }
 
 
@@ -471,9 +503,17 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             playSFX(m_current_anim);
         }
 
+        if (m_IsJumping)
+        {
+            // VFX 
+            m_vfx.resetCurrentAnim(VFX::AnimName::DustJump);
+        }
+
     }
 	else if (m_IsJumping)
 	{
+        
+
 		if (m_nbjumps == 1)
 		{
 			Play(AnimName::Jump, deltaTime, true);
@@ -482,6 +522,9 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		{
 			Play(AnimName::DoubleJump, deltaTime, true);
 		}
+
+        // VFX 
+        m_vfx.Update(deltaTime, VFX::AnimName::DustJump,  a_direction);
 
         // Sound when Anim is defined 
         setSoundType(m_current_anim);
@@ -494,11 +537,21 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
 		{
 			Play(AnimName::Idle, deltaTime, true);
+            SetVFX(VFX::AnimName::EmptyFrame);
 		}
 		// moving left right 
 		else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
 		{
 			Play(AnimName::Walk, deltaTime, true);
+            // VFX 
+            sf::Vector2f dustpos = m_Position;
+            if (a_direction) {
+                dustpos -= sf::Vector2f(std::abs(m_Sprite.getTextureRect().width) / 2.0f, -2.0f);
+            } else {
+                dustpos += sf::Vector2f(std::abs(m_Sprite.getTextureRect().width) / 1.3f, 2.0f);
+            }
+            
+            SetVFX(VFX::AnimName::DustTrail, dustpos, a_direction);
 		}
 	}
 
@@ -508,6 +561,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     {
         resetPlaying();
     }
+
+    // Animate VFX 
+    m_vfx.Update(deltaTime);
+    LOG(m_vfx.getCurrentAnimName());
 	
 }
 
@@ -521,7 +578,11 @@ void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) cons
     for (const auto& dbd : m_deadbodies)
     {
         target.draw(dbd);
+    }
 
+    if (m_vfxname != VFX::AnimName::EmptyFrame)
+    {
+        target.draw(m_vfx);
     }
 }
 
@@ -659,14 +720,6 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std
 			cloop++;
             setPosition(deltaTime, Pf, l_cactus, cloop);
 		}
-        /*else if (_colliding_cactus)
-        {
-            new_Position = m_Position;
-            m_Velocity.x = 0.0f;
-            m_Velocity.y *= 0.9f;
-            cloop++;
-            setPosition(deltaTime, Pf, l_cactus, cloop);
-        }*/
         else
         {
             new_Position = m_Position;
@@ -675,10 +728,7 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std
             setPosition(deltaTime, Pf, l_cactus, cloop);
             
         }
-        
     } 
-	
-
 }
 
 // colliding plateforms and dead bodies 
@@ -718,11 +768,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
                 {
                     m_Velocity.x = 0.0f;
                 }
-
-                 
             }
-            
-
         }
     };
 	
@@ -748,16 +794,11 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
             {
                 ResetJumpCounter();
             }
-
-
-
         }
-
     }	
     
     for (Ennemie& cac : l_cactus)
     {
-
         if (this->IsColliding(cac))
         {
             _colliding_cactus = true;
@@ -780,9 +821,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
                 m_isWalkable = true;
                 m_InTheAir = true;
             }
-
         }
-
     }
 
     if ((!_colliding_plateforms) and (!_colliding_deadbodies) and (!_colliding_cactus))
@@ -1362,4 +1401,38 @@ void MainCharacter::resetPlaying()
     dictSound[AnimName::FireBegin].is_playing = false;
     dictSound[AnimName::FireEnd].is_playing = false;
     dictSound[AnimName::Reborn].is_playing = false;
+}
+
+// set VFX pos to Main Character position
+void MainCharacter::SetVFX()
+{
+    m_vfx.setSpriteParameters(m_Position, 0.0f, sf::Vector2f(1.0f, 1.0f)); 
+    m_vfx.SetDirection(true);
+    return; 
+}
+
+// Set anim with default position = main character
+void MainCharacter::SetVFX(VFX::AnimName anim)
+{
+    if (m_vfxname != anim)
+    {
+        m_vfxname = anim;
+        m_vfx.resetCurrentAnim(m_vfxname);
+    }
+    SetVFX();
+    return;
+}
+
+void MainCharacter::SetVFX(VFX::AnimName anim, sf::Vector2f pos, bool sidex)
+{
+    if (m_vfxname != anim)
+    {
+        m_vfxname = anim;
+        m_vfx.resetCurrentAnim(m_vfxname);
+    }
+
+    m_vfx.setPosition(pos);
+    m_vfx.SetDirection(sidex);
+
+    return;
 }

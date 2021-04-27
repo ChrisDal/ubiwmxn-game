@@ -27,14 +27,12 @@ public:
     void StartEndGame();
     bool getCanMove() const { return moving; }; 
 	
-	// Sound handling 
-	void setSoundType(); 
+	// FX handling 
+	void setFXType();
 	inline void playSFX();
-
-    // Visual 
-    void playVFX(float deltaTime);
-
 	bool getPlayStatusSFX() const { return m_soundfx.getStatus(); }
+    void playVFX(float deltaTime);
+    bool getPlayStatusVFX() const { return m_vfx.isPlaying(); }
 
 protected:
 	enum class ObjectType { checkpoint, panneau, box, decor }; 
@@ -57,6 +55,7 @@ private:
     VFX m_vfx; 
     VFX m_vfx_mirror;
     bool m_vfx_mirrored{ true }; // if vfx is mirrored 
+    VFX::AnimName m_vfxname{ VFX::AnimName::EmptyFrame };
 
     bool m_IsPlayingEndGame{ false };
 
