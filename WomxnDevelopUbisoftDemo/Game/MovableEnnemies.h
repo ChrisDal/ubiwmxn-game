@@ -39,6 +39,7 @@ private:
 	sf::Vector2f m_size;
 	sf::Vector2f m_Position;
 	sf::Vector2f m_Velocity;
+	// movement 
 	SequencePath m_Path;
 
 	// Death 

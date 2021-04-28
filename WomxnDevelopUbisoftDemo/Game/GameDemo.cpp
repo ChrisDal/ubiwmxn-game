@@ -74,9 +74,11 @@ GameDemo::GameDemo()
     // SetUp Ennemies Path 
     for (MovableEnnemies& mush : m_mushrooms)
     {
+        
         sf::Vector2f TargetPoint{ mush.GetCenter() };
         TargetPoint.x += 32.0f * 6.0f;
-        mush.setPath(mush.GetCenter(), TargetPoint);
+        MoveToAR mushrout = MoveToAR(mush.GetCenter(), TargetPoint, &mush);
+        m_routines.push_back(mushrout);
     } 
     
    
@@ -148,7 +150,13 @@ void GameDemo::Update(float deltaTime)
     }
 
     // Check the mushrooms 
-    for (MovableEnnemies& mvenm : m_mushrooms)
+    for (int i = 0; i < m_mushrooms.size(); i++)
+    {
+        m_mushrooms[i].Update(deltaTime); 
+        m_routines[i].Act(&m_mushrooms[i]);
+    }
+
+    /*for (MovableEnnemies& mvenm : m_mushrooms)
     {
         mvenm.Update(deltaTime);
         if (mvenm.getIsFinished())
@@ -164,7 +172,7 @@ void GameDemo::Update(float deltaTime)
             mvenm.setPath(mvenm.GetCenter(), TargetPoint);
             m_Animation_AR = not m_Animation_AR;
         }
-    }
+    }*/
 
 
     if (!m_IsFinished)

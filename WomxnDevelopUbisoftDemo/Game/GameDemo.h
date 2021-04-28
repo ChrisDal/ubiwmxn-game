@@ -11,6 +11,7 @@
 #include <Game/Plateform.h>
 #include <Game/EnumElements.h>
 #include <Game/Vfx.h>
+#include <Modules/MoveToAR.h>
 
 class GameDemo : public Game
 {
@@ -73,6 +74,9 @@ private:
 	
     // Game process
     bool m_IsFinished;
+
+    // behavior mushrooms 
+    std::vector<MoveToAR> m_routines;
     bool m_Animation_AR{ true }; // Back and Forth for the mushroom 
 
 };
