@@ -51,6 +51,7 @@ public:
 	void ResetElapsedTime();
 	bool ReachedTime();
 	bool CanBeRemoved();
+	void EatenByEnnemies() { m_external_flag = true; }
 	
 	// Plateform attribut
 	void setWalkable(const bool& walkable) { m_isWalkable = walkable; }
@@ -99,5 +100,6 @@ private:
     std::map< AnimName, AnimType > dictAnim;
 	float t_elapsed = 0.0f;
 	short int m_deathfood = -1; // set final dish if food 
+	bool m_external_flag{ false }; // eaten by mushrooms
 
 };

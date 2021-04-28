@@ -98,3 +98,16 @@ void MovableEnnemies::Update(float deltaTime)
 	
 }
 
+// Object in neighbourhood 
+bool MovableEnnemies::ObjectInRange(const BoxCollideable& dbd)
+{
+	if (m_neighb.IsColliding(dbd))
+	{
+		return true; 
+	}
+	else
+	{
+		return false; 
+	}
+}
+

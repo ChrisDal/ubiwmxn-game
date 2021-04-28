@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "GameDemo.h"
+#include <iostream>
 
 GameDemo::GameDemo()
     : Game{ "9Lives" }
@@ -77,11 +78,10 @@ GameDemo::GameDemo()
         
         sf::Vector2f TargetPoint{ mush.GetCenter() };
         TargetPoint.x += 32.0f * 6.0f;
-        MoveToAR mushrout = MoveToAR(mush.GetCenter(), TargetPoint, &mush);
-        m_routines.push_back(mushrout);
+        m_routinesAR.push_back(MoveToAR(mush.GetCenter(), TargetPoint, &mush));
+        m_routinesEat.push_back(EatDeadbody());
     } 
     
-   
 
     // Load main character 
     m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
@@ -149,31 +149,67 @@ void GameDemo::Update(float deltaTime)
         }
     }
 
-    // Check the mushrooms 
-    for (int i = 0; i < m_mushrooms.size(); i++)
+    /*for (int i = 0; i < m_mushrooms.size(); i++)
     {
-        m_mushrooms[i].Update(deltaTime); 
-        m_routines[i].Act(&m_mushrooms[i]);
-    }
-
-    /*for (MovableEnnemies& mvenm : m_mushrooms)
-    {
-        mvenm.Update(deltaTime);
-        if (mvenm.getIsFinished())
-        {
-            sf::Vector2f TargetPoint{ mvenm.GetCenter() };
-
-            if (m_Animation_AR) { 
-                TargetPoint.x -= 32.0f * 5.0f; 
-            } else { 
-                TargetPoint.x += 32.0f * 5.0f; 
-            }
-            // Make AR 
-            mvenm.setPath(mvenm.GetCenter(), TargetPoint);
-            m_Animation_AR = not m_Animation_AR;
-        }
+        // MoveToAR routine 
+        m_mushrooms[i].Update(deltaTime);
+        m_routinesAR[i].Act(&m_mushrooms[i]);
     }*/
 
+    m_deadbodies = m_MainCharacter->getDeadBodies();
+    // Check the mushrooms 
+    
+    for (int i = 0; i < m_mushrooms.size(); i++)
+    {
+        short int km = -1;
+        if (m_deadbodies.size() > 0)
+        {
+            
+            for (int k = 0; k < m_deadbodies.size(); k++)
+            {
+                std::cout << "LOOP DBD";
+                if (m_mushrooms[i].ObjectInRange(m_deadbodies[k]))
+                {
+                    km = k; 
+                }
+            }
+
+            if (km > -1)
+            {
+                std::cout << "Found a deadbody to eat :" << km; 
+                // Eating deadbody 
+                if (m_routinesEat[i].isNone())
+                {
+                    m_routinesEat[i] = EatDeadbody(&m_mushrooms[i], m_deadbodies[km].GetCenter());
+                }
+
+                if (m_routinesEat[i].isSuccessfull())
+                {
+                    std::cout << "Routine Eatdeadbody sucessfull ";
+                    m_routinesEat[i] = EatDeadbody();
+                    m_MainCharacter->RemoveDeadbody(km);
+                }
+
+                m_routinesEat[i].Act(&m_mushrooms[i], deltaTime);
+                m_mushrooms[i].Update(deltaTime);
+            }
+            else
+            {
+                // MoveToAR routine 
+                m_mushrooms[i].Update(deltaTime);
+                m_routinesAR[i].Act(&m_mushrooms[i]);
+            }
+
+        }
+        else 
+        {
+            // MoveToAR routine 
+            m_mushrooms[i].Update(deltaTime);
+            m_routinesAR[i].Act(&m_mushrooms[i]);
+        }
+
+        
+    }
 
     if (!m_IsFinished)
     {

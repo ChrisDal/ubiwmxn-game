@@ -940,6 +940,16 @@ void MainCharacter::UpdateDeadBodies(float deltaTime, TileMap& Tm)
 
 }
 
+
+// action by mushrooms : tag to be removed 
+void MainCharacter::RemoveDeadbody(int index)
+{
+    if (index < (m_deadbodies.size() - 1))
+    {
+        m_deadbodies[index].EatenByEnnemies(); 
+    }
+}
+
 // ----------------------------------------
 //          Colliding 
 // ----------------------------------------

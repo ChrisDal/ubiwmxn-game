@@ -34,6 +34,8 @@ public:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const; 
 	void StartEnd() {};
 
+	bool ObjectInRange(const BoxCollideable& dbd); 
+
 private:
 	sf::Sprite m_Sprite;
 	sf::Vector2f m_size;
@@ -41,6 +43,7 @@ private:
 	sf::Vector2f m_Velocity;
 	// movement 
 	SequencePath m_Path;
+	
 
 	// Death 
 	bool m_Dead;

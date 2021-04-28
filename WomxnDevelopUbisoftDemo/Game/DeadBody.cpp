@@ -140,7 +140,7 @@ bool DeadBody::ReachedTime()
 
 bool DeadBody::CanBeRemoved()
 {
-    bool is_done = (ReachedTime() and m_death_element == terrain::Element::Water) ; // More conditions later maybe
+    bool is_done = (ReachedTime() and m_death_element == terrain::Element::Water or m_external_flag) ; // More conditions later maybe
 
     return is_done; 
 }

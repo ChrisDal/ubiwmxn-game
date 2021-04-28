@@ -2,7 +2,8 @@
 #include <Game/MovableEnnemies.h>
 
 // Routine is an abstract class for Actions  
-// based on obviam.net :  Game AI – An Introduction to Behaviour Trees
+// based on Obviam :  Game AI – An Introduction to Behaviour Trees
+// https://obviam.net/posts/2014/02.game-ai-introduction-behaviour-trees/
 class Routine
 {
 public:

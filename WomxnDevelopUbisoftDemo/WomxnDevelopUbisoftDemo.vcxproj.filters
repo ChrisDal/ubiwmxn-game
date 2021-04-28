@@ -65,6 +65,9 @@
     <ClCompile Include="Modules\MoveToAR.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="Modules\EatDeadbody.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -126,6 +129,9 @@
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="Modules\Routine.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\EatDeadbody.h">
       <Filter>Modules</Filter>
     </ClInclude>
   </ItemGroup>

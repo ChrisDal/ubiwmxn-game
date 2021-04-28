@@ -12,6 +12,7 @@
 #include <Game/EnumElements.h>
 #include <Game/Vfx.h>
 #include <Modules/MoveToAR.h>
+#include <Modules/EatDeadbody.h>
 
 class GameDemo : public Game
 {
@@ -71,12 +72,13 @@ private:
 	std::vector<ObjectsElements> m_objects = {};
 	std::vector<ObjectsElements> m_checkpoints = {};
 
-	
     // Game process
     bool m_IsFinished;
 
     // behavior mushrooms 
-    std::vector<MoveToAR> m_routines;
+    std::vector<MoveToAR> m_routinesAR;
+    std::vector<EatDeadbody> m_routinesEat;
+    //std::map<MovableEnnemies*, Routine> m_allroutines; 
     bool m_Animation_AR{ true }; // Back and Forth for the mushroom 
 
 };
