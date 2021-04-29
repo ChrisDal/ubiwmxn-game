@@ -55,10 +55,7 @@ GameDemo::GameDemo()
 
     // TILEMAPS
     bool firstlevel = not (m_level > 0); 
-    if (NextLevel(firstlevel))
-    {
-        m_level++; 
-    }
+    NextLevel(firstlevel);
 
     // SetUp Ennemies Path 
     for (MovableEnnemies& mush : m_mushrooms)
@@ -126,6 +123,8 @@ bool GameDemo::NextLevel(bool firstlevel)
         m_MainCharacter->MoveToNextLevel(m_Elements.getMainCharacterSpawnPosition());
     }
 
+
+    m_level++;
 
     return true;
 }
