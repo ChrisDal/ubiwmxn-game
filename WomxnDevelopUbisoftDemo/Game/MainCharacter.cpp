@@ -45,9 +45,11 @@ namespace
 
 // constructor
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position)
-    : m_IsPlayingEndGame(false), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
-    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_InTheWater(false), 
-    m_InTheVoid(false), m_CanJump(true), a_textsquare_offset(12,22)
+    : m_IsPlayingEndGame(false), m_IsPlayingEndLevel(false), 
+        m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false),
+        c_left(false), c_right(false), c_up(false), c_down(false),  
+        m_InTheAir(true), m_InTheWater(false),  m_InTheVoid(false), 
+        m_CanJump(true), a_textsquare_offset(12,22)
 {
     // Texture
     m_Texture.loadFromFile(".\\Assets\\hero\\cat_addon_sprite.png");
@@ -75,6 +77,7 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 
     // Reborn init 
     m_RespawnPosition = m_Position; 
+
     // Animations structures and mapping
     InitAnimType();             // ToDo : make a configuration files for animation's details
     InitSoundType();
@@ -83,11 +86,54 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 }
 
 
+// Set Up MainCharacter and deadbodies for next level 
+void MainCharacter::MoveToNextLevel(sf::Vector2f spawn_position)
+{
+    // Movement 
+    m_Position = spawn_position; 
+    m_RespawnPosition = m_Position;
+    m_Sprite.setPosition(m_Position);
+    // Bounding box
+    const sf::Vector2f size(32.0f, 32.0f);
+    SetBoundingBox(m_Position, sf::Vector2f(0.5625 * static_cast<float>(m_Sprite.getScale().x) * size.x,
+                                0.9375 * static_cast<float>(m_Sprite.getScale().y) * size.y));
+
+    m_Velocity = { 0.0f, 0.0f };
+    // FX
+    m_vfx = VFX(m_Position, false);
+    m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
+
+    // Deadbodies 
+    m_deadbodies.clear(); 
+    // Ennemies 
+    _colliding_plateforms = false;
+    _colliding_deadbodies = false;
+    _colliding_cactus = false;
+    m_HitByEnnemies = false;
+    m_isAlive = true; 
+    m_Respawning = false; 
+
+    // Reset Jump 
+    m_CanJump = true;
+    ResetJumpCounter();
+    // Reset Elements
+    m_touched_lava = false; 
+    m_timer_lava = false;
+    ResetTimers(); 
+    ResetElements();
+
+    // End or not
+    m_IsPlayingEndGame  = false; 
+    m_IsPlayingEndLevel = false;
+    m_WasButtonPressed  = false;
+
+}
+
 void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, 
                             std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus, 
                             std::vector<MovableEnnemies>& l_mennemies)
 {
-    if (m_IsPlayingEndGame)
+    if (m_IsPlayingEndLevel or m_IsPlayingEndGame)
     {
         return;
     }
@@ -581,6 +627,11 @@ void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) cons
 void MainCharacter::StartEndGame()
 {
     m_IsPlayingEndGame = true;
+}
+
+void MainCharacter::StartEndLevel()
+{
+    m_IsPlayingEndLevel = true;
 }
 
 

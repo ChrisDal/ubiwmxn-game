@@ -98,11 +98,22 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
 
     // keep in memory tiles level 
     m_tilesize = tileSize; 
+    m_plateforms = {};
+
+    // Interpreted as Quad when drawn, init as points
+    if (m_vertices.getPrimitiveType() != sf::Quads)
+    {
+        m_vertices.setPrimitiveType(sf::Quads);
+    }
+    
 
     // resize the vertex array to fit the level size
-    m_vertices.setPrimitiveType(sf::Quads);
     unsigned int nsize = width * height * 4;
-    m_vertices.resize(nsize);
+    if (static_cast<unsigned int>(m_vertices.getVertexCount())!= nsize)
+    {
+        m_vertices.resize(nsize);
+    }
+    
 
     // populate the vertex array, with one quad per tile
     for (unsigned int i = 0; i < width; ++i)
@@ -117,7 +128,7 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
             int tv = tileNumber / (m_tileset.getSize().x / tileSize.x);
 
             // get a pointer to the current tile's quad
-            sf::Vertex* quad = &m_vertices[index * 4];
+            sf::Vertex* quad = &m_vertices[index * int(4)];
 
             // define its 4 corners
             quad[0].position = sf::Vector2f((float)(i * tileSize.x),         (float)(j * tileSize.y));
@@ -138,12 +149,12 @@ bool TileMap::load(const std::string& tileset, sf::Vector2u tileSize, unsigned i
 					m_plateforms.push_back(Plateform(quad[0].position, quad[1].position, quad[2].position, quad[3].position));
 			}
 			
-			
         }
 
         return true;
-
 };
+
+
 
 
 
@@ -158,7 +169,18 @@ void TileMap::draw(sf::RenderTarget& target, sf::RenderStates states) const
     // draw the vertex array
     target.draw(m_vertices, states);
 
-};
+}
+
+// Clear data for next level 
+void TileMap::PreNextLevel()
+{
+    // plateforms removing
+    m_plateforms = {}; 
+    
+    // Vertex clear : doesn't deallocate the corresponding memory
+    m_vertices.clear();
+}
+
 
 // is the position tile walkable 
 bool TileMap::walkable_tile(sf::Vector2f& position)
@@ -169,13 +191,11 @@ bool TileMap::walkable_tile(sf::Vector2f& position)
         return walkable;
     }
     // from position get tile 
-    sf::Vector2f tilepos(std::ceil(position.x / m_tilesize.x), std::ceil(position.y / m_tilesize.y));
-    sf::FloatRect tilemapsize = m_vertices.getBounds();
-    int tiletype = m_tiles[int(tilepos.x) - 1 + (int(tilepos.y) - 1) * int(tilemapsize.width / m_tilesize.x)];
+    unsigned int ki = getTileIndex(position); 
 
     // 0 >= plateforme >= 9 
     // 9 < Walkable < 100  
-    if (tiletype > 9 && tiletype < 121) {
+    if (m_tiles[ki] > 9 && m_tiles[ki] < 121) {
         walkable = true;
     }
     return walkable;
@@ -191,13 +211,11 @@ short int TileMap::ElementsTiles(sf::Vector2f& position)
         return element;
     }
     // from position get tile 
-    sf::Vector2f tilepos(std::ceil(position.x / m_tilesize.x), std::ceil(position.y / m_tilesize.y));
-    sf::FloatRect tilemapsize = m_vertices.getBounds();
-    int tiletype = m_tiles[int(tilepos.x) - 1 + (int(tilepos.y) - 1) * int(tilemapsize.width / m_tilesize.x)];
+    unsigned int ki = getTileIndex(position);
 
     // 0 >= plateforme >= 9 
     // 9 < Walkable < 100  
-    switch (tiletype)
+    switch (m_tiles[ki])
     {
         case(10): element = 0;  break;   // Air
         case(11): element = 10; break;   // Water => Air
@@ -205,6 +223,10 @@ short int TileMap::ElementsTiles(sf::Vector2f& position)
         case(13): element = 20; break;   // Lava => Air 
         case(14): element = 2;  break;   // Lava
         case(15): element = 3;  break;   // Void
+        case(16): element = 0;  break;   // Air
+        case(17): element = 0;  break;   // Air
+        case(18): element = 0;  break;   // Air
+        case(19): element = 0;  break;   // Air
         default: element = -1;  break;
     }
 
@@ -246,6 +268,17 @@ std::vector<int> TileMap::ReadLevelFile(const std::string& filename)
         }
     }
     return eboard;
+}
+
+const int TileMap::getTileIndex(const sf::Vector2f& position)
+{
+    // from position get tile 
+    sf::Vector2f tilepos(std::ceil(position.x / m_tilesize.x), std::ceil(position.y / m_tilesize.y));
+    sf::FloatRect tilemapsize = m_vertices.getBounds();
+    // index 
+    int index = int(tilepos.x) - 1 + (int(tilepos.y) - 1) * int(tilemapsize.width / m_tilesize.x);
+    
+    return index;
 }
 
 
