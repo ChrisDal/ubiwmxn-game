@@ -33,6 +33,7 @@ Filename examples : `Level-TMPF-Niv-%02d-tiles.csv`  and  `Level-TMPF-Niv-%02d-e
 ### Main character 
 - 100: Spawn position
 - 101: Checkpoint not activated
+- 102: Checkpoint raised not activated
 - 106: Exit Sign
 
 ### Terrains : cosmetic
