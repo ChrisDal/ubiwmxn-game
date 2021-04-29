@@ -1,3 +1,4 @@
+#include <iostream>
 #include "stdafx.h"
 #include "GameDemo.h"
 
@@ -112,7 +113,6 @@ bool GameDemo::NextLevel(bool firstlevel)
                                         m_checkpoints, m_exit_sign, 
                                         m_mushrooms);
 
-
     // Main character 
     if (firstlevel)
     {
@@ -123,14 +123,13 @@ bool GameDemo::NextLevel(bool firstlevel)
         m_MainCharacter->MoveToNextLevel(m_Elements.getMainCharacterSpawnPosition());
     }
 
-
     m_level++;
 
     return true;
 }
 
-
-
+/// Load TileSet and Elements maps from CSV
+/// \parae
 void GameDemo::LoadTileMaps(int level)
 {
     char tilename[45];
@@ -159,7 +158,7 @@ void GameDemo::Update(float deltaTime)
 
     if (not m_noMusic)
     {
-        if ( not IsBGMusicPlaying())
+        if (not IsBGMusicPlaying())
         {
             // if pause or stopped => play
             m_bgmusic.play(); 
@@ -235,8 +234,9 @@ void GameDemo::Update(float deltaTime)
             if (m_level < m_NBLEVELS)
             {
                 // End of the level
-                bool isfirst = m_level == 0; 
+                bool isfirst = (m_level == 0); 
                 NextLevel(isfirst);
+                m_bgmusic.pause();
             }
             else
             {
