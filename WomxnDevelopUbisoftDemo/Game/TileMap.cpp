@@ -239,8 +239,9 @@ std::vector<int> TileMap::ReadLevelFile(const std::string& filename)
             std::istringstream sline(line);
             int n; 
             char c; 
-            while (sline >> n >> c && c == ',') {
+            while (sline >> n) {
                 eboard.push_back(n); // add vector to board  
+                sline >> c; 
             }
         }
     }
