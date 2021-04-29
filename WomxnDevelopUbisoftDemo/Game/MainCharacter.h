@@ -65,6 +65,8 @@ public:
                 std::vector<MovableEnnemies>& l_mennemies);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
+    void MoveToNextLevel(sf::Vector2f spawn_position);
+    void StartEndLevel();
     void StartEndGame();
     
     // Colliding and position 
@@ -178,6 +180,7 @@ private:
     float m_CounterLava{ 0.0f };
 	
     bool m_IsPlayingEndGame;
+    bool m_IsPlayingEndLevel; 
 
     // in the air vs on the floor 
     bool m_isWalkable; 

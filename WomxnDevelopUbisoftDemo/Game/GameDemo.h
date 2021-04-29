@@ -14,6 +14,7 @@
 
 class GameDemo : public Game
 {
+
 public:
     GameDemo();
     ~GameDemo();
@@ -22,6 +23,13 @@ public:
     void Render(sf::RenderTarget& target) override;
     void RenderDebugMenu(sf::RenderTarget& target) override;
     void RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE);
+
+    // Levels Handling 
+    void LoadTileMaps(int level);
+    void ClearDataLevel();
+    bool NextLevel(bool firstlevel);
+    
+
 
     inline bool IsBGMusicPlaying() 
     {
@@ -32,6 +40,10 @@ public:
     float getMusicVolume() const { return m_bgmusic.getVolume(); }
 
 private:
+
+    const sf::Vector2u m_WINSIZE{ 1024, 768 };
+    std::string m_AtlasName;
+    const short unsigned int m_NBLEVELS = 2;
     sf::Font m_EndgameTextFont;
     sf::Text m_EndgameText;
     // UI Game
@@ -63,13 +75,15 @@ private:
     ObjectsElements m_exit_sign;
     std::vector<MovableEnnemies> m_mushrooms = {};
 
-    // struct gameelements m_GameElements;
+    // Game Elements
     std::vector<Ennemie> m_cactus = {};
     std::vector<Ennemie> m_ennemies = {};
 	std::vector<DeadBody> m_deadbodies = {};
 	std::vector<ObjectsElements> m_objects = {};
 	std::vector<ObjectsElements> m_checkpoints = {};
 
+    // Levels
+    short unsigned int m_level{ 0 };
 	
     // Game process
     bool m_IsFinished;

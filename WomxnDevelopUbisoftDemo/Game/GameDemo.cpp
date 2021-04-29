@@ -1,5 +1,7 @@
+#include <iostream>
 #include "stdafx.h"
 #include "GameDemo.h"
+
 
 GameDemo::GameDemo()
     : Game{ "9Lives" }
@@ -37,40 +39,25 @@ GameDemo::GameDemo()
 	m_TextureIcoNoSound.loadFromFile(".\\Assets\\icons\\audioOff.png"); 
 	m_icoSFX.setTexture(m_TextureIcoSound);
 
-
-    // map tile 
-    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level-TMPF-mini-map.csv");
-    //m_Tilemap.loadCsvTilemap("Assets\\levels\\Level-TMPF-Niv-01-tiles.csv");
-    // test
-    m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
-	// define found plateform 
-	m_plateform = m_Tilemap.getPlateforms(); 
-
-    // Ennemies 
-    m_Elements.loadCsvTilemap("Assets\\levels\\Level-TMPF-mini-map-elements.csv");
-    //m_Elements.loadCsvTilemap("Assets\\levels\\Level-TMPF-Niv-01-elem.csv");
-    m_Elements.setTilemapType(false);
-
-    // Get texture 
-    const std::string texture_name = "Assets\\ennemies_empty3.png"; 
-    m_TextureAtlas.loadFromFile(texture_name);
+    // TEXTURES LOADING 
+    // Get Main spritesheet
+    m_AtlasName = "Assets\\ennemies_empty3.png";
+    m_TextureAtlas.loadFromFile(m_AtlasName);
+    // assign 
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
     ObjectsElements::SetTextureAtlas(&m_TextureAtlas);
     MovableEnnemies::SetTextureAtlas(&m_TextureAtlas);
     VFX::SetTextureAtlas(&m_TextureAtlas);
-	
-	// Dead Body Texture
-	const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png"; 
+
+    // Dead Body Texture
+    const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png";
     m_TextureDead.loadFromFile(dead_texture_name);
-	DeadBody::SetTextureAtlas(&m_TextureDead);
+    DeadBody::SetTextureAtlas(&m_TextureDead);
 
+    // TILEMAPS
+    bool firstlevel = not (m_level > 0); 
+    NextLevel(firstlevel);
 
-    const sf::Vector2u WINSIZE = { 1024, 768 };
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 
-                                        static_cast<unsigned int>(WINSIZE.x / 32.0f), 
-                                        static_cast<unsigned int>(WINSIZE.y / 32.0f),
-                                        m_objects, m_cactus, m_checkpoints, m_exit_sign, m_mushrooms);
-    
     // SetUp Ennemies Path 
     for (MovableEnnemies& mush : m_mushrooms)
     {
@@ -78,16 +65,87 @@ GameDemo::GameDemo()
         TargetPoint.x += 32.0f * 6.0f;
         mush.setPath(mush.GetCenter(), TargetPoint);
     } 
-    
+
    
-
-    // Load main character 
-    m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
-
     // Set sound volume 
     m_MainCharacter->SetSFXVolume(50.0f); 
     this->setMusicVolume(m_MainCharacter->GetSFXVolume()/10.0f);
 	
+}
+
+
+// Clear data level
+void GameDemo::ClearDataLevel()
+{
+    // unload Data : call destructors; 
+    m_plateform.clear();
+    m_mushrooms.clear();
+    m_cactus.clear();
+    m_ennemies.clear();
+    m_objects.clear();
+    m_checkpoints.clear();
+}
+
+
+// Clear and prepare for next level
+bool GameDemo::NextLevel(bool firstlevel)
+{
+    
+    if (not firstlevel)
+    {
+        // Unload data for TileMaps
+        m_Tilemap.PreNextLevel();
+        m_Elements.PreNextLevel();
+    }
+
+    // Remove Game Data
+    ClearDataLevel(); 
+
+    // Load Tilemap : Backgrounds (plateform) and Elements (ennemies, position)
+    LoadTileMaps(m_level);
+
+    // LOAD elements for Game  
+    m_ennemies = m_Elements.loadObjects(m_AtlasName, 
+                                        sf::Vector2u(32, 32), sf::Vector2u(10, 50),
+                                        static_cast<unsigned int>(m_WINSIZE.x / 32.0f),
+                                        static_cast<unsigned int>(m_WINSIZE.y / 32.0f),
+                                        m_objects, m_cactus, 
+                                        m_checkpoints, m_exit_sign, 
+                                        m_mushrooms);
+
+    // Main character 
+    if (firstlevel)
+    {
+        m_MainCharacter = new MainCharacter(m_WINSIZE, m_Elements.getMainCharacterSpawnPosition());
+    }
+    else
+    {
+        m_MainCharacter->MoveToNextLevel(m_Elements.getMainCharacterSpawnPosition());
+    }
+
+    m_level++;
+
+    return true;
+}
+
+/// Load TileSet and Elements maps from CSV
+/// \parae
+void GameDemo::LoadTileMaps(int level)
+{
+    char tilename[45];
+    int cx;
+    cx = snprintf(tilename, 45, "Assets\\levels\\Level-TMPF-Niv-%02d-tiles.csv", level);
+    // background tilemap
+    m_Tilemap.loadCsvTilemap(std::string(tilename));
+    m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
+    // define found plateform 
+    m_plateform = m_Tilemap.getPlateforms();
+
+    char elemname[45];
+    cx = snprintf(elemname, 45, "Assets\\levels\\Level-TMPF-Niv-%02d-elem.csv", level);
+    m_Elements.loadCsvTilemap(std::string(elemname));
+    m_Elements.setTilemapType(false);
+
 }
 
 GameDemo::~GameDemo()
@@ -100,7 +158,7 @@ void GameDemo::Update(float deltaTime)
 
     if (not m_noMusic)
     {
-        if ( not IsBGMusicPlaying())
+        if (not IsBGMusicPlaying())
         {
             // if pause or stopped => play
             m_bgmusic.play(); 
@@ -173,9 +231,22 @@ void GameDemo::Update(float deltaTime)
         {
             m_EndgameSound.play();
 
-            m_MainCharacter->StartEndGame();
-            m_exit_sign.StartEndGame();
-            m_IsFinished = true;
+            if (m_level < m_NBLEVELS)
+            {
+                // End of the level
+                bool isfirst = (m_level == 0); 
+                NextLevel(isfirst);
+                m_bgmusic.pause();
+            }
+            else
+            {
+                // End of the game 
+                m_MainCharacter->StartEndGame();
+                m_exit_sign.StartEndGame();
+                m_IsFinished = true;
+            }
+            
+            
         }
     }
 }
@@ -292,6 +363,9 @@ void GameDemo::RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE)
     ImGui::End();
 
 }
+
+
+
 
 void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 {
