@@ -33,10 +33,10 @@ namespace
 
     float GetScaledAxis(unsigned int index, sf::Joystick::Axis axis, float deadZone, float scale)
     {
-        float value = (Joystick::getAxisPosition(index, axis) / 100.0f) * scale;
-        if (value >= -deadZone && value <= deadZone)
+        float rawValue = Joystick::getAxisPosition(index, axis);
+        if (rawValue >= -deadZone && rawValue <= deadZone)
             return 0.0f;
-
+        float value = (rawValue / 100.0f) * scale;
         return value;
     }
 }
@@ -241,7 +241,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     static const short unsigned int NB_MAX_JUMPS = 3;
 
     static const float SPEED_INC = 12.0f;
-    static const float DEAD_ZONE = 5.0f;
+    static const float DEAD_ZONE = 25.0f;
     static const float SLOWDOWN_RATE = 0.5f;
 
     // handling collision : new pos vs old pos 
