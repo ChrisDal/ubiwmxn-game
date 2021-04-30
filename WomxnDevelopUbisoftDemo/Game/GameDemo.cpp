@@ -62,12 +62,16 @@ GameDemo::GameDemo()
     // SetUp Ennemies Path 
     for (MovableEnnemies& mush : m_mushrooms)
     {
-        
+        // A/R
         sf::Vector2f TargetPoint{ mush.GetCenter() };
         TargetPoint.x += 32.0f * 6.0f;
+        // Mushroom config
+        mush.SetSFXVolume(50.0f);
         mush.configurePatrol(mush.GetCenter(), TargetPoint);
+        // Routine config
         std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush); 
         m_Routines.push_back(rout);
+        
     } 
 
     // Set sound volume 
@@ -229,6 +233,9 @@ void GameDemo::Update(float deltaTime)
             m_Routines.erase(m_Routines.begin() + i);
             m_Routines.insert(m_Routines.begin() + i, std::make_shared<EatDeadbody>(&m_mushrooms[i], TargetPoint));
 
+            // Play eating Sound 
+            m_mushrooms[i].EatPerso(); 
+
             // Routine applied : nothing else to be done : wait until finished
             m_toapplyRoutine = false;
             m_appliedRoutine = true;
@@ -241,6 +248,9 @@ void GameDemo::Update(float deltaTime)
             // last deadbody == killed by Ennemies
             int k = m_deadbodies.size() - 1;
             m_MainCharacter->RemoveDeadbody(k);
+
+            // stop eating perso
+            m_mushrooms[i].StopEatingPerso();
 
             auto rout = std::make_shared<MoveToAR>(m_mushrooms[i].getPatrol()[0], m_mushrooms[i].getPatrol()[1], &m_mushrooms[i]);
             m_Routines.erase(m_Routines.begin() + i);
@@ -793,7 +803,11 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 			ImGui::Text("Volume");
 			ImGui::SliderInt("", &slider_i, 0, 100, "%d", ImGuiSliderFlags_None);
 			ImGui::EndPopup();
-            m_MainCharacter->SetSFXVolume((float)slider_i);
+            m_MainCharacter->SetSFXVolume(static_cast<float>(slider_i));
+            for (auto& mush : m_mushrooms)
+            {
+                mush.SetSFXVolume(static_cast<float>(slider_i));
+            }
 		}
 		
         if (m_MainCharacter->GetSFXVolume() == 0.0f)

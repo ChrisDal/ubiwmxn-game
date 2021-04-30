@@ -2,6 +2,7 @@
 #include <Game/MovableEnnemies.h> 
 
 sf::Texture*  MovableEnnemies::m_pTextureAtlas = nullptr;
+float MovableEnnemies::m_SFX_volume = 18.0f;
 
 // constructor 
 MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft)
@@ -26,6 +27,8 @@ MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, un
 	// Neighbourhood : size character + deltapixels/2 (as it is centered ) 
 	m_neighb.setNeighbourhood(this, 64.0f, 10.0f);
 
+	// Sound init 
+	InitSoundType(); 
 
 };
 
@@ -98,6 +101,15 @@ void MovableEnnemies::Update(float deltaTime)
 	
 }
 
+void MovableEnnemies::EatPerso()
+{
+	if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+	{
+		setSoundType(AnimName::Eat);
+		playSFX(AnimName::Eat);
+	}
+}
+
 // Object in neighbourhood 
 bool MovableEnnemies::ObjectInRange(const BoxCollideable& dbd)
 {
@@ -115,5 +127,71 @@ void MovableEnnemies::configurePatrol(sf::Vector2f start, sf::Vector2f end)
 {
 	m_patrol_start = start; 
 	m_patrol_end = end;
+}
+
+void MovableEnnemies::StopEatingPerso()
+{
+	if (m_soundfx.getStatus() == sf::SoundSource::Status::Playing)
+	{
+		m_soundfx.stop(); 
+	}
+}
+
+void MovableEnnemies::InitSoundType()
+{
+	/*
+	struct SoundType {
+		sf::SoundBuffer s_buffer;       // sound buffer
+		bool is_playing{ false };       // sound is playing
+		bool no_sound{ true };          // = sound not loaded
+		std::string pathsound{ "" };    // path to wav sound file
+		bool looping{ false };          // looping or not
+	};
+	*/
+
+	LoadStructSound(m_AllSounds.Eat, "Assets\\Sounds\\13173.wav", true);
+	
+	// default initialisation for the others
+	dictSound[AnimName::Idle] = m_AllSounds.Idle;
+	dictSound[AnimName::Walk] = m_AllSounds.Walk;
+	dictSound[AnimName::Jump] = m_AllSounds.Jump;
+	dictSound[AnimName::Eat]  = m_AllSounds.Eat;
+	dictSound[AnimName::Die]  = m_AllSounds.Die;
+
+}
+
+void MovableEnnemies::LoadStructSound(SoundType& onesound, const std::string soundpath, bool looping)
+{
+	onesound.no_sound = not onesound.s_buffer.loadFromFile(soundpath);
+	onesound.is_playing = false;
+	onesound.pathsound = soundpath;
+	onesound.looping = looping;
+}
+
+inline void MovableEnnemies::setSoundType(AnimName anim)
+{
+	if (not dictSound[anim].no_sound)
+	{
+		m_soundfx.setBuffer(dictSound[anim].s_buffer);
+		m_soundfx.setVolume(GetSFXVolume());
+		m_soundfx.setLoop(dictSound[anim].looping);
+	}
+}
+
+inline void MovableEnnemies::playSFX(AnimName anim)
+{
+	if (dictSound[anim].no_sound) { return; }
+	m_soundfx.setBuffer(dictSound[anim].s_buffer); // re-set buffer 
+	m_soundfx.play();
+	dictSound[anim].is_playing = true;
+}
+
+void MovableEnnemies::resetPlaying()
+{
+	dictSound[AnimName::Idle].is_playing = false;
+	dictSound[AnimName::Walk].is_playing = false;
+	dictSound[AnimName::Jump].is_playing = false;
+	dictSound[AnimName::Eat].is_playing  = false;
+	dictSound[AnimName::Die].is_playing  = false;
 }
 

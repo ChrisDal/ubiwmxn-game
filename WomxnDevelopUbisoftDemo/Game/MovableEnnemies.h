@@ -5,18 +5,35 @@
 class MovableEnnemies : public Ennemie
 {
 
+	enum class AnimName {Idle, Walk, Jump, Eat,  Die};
+
 	static sf::Texture* m_pTextureAtlas;
 
 	struct AllAnims {
 		struct AnimType Idle;
 		struct AnimType Walk;
 		struct AnimType Jump;
-		struct AnimType DoubleJump;
+		struct AnimType Eat;
 		struct AnimType Die;
-		struct AnimType Hurt;
-		struct AnimType Dodge;
 	};
 
+	struct SoundType {
+		sf::SoundBuffer s_buffer;       // sound buffer 
+		bool is_playing{ false };       // sound is playing
+		bool no_sound{ true };          // = sound not loaded
+		std::string pathsound{ "" };    // path to wav sound file 
+		bool looping{ false };          // looping or not 
+	};
+
+	struct AllSounds {
+		struct SoundType Idle;
+		struct SoundType Walk;
+		struct SoundType Jump;
+		struct SoundType Eat;
+		struct SoundType Die;
+	};
+
+	static float m_SFX_volume;
 
 public:
 
@@ -37,9 +54,21 @@ public:
 	bool ObjectInRange(const BoxCollideable& dbd); 
 	bool isPatrolling() const { return m_patrolling; }
 	void configurePatrol(sf::Vector2f start, sf::Vector2f end);
-	std::vector<sf::Vector2f> getPatrol()  {
-		return std::vector<sf::Vector2f> {m_patrol_start, m_patrol_end};
-	}
+	std::vector<sf::Vector2f> getPatrol()  { return std::vector<sf::Vector2f> {m_patrol_start, m_patrol_end}; }
+
+	// Hit an other object 
+	void EatPerso(); 
+	void StopEatingPerso(); 
+
+	// Sound
+	void InitSoundType();
+	void LoadStructSound(struct SoundType& onesound, const std::string soundpath, bool looping);
+	inline void setSoundType(AnimName anim);
+	inline void playSFX(AnimName anim);
+	void resetPlaying();
+
+	static void SetSFXVolume(float percentage) { m_SFX_volume = percentage; }
+	static const float GetSFXVolume() { return m_SFX_volume; }
 
 private:
 	sf::Sprite m_Sprite;
@@ -63,6 +92,11 @@ private:
 
 	// animation 
 	float a_counter_seconds = 1.0f / 10.0f;
+
+	// Sound
+	sf::Sound m_soundfx;
+	std::map< AnimName, SoundType > dictSound;
+	AllSounds m_AllSounds;
 
 	// attributes for all types of ennemies
 	bool _colliding_plateforms;
