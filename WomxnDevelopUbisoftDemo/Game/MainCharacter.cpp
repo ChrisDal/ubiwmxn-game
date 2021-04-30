@@ -279,11 +279,11 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     static const float WATER_SPEED_MAX_FALL = SPEED_MAX_FALL / 8.0f;
 
     static const float APPLIED_FACTOR = 0.6f;
-    static const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.82f;
+    static const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.5f;
     static const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.25f;
     static const float GRAVITY = 98.1f;
     static const float NO_GRAVITY = 0.0f;
-    static const float JUMP_HEIGHT = 32.f*12.0f*10.0f;
+    static const float JUMP_HEIGHT = 32.f*12.0f*5.0f;
     static const short unsigned int NB_MAX_JUMPS = 3;
 
     static const float SPEED_INC = 12.0f;
@@ -592,7 +592,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 dustpos += sf::Vector2f(std::abs(m_Sprite.getTextureRect().width) / 1.3f, 2.0f);
             }
             
-            m_vfx.setParamVFX(VFX::AnimName::DustTrail, dustpos);
+            m_vfx.setParamVFX(VFX::AnimName::DustTrail, dustpos, a_direction);
 		}
 	}
 
