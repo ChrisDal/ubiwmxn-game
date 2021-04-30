@@ -567,11 +567,23 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         // VFX 
         m_vfx.setParamVFX(VFX::AnimName::DustJump);
 
-        // Sound when Anim is defined 
-        setSoundType(m_current_anim);
-        // Leap authorized = sound
-        if (k_KeyboardPressed[4] or k_JoystickPressed[0])
-            playSFX(m_current_anim);
+        if (m_InTheAir)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            // Leap authorized = sound
+            if (k_KeyboardPressed[4] or k_JoystickPressed[0])
+                playSFX(m_current_anim);
+        }
+        else
+        {
+            // Sound when Anim is defined 
+            setSoundType(AnimName::JumpWater);
+            // Leap authorized = sound
+            if (k_KeyboardPressed[4] or k_JoystickPressed[0])
+                playSFX(AnimName::JumpWater);
+        }
+        
 	}
 	else
 	{
@@ -593,8 +605,17 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             }
             
             m_vfx.setParamVFX(VFX::AnimName::DustTrail, dustpos, a_direction);
+
+            
 		}
 	}
+
+    if (m_InTheWater and (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped))
+    {
+        // Sound when Anim is defined 
+        setSoundType(AnimName::Walk);
+        playSFX(AnimName::Walk);
+    }
 
 
 
@@ -1406,15 +1427,17 @@ void MainCharacter::InitSoundType()
     */
 
     LoadStructSound(m_AllSounds.Jump, "Assets\\Sounds\\jump_03.wav", false); 
+    LoadStructSound(m_AllSounds.Walk, "Assets\\Sounds\\7534_cut.wav", false); 
     LoadStructSound(m_AllSounds.DoubleJump, "Assets\\Sounds\\jump_water_06.wav", false);
     LoadStructSound(m_AllSounds.Die, "Assets\\Sounds\\deaths\\cat_meow_01.wav", false);
     LoadStructSound(m_AllSounds.FireEnd, "Assets\\Sounds\\deaths\\cat_meow_02.wav", false);
     LoadStructSound(m_AllSounds.FireBegin, "Assets\\Sounds\\lava.flac", false);
-    LoadStructSound(m_AllSounds.FireSet, "Assets\\Sounds\\ignition.flac", false);
+    LoadStructSound(m_AllSounds.FireSet, "Assets\\Sounds\\10000_cut.wav", false);
     // default initialisation for the others
     dictSound[AnimName::Idle] = m_AllSounds.Idle;
     dictSound[AnimName::Walk] = m_AllSounds.Walk;
     dictSound[AnimName::Jump] = m_AllSounds.Jump;
+    dictSound[AnimName::JumpWater] = m_AllSounds.JumpWater;
     dictSound[AnimName::DoubleJump] = m_AllSounds.DoubleJump;
     dictSound[AnimName::Die] = m_AllSounds.Die;
     dictSound[AnimName::FireSet] = m_AllSounds.FireSet;
@@ -1448,6 +1471,7 @@ void MainCharacter::resetPlaying()
     dictSound[AnimName::Idle].is_playing = false;
     dictSound[AnimName::Walk].is_playing = false;
     dictSound[AnimName::Jump].is_playing = false;
+    dictSound[AnimName::JumpWater].is_playing = false;
     dictSound[AnimName::DoubleJump].is_playing = false;
     dictSound[AnimName::Die].is_playing = false;
     dictSound[AnimName::FireSet].is_playing = false;
