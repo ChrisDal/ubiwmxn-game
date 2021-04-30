@@ -23,8 +23,8 @@ MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, un
 	SetBoundingBox(m_Position, m_size);
 	// velocity 
 	m_Velocity = { 0.0f, 0.0f };
-	// Neighbourhood : size character + deltapixels/2 
-	m_neighb.setNeighbourhood(this, 64.0f, 5.0f);
+	// Neighbourhood : size character + deltapixels/2 (as it is centered ) 
+	m_neighb.setNeighbourhood(this, 64.0f, 10.0f);
 
 
 };
@@ -96,5 +96,24 @@ void MovableEnnemies::Update(float deltaTime)
 	m_Sprite.setPosition(m_Position);
 	SetCenter(m_Position);
 	
+}
+
+// Object in neighbourhood 
+bool MovableEnnemies::ObjectInRange(const BoxCollideable& dbd)
+{
+	if (m_neighb.IsColliding(dbd))
+	{
+		return true; 
+	}
+	else
+	{
+		return false; 
+	}
+}
+
+void MovableEnnemies::configurePatrol(sf::Vector2f start, sf::Vector2f end)
+{
+	m_patrol_start = start; 
+	m_patrol_end = end;
 }
 

@@ -34,12 +34,21 @@ public:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const; 
 	void StartEnd() {};
 
+	bool ObjectInRange(const BoxCollideable& dbd); 
+	bool isPatrolling() const { return m_patrolling; }
+	void configurePatrol(sf::Vector2f start, sf::Vector2f end);
+	std::vector<sf::Vector2f> getPatrol()  {
+		return std::vector<sf::Vector2f> {m_patrol_start, m_patrol_end};
+	}
+
 private:
 	sf::Sprite m_Sprite;
 	sf::Vector2f m_size;
 	sf::Vector2f m_Position;
 	sf::Vector2f m_Velocity;
+	// movement 
 	SequencePath m_Path;
+	
 
 	// Death 
 	bool m_Dead;
@@ -64,5 +73,9 @@ private:
 	bool _colliding_void;
 	bool _colliding_lava;
 	bool _colliding{ false };
+	
+	bool m_patrolling{true}; 
+	sf::Vector2f m_patrol_start{ 0.0f, 0.0f };
+	sf::Vector2f m_patrol_end{ 32.0f, 0.0f };
 
 };

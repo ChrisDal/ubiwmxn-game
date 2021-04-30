@@ -11,6 +11,8 @@
 #include <Game/Plateform.h>
 #include <Game/EnumElements.h>
 #include <Game/Vfx.h>
+#include <Modules/MoveToAR.h>
+#include <Modules/EatDeadbody.h>
 
 class GameDemo : public Game
 {
@@ -67,6 +69,7 @@ private:
     // Solid Elements
     TileMap m_Tilemap;
     MainCharacter* m_MainCharacter;
+    //std::unique_ptr<MainCharacter> m_MainCharacter;
 	std::vector<Plateform> m_plateform = {}; 
     // Affects life
     TileMap m_Elements; 
@@ -87,6 +90,13 @@ private:
 	
     // Game process
     bool m_IsFinished;
+
+    // behavior mushrooms 
+    std::vector< std::shared_ptr<Routine> > m_Routines; 
+    // routines interruption and set
+    bool m_appliedRoutine{ false };
+    bool m_toapplyRoutine{ false };
+    //std::map<MovableEnnemies*, Routine> m_allroutines; 
     bool m_Animation_AR{ true }; // Back and Forth for the mushroom 
 
 };

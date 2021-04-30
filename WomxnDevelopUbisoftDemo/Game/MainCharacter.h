@@ -125,6 +125,8 @@ public:
     // Dead body 
     void UpdateDeadBodies(float deltaTime, TileMap& Tm); // count 
     bool isCollidingDeadBodyLava(); 
+    std::vector<DeadBody> getDeadBodies() const { return m_deadbodies;  }
+    void RemoveDeadbody(int index); 
 
 
     // Animation 

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "stdafx.h"
 #include "GameDemo.h"
+#include <iostream>
 
 
 GameDemo::GameDemo()
@@ -61,12 +62,14 @@ GameDemo::GameDemo()
     // SetUp Ennemies Path 
     for (MovableEnnemies& mush : m_mushrooms)
     {
+        
         sf::Vector2f TargetPoint{ mush.GetCenter() };
         TargetPoint.x += 32.0f * 6.0f;
-        mush.setPath(mush.GetCenter(), TargetPoint);
+        mush.configurePatrol(mush.GetCenter(), TargetPoint);
+        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush); 
+        m_Routines.push_back(rout);
     } 
 
-   
     // Set sound volume 
     m_MainCharacter->SetSFXVolume(50.0f); 
     this->setMusicVolume(m_MainCharacter->GetSFXVolume()/10.0f);
@@ -205,23 +208,52 @@ void GameDemo::Update(float deltaTime)
         }
     }
 
-    // Check the mushrooms 
-    for (MovableEnnemies& mvenm : m_mushrooms)
-    {
-        mvenm.Update(deltaTime);
-        if (mvenm.getIsFinished())
-        {
-            sf::Vector2f TargetPoint{ mvenm.GetCenter() };
 
-            if (m_Animation_AR) { 
-                TargetPoint.x -= 32.0f * 5.0f; 
-            } else { 
-                TargetPoint.x += 32.0f * 5.0f; 
-            }
-            // Make AR 
-            mvenm.setPath(mvenm.GetCenter(), TargetPoint);
-            m_Animation_AR = not m_Animation_AR;
+    m_deadbodies = m_MainCharacter->getDeadBodies();
+
+    // Check the mushrooms 
+    for (int i = 0; i < m_mushrooms.size(); i++)
+    {
+        // MoveToAR routine 
+        m_mushrooms[i].Update(deltaTime);
+
+        // routines handling 
+        if (m_mushrooms[i].IsColliding(*m_MainCharacter))
+        {
+            m_toapplyRoutine = true; 
         }
+
+        if ((not m_appliedRoutine) and m_toapplyRoutine)
+        {
+            sf::Vector2f TargetPoint = { m_MainCharacter->GetCenter().x, m_mushrooms[i].GetCenter().y };
+            m_Routines.erase(m_Routines.begin() + i);
+            m_Routines.insert(m_Routines.begin() + i, std::make_shared<EatDeadbody>(&m_mushrooms[i], TargetPoint));
+
+            // Routine applied : nothing else to be done : wait until finished
+            m_toapplyRoutine = false;
+            m_appliedRoutine = true;
+        }
+
+        // MoveTO AR doesn't succeed = infinite, others routine yes
+        // EatDeadBody is the only other Routine 
+        if (m_Routines[i]->isSuccessfull())
+        {
+            // last deadbody == killed by Ennemies
+            int k = m_deadbodies.size() - 1;
+            m_MainCharacter->RemoveDeadbody(k);
+
+            auto rout = std::make_shared<MoveToAR>(m_mushrooms[i].getPatrol()[0], m_mushrooms[i].getPatrol()[1], &m_mushrooms[i]);
+            m_Routines.erase(m_Routines.begin() + i);
+            m_Routines.insert(m_Routines.begin() + i, rout);
+
+            // handling application of Routines
+            // Patrol is the default routine when applied we can interrupt any time
+            m_toapplyRoutine = false;
+            m_appliedRoutine = false;
+        }
+
+        m_Routines[i]->Act(&m_mushrooms[i], deltaTime);
+
     }
 
 
