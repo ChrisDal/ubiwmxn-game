@@ -592,7 +592,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 dustpos += sf::Vector2f(std::abs(m_Sprite.getTextureRect().width) / 1.3f, 2.0f);
             }
             
-            m_vfx.setParamVFX(VFX::AnimName::DustTrail, dustpos);
+            m_vfx.setParamVFX(VFX::AnimName::DustTrail, dustpos, a_direction);
 		}
 	}
 
