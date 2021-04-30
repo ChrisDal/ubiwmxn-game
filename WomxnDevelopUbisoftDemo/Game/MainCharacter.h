@@ -9,7 +9,7 @@ class Ennemie;
 
 class MainCharacter : public sf::Drawable, public BoxCollideable
 {
-    enum class AnimName { Idle, Walk, Jump, DoubleJump, 
+    enum class AnimName { Idle, Walk, Jump, JumpWater, DoubleJump, 
                             Attack, Hurt, Die, 
                             FireSet, FireBegin, FireEnd,
                             Reborn };
@@ -46,6 +46,7 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
         struct SoundType Idle;
         struct SoundType Walk;
         struct SoundType Jump;
+        struct SoundType JumpWater;
         struct SoundType DoubleJump;
         struct SoundType Die;
         struct SoundType Hurt;
@@ -146,7 +147,7 @@ public:
     void LoadStructSound(struct SoundType& onesound, const std::string soundpath, bool looping);
     inline void setSoundType(AnimName anim);
     inline void playSFX(AnimName anim);
-    bool getPlayStatusSFX() const { return m_soundfx.getStatus(); }
+    bool getPlayStatusSFX() const { return m_soundfx.getStatus() == sf::SoundSource::Status::Playing; }
     void resetPlaying();
 
     static void SetSFXVolume(float percentage) { m_SFX_volume = percentage; }
