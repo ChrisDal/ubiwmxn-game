@@ -56,6 +56,9 @@ public:
 	void configurePatrol(sf::Vector2f start, sf::Vector2f end);
 	std::vector<sf::Vector2f> getPatrol()  { return std::vector<sf::Vector2f> {m_patrol_start, m_patrol_end}; }
 
+	// Animation : Rotation 
+	void setAnimatedByRot(bool rot_allowed) { m_rotated = rot_allowed;  }
+
 	// Hit an other object 
 	void EatPerso(); 
 	void StopEatingPerso(); 
@@ -92,6 +95,7 @@ private:
 
 	// animation 
 	float a_counter_seconds = 1.0f / 10.0f;
+	bool m_rotated{ false };
 
 	// Sound
 	sf::Sound m_soundfx;

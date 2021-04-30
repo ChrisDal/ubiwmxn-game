@@ -98,6 +98,11 @@ void MovableEnnemies::Update(float deltaTime)
 	// Set New position
 	m_Sprite.setPosition(m_Position);
 	SetCenter(m_Position);
+
+	if (m_rotated)
+	{
+		m_Sprite.rotate(-15.0f);
+	}
 	
 }
 

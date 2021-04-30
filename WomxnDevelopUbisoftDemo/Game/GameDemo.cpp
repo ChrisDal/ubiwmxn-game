@@ -72,6 +72,22 @@ GameDemo::GameDemo()
         std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush); 
         m_Routines.push_back(rout);
         
+    }     
+	
+	// SetUp Ennemies Path 
+    for (MovableEnnemies& disc : m_discs)
+    {
+        // A/R
+        sf::Vector2f TargetPoint{ disc.GetCenter() };
+        TargetPoint.y += 32.0f * 5.0f;
+        // Disc config
+        disc.SetSFXVolume(50.0f);
+        disc.configurePatrol(disc.GetCenter(), TargetPoint);
+        disc.setAnimatedByRot(true); 
+        // Routine config
+        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(disc.GetCenter(), TargetPoint, &disc); 
+        m_RoutinesDiscs.push_back(rout);
+        
     } 
 
     // Set sound volume 
@@ -87,6 +103,7 @@ void GameDemo::ClearDataLevel()
     // unload Data : call destructors; 
     m_plateform.clear();
     m_mushrooms.clear();
+    m_discs.clear();
     m_cactus.clear();
     m_ennemies.clear();
     m_objects.clear();
@@ -118,7 +135,7 @@ bool GameDemo::NextLevel(bool firstlevel)
                                         static_cast<unsigned int>(m_WINSIZE.y / 32.0f),
                                         m_objects, m_cactus, 
                                         m_checkpoints, m_exit_sign, 
-                                        m_mushrooms);
+                                        m_mushrooms, m_discs);
 
     // Main character 
     if (firstlevel)
@@ -173,7 +190,7 @@ void GameDemo::Update(float deltaTime)
     }
 
     m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap,
-                            m_ennemies, m_cactus, m_mushrooms);
+                            m_ennemies, m_cactus, m_mushrooms, m_discs);
 
     // Handling death of cactus
     std::vector<Ennemie>::iterator it_cactus = m_cactus.begin();
@@ -211,6 +228,14 @@ void GameDemo::Update(float deltaTime)
             m_checkpoints[k].Update(deltaTime, true);
         }
     }
+	
+   // Check the discs 
+    for (int i = 0; i < m_discs.size(); i++)
+    {
+		// MoveToAR routine 
+        m_discs[i].Update(deltaTime);
+        m_RoutinesDiscs[i]->Act(&m_discs[i], deltaTime);
+	}
 
 
     m_deadbodies = m_MainCharacter->getDeadBodies();
@@ -323,11 +348,19 @@ void GameDemo::Render(sf::RenderTarget& target)
 	
     // Exit and MC
     target.draw(m_exit_sign);
-    // Msuhroom 
+	
+    // Mushrooms 
     for (MovableEnnemies& mvenm : m_mushrooms)
     {
         target.draw(mvenm);
     }
+	
+	// discs 
+    for (MovableEnnemies& mdisc : m_discs)
+    {
+        target.draw(mdisc);
+    }
+
     // Main character
     target.draw(*m_MainCharacter);
 

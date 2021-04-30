@@ -131,7 +131,7 @@ void MainCharacter::MoveToNextLevel(sf::Vector2f spawn_position)
 
 void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, 
                             std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus, 
-                            std::vector<MovableEnnemies>& l_mennemies)
+                            std::vector<MovableEnnemies>& l_mennemies, std::vector<MovableEnnemies>& l_discs)
 {
     if (m_IsPlayingEndLevel or m_IsPlayingEndGame)
     {
@@ -200,7 +200,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
 
     // Alive or not 
-    bool living = Alive(deltaTime, l_ennemie, l_mennemies);
+    bool living = Alive(deltaTime, l_ennemie, l_mennemies, l_discs);
 
     
     if (not living)
@@ -1347,7 +1347,7 @@ void MainCharacter::ResetTimers()
 }
 
 // Set Alive or Dead
-bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std::vector<MovableEnnemies> l_mennemies)
+bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std::vector<MovableEnnemies> l_mennemies, std::vector<MovableEnnemies> l_discs)
 {
     static const float TIMER_DEAD_WATER = 1.5f; 
     static const float TIMER_DEAD_VOID  = 0.25f;
@@ -1389,6 +1389,17 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std:
     for (auto const& menm : l_mennemies)
     {
         if (IsColliding(menm) and m_isAlive)
+        {
+            // Die 
+            setAliveOrDead(false);
+            m_HitByEnnemies = true;
+            break;
+        }
+    }
+
+    for (auto const& mdks : l_discs)
+    {
+        if (IsColliding(mdks) and m_isAlive)
         {
             // Die 
             setAliveOrDead(false);

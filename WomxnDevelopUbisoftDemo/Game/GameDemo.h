@@ -77,6 +77,7 @@ private:
     sf::Texture m_TextureDead;
     ObjectsElements m_exit_sign;
     std::vector<MovableEnnemies> m_mushrooms = {};
+    std::vector<MovableEnnemies> m_discs = {};
 
     // Game Elements
     std::vector<Ennemie> m_cactus = {};
@@ -93,10 +94,9 @@ private:
 
     // behavior mushrooms 
     std::vector< std::shared_ptr<Routine> > m_Routines; 
+    std::vector< std::shared_ptr<Routine> > m_RoutinesDiscs; 
     // routines interruption and set
     bool m_appliedRoutine{ false };
     bool m_toapplyRoutine{ false };
-    //std::map<MovableEnnemies*, Routine> m_allroutines; 
-    bool m_Animation_AR{ true }; // Back and Forth for the mushroom 
 
 };

@@ -63,7 +63,8 @@ public:
 
     void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, 
                 std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus, 
-                std::vector<MovableEnnemies>& l_mennemies);
+                std::vector<MovableEnnemies>& l_mennemies,
+                std::vector<MovableEnnemies>& l_discs);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void MoveToNextLevel(sf::Vector2f spawn_position);
@@ -105,7 +106,9 @@ public:
 	void setAliveOrDead(const bool& not_dead) { m_isAlive = not_dead;}
 	bool getAlive() const { return m_isAlive; }
 	// Define if Alive or not
-	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std::vector<MovableEnnemies> l_mennemies);
+	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies, 
+                std::vector<MovableEnnemies> l_mennemies, 
+        std::vector<MovableEnnemies> l_discs);
 
     // Elements with associated time counters
     void setInElements(TileMap& Tm); // set air, water, void, lava
