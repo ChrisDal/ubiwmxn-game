@@ -11,7 +11,7 @@ MoveToAR::MoveToAR(sf::Vector2f startpoint, sf::Vector2f targetpoint, MovableEnn
 }
 
 
-void MoveToAR::Act(MovableEnnemies* enm)
+void MoveToAR::Act(MovableEnnemies* enm, float deltaTime)
 {
 	
 	// works if routine is running 

@@ -78,14 +78,15 @@ GameDemo::GameDemo()
         
         sf::Vector2f TargetPoint{ mush.GetCenter() };
         TargetPoint.x += 32.0f * 6.0f;
-        m_routinesAR.push_back(MoveToAR(mush.GetCenter(), TargetPoint, &mush));
-        m_routinesEat.push_back(EatDeadbody());
+        mush.configurePatrol(mush.GetCenter(), TargetPoint);
+        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush); 
+        m_Routines.push_back(rout);
     } 
     
 
     // Load main character 
     m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
-
+    //m_MainCharacter = std::make_unique<MainCharacter>(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
     // Set sound volume 
     m_MainCharacter->SetSFXVolume(50.0f); 
     this->setMusicVolume(m_MainCharacter->GetSFXVolume()/10.0f);
@@ -149,67 +150,54 @@ void GameDemo::Update(float deltaTime)
         }
     }
 
-    /*for (int i = 0; i < m_mushrooms.size(); i++)
+
+    m_deadbodies = m_MainCharacter->getDeadBodies();
+
+    // Check the mushrooms 
+    for (int i = 0; i < m_mushrooms.size(); i++)
     {
         // MoveToAR routine 
         m_mushrooms[i].Update(deltaTime);
-        m_routinesAR[i].Act(&m_mushrooms[i]);
-    }*/
 
-    m_deadbodies = m_MainCharacter->getDeadBodies();
-    // Check the mushrooms 
-    
-    for (int i = 0; i < m_mushrooms.size(); i++)
-    {
-        short int km = -1;
-        if (m_deadbodies.size() > 0)
+        // routines handling 
+        if (m_mushrooms[i].IsColliding(*m_MainCharacter))
         {
-            
-            for (int k = 0; k < m_deadbodies.size(); k++)
-            {
-                std::cout << "LOOP DBD";
-                if (m_mushrooms[i].ObjectInRange(m_deadbodies[k]))
-                {
-                    km = k; 
-                }
-            }
-
-            if (km > -1)
-            {
-                std::cout << "Found a deadbody to eat :" << km; 
-                // Eating deadbody 
-                if (m_routinesEat[i].isNone())
-                {
-                    m_routinesEat[i] = EatDeadbody(&m_mushrooms[i], m_deadbodies[km].GetCenter());
-                }
-
-                if (m_routinesEat[i].isSuccessfull())
-                {
-                    std::cout << "Routine Eatdeadbody sucessfull ";
-                    m_routinesEat[i] = EatDeadbody();
-                    m_MainCharacter->RemoveDeadbody(km);
-                }
-
-                m_routinesEat[i].Act(&m_mushrooms[i], deltaTime);
-                m_mushrooms[i].Update(deltaTime);
-            }
-            else
-            {
-                // MoveToAR routine 
-                m_mushrooms[i].Update(deltaTime);
-                m_routinesAR[i].Act(&m_mushrooms[i]);
-            }
-
-        }
-        else 
-        {
-            // MoveToAR routine 
-            m_mushrooms[i].Update(deltaTime);
-            m_routinesAR[i].Act(&m_mushrooms[i]);
+            m_toapplyRoutine = true; 
         }
 
-        
+        if ((not m_appliedRoutine) and m_toapplyRoutine)
+        {
+            sf::Vector2f TargetPoint = { m_MainCharacter->GetCenter().x, m_mushrooms[i].GetCenter().y };
+            m_Routines.erase(m_Routines.begin() + i);
+            m_Routines.insert(m_Routines.begin() + i, std::make_shared<EatDeadbody>(&m_mushrooms[i], TargetPoint));
+
+            // Routine applied : nothing else to be done : wait until finished
+            m_toapplyRoutine = false;
+            m_appliedRoutine = true;
+        }
+
+        // MoveTO AR doesn't succeed = infinite, others routine yes
+        // EatDeadBody is the only other Routine 
+        if (m_Routines[i]->isSuccessfull())
+        {
+            // last deadbody == killed by Ennemies
+            int k = m_deadbodies.size() - 1;
+            m_MainCharacter->RemoveDeadbody(k);
+
+            auto rout = std::make_shared<MoveToAR>(m_mushrooms[i].getPatrol()[0], m_mushrooms[i].getPatrol()[1], &m_mushrooms[i]);
+            m_Routines.erase(m_Routines.begin() + i);
+            m_Routines.insert(m_Routines.begin() + i, rout);
+
+            // handling application of Routines
+            // Patrol is the default routine when applied we can interrupt any time
+            m_toapplyRoutine = false;
+            m_appliedRoutine = false;
+        }
+
+        m_Routines[i]->Act(&m_mushrooms[i], deltaTime);
+
     }
+
 
     if (!m_IsFinished)
     {

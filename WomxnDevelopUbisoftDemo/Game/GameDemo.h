@@ -57,6 +57,7 @@ private:
     // Solid Elements
     TileMap m_Tilemap;
     MainCharacter* m_MainCharacter;
+    //std::unique_ptr<MainCharacter> m_MainCharacter;
 	std::vector<Plateform> m_plateform = {}; 
     // Affects life
     TileMap m_Elements; 
@@ -76,8 +77,10 @@ private:
     bool m_IsFinished;
 
     // behavior mushrooms 
-    std::vector<MoveToAR> m_routinesAR;
-    std::vector<EatDeadbody> m_routinesEat;
+    std::vector< std::shared_ptr<Routine> > m_Routines; 
+    // routines interruption and set
+    bool m_appliedRoutine{ false };
+    bool m_toapplyRoutine{ false };
     //std::map<MovableEnnemies*, Routine> m_allroutines; 
     bool m_Animation_AR{ true }; // Back and Forth for the mushroom 
 

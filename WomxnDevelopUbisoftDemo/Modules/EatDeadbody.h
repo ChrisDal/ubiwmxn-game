@@ -4,7 +4,7 @@
 class EatDeadbody : public Routine
 {
 
-	static const float EATING_TIMER;
+	static float constexpr EATING_TIMER{3.0f};
 
 public:
 
@@ -18,8 +18,8 @@ public:
 	void Start();
 
 protected:
-	void UpdateTimer(float deltaTime);
-	void ResetTimer();
+	inline void UpdateTimer(float deltaTime) { m_timer += deltaTime; }
+	inline void ResetTimer() { m_timer = 0.0f; } 
 
 private:
 	float m_timer{ 0.0f };

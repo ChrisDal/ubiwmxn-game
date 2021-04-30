@@ -14,23 +14,23 @@ public:
 	~Routine() {};
 
 	// Get
-	State getState() const { return m_state; }
+	inline State getState() const { return m_state; }
 
-	// Pure Virtual Functions => Actions to make : override
-	virtual void Act(MovableEnnemies* enm) = 0;
-	virtual void Reset() = 0;
+	// Virtual Functions => Actions in derived class: override
+	virtual void Act(MovableEnnemies* enm, float deltaTime) {};
+	virtual void Reset() {};
 
 	// Routine State 
-	bool testState(State state) { return m_state == state; }
-	bool isRunning() { return testState(State::Running); }
-	bool isFailed() { return testState(State::Failure); }
-	bool isSuccessfull() { return testState(State::Success); }
-	bool isNone() { return testState(State::NA); }
+	inline bool testState(State state) { return m_state == state; }
+	inline bool isRunning() { return testState(State::Running); }
+	inline bool isFailed() { return testState(State::Failure); }
+	inline bool isSuccessfull() { return testState(State::Success); }
+	inline bool isNone() { return testState(State::NA); }
 
 protected:
 	State m_state{ State::NA };
 
-	void Start() { m_state = State::Running; }
-	void Succeed() { m_state = State::Success; }
-	void Fail() { m_state = State::Failure; }
+	inline void Start() { m_state = State::Running; }
+	inline void Succeed() { m_state = State::Success; }
+	inline void Fail() { m_state = State::Failure; }
 };

@@ -12,7 +12,7 @@ public:
 	~MoveToAR() {};
 
 	// override virtual function in Routine 
-	void Act(MovableEnnemies* enm) override;
+	void Act(MovableEnnemies* enm, float deltaTime) override;
 	void Reset() override;
 
 	// set new ennemie target point 
