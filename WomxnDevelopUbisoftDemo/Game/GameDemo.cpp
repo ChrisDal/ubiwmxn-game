@@ -57,34 +57,6 @@ GameDemo::GameDemo()
     bool firstlevel = not (m_level > 0); 
     NextLevel(firstlevel);
 
-    // SetUp Ennemies Path 
-    for (MovableEnnemies& mush : m_mushrooms)
-    {
-        // A/R
-        sf::Vector2f TargetPoint{ mush.ComputeTargetPoint() };
-        // Mushroom config
-        mush.SetSFXVolume(50.0f);
-        mush.configurePatrol(mush.GetCenter(), TargetPoint);
-        // Routine config
-        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush); 
-        m_Routines.push_back(std::move(rout));
-        
-    }     
-    
-    // SetUp Ennemies Path 
-    for (MovableEnnemies& disc : m_discs)
-    {
-        // A/R
-        sf::Vector2f TargetPoint{ disc.ComputeTargetPoint() };
-        // Disc config
-        disc.SetSFXVolume(50.0f);
-        disc.configurePatrol(disc.GetCenter(), TargetPoint);
-        disc.setAnimatedByRot(true); 
-        // Routine config
-        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(disc.GetCenter(), TargetPoint, &disc); 
-        m_RoutinesDiscs.push_back(std::move(rout));
-        
-    } 
 
     // Set sound volume 
     m_MainCharacter->SetSFXVolume(50.0f); 
@@ -148,7 +120,7 @@ bool GameDemo::NextLevel(bool firstlevel)
         mush.configurePatrol(mush.GetCenter(), TargetPoint);
         // Routine config
         std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush);
-        m_Routines.push_back(std::move(rout));
+        m_Routines.push_back(rout);
 
     }
 
@@ -163,7 +135,7 @@ bool GameDemo::NextLevel(bool firstlevel)
         disc.setAnimatedByRot(true);
         // Routine config
         std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(disc.GetCenter(), TargetPoint, &disc);
-        m_RoutinesDiscs.push_back(std::move(rout));
+        m_RoutinesDiscs.push_back(rout);
 
     }
     
