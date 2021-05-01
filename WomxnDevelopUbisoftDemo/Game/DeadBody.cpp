@@ -45,7 +45,6 @@ DeadBody::DeadBody(sf::Vector2f& position, unsigned int sx, unsigned int sy, boo
         // classical death
         textdeath.x = 0;
         textdeath.y = 0;
-        LOG("Air");
         break;
     case(terrain::Element::Water):
         // classical death
