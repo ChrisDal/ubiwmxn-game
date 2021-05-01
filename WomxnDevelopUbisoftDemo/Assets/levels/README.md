@@ -47,5 +47,11 @@ Filename examples : `Level-TMPF-Niv-%02d-tiles.csv`  and  `Level-TMPF-Niv-%02d-e
 - 202: Piques (left orientation)
 - 203: Piques (right orientation)
 - 204: Piques (down orientation)
-- 280: Mushroom (takes 1 tile) 
+- "4DU": Disc (takes 1 tile) 
 - 330: Cactus (takes 3w x 4h tiles) 
+- "5DU": Mushroom (takes 1 tile) 
+
+Discs and Mushrooms are created with a distance and direction from the point of creation in elem tile :
+D = 0 Up, 1 Right,  2 Down, 3 Left
+U = Distance to travel in tile
+For example : 425 will create a Disc that will go down 5 tiles then go back to position of creation (infinite)
