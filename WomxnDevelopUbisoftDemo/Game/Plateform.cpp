@@ -21,7 +21,8 @@ Plateform::~Plateform()
 {
 };
 
-Plateform::Plateform() {};
+Plateform::Plateform() : walkable{ false }
+{};
 
 // Update position if needed
 void Plateform::setPosition(sf::Vector2f new_center)

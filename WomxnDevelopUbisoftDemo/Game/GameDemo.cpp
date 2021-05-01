@@ -71,8 +71,8 @@ GameDemo::GameDemo()
         m_Routines.push_back(rout);
         
     }     
-	
-	// SetUp Ennemies Path 
+    
+    // SetUp Ennemies Path 
     for (MovableEnnemies& disc : m_discs)
     {
         // A/R
@@ -91,7 +91,7 @@ GameDemo::GameDemo()
     // Set sound volume 
     m_MainCharacter->SetSFXVolume(50.0f); 
     this->setMusicVolume(m_MainCharacter->GetSFXVolume()/10.0f);
-	
+    
 }
 
 
@@ -230,14 +230,14 @@ void GameDemo::Update(float deltaTime)
         }
        
     }
-	
+    
    // Check the discs 
     for (int i = 0; i < m_discs.size(); i++)
     {
-		// MoveToAR routine 
+        // MoveToAR routine 
         m_discs[i].Update(deltaTime);
         m_RoutinesDiscs[i]->Act(&m_discs[i], deltaTime);
-	}
+    }
 
 
     m_deadbodies = m_MainCharacter->getDeadBodies();
@@ -324,40 +324,40 @@ void GameDemo::Render(sf::RenderTarget& target)
 {
     target.clear(sf::Color(0, 0, 0));
     target.draw(m_Tilemap);
-	
-	// Ennemies 
-	for ( const auto& enm : m_ennemies) 
-	{
-		target.draw(enm); 
-	}		
+    
+    // Ennemies 
+    for ( const auto& enm : m_ennemies) 
+    {
+        target.draw(enm); 
+    }		
     
     for ( const auto& cac : m_cactus) 
-	{
-		target.draw(cac); 
-	}	
+    {
+        target.draw(cac); 
+    }	
     
     // Elements 
-	for ( const auto& elm : m_objects)
-	{
-		target.draw(elm);
-	}
-	
+    for ( const auto& elm : m_objects)
+    {
+        target.draw(elm);
+    }
+    
     // Checkpoints 
-	for ( const auto& ckp : m_checkpoints)
-	{
-		target.draw(ckp);
-	}
-	
+    for ( const auto& ckp : m_checkpoints)
+    {
+        target.draw(ckp);
+    }
+    
     // Exit and MC
     target.draw(m_exit_sign);
-	
+    
     // Mushrooms 
     for (MovableEnnemies& mvenm : m_mushrooms)
     {
         target.draw(mvenm);
     }
-	
-	// discs 
+    
+    // discs 
     for (MovableEnnemies& mdisc : m_discs)
     {
         target.draw(mdisc);
@@ -470,14 +470,14 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "GAME IN PROGRESS");
         }
     }
-	
-	if (ImGui::CollapsingHeader("Sound status"))
+    
+    if (ImGui::CollapsingHeader("Sound status"))
     {
-		ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(this->getMusicVolume())).c_str());		
-		ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(m_MainCharacter->GetSFXVolume())).c_str());
+        ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(this->getMusicVolume())).c_str());		
+        ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(m_MainCharacter->GetSFXVolume())).c_str());
     }
-	
-	if (ImGui::CollapsingHeader("MainCharacter Status"))
+    
+    if (ImGui::CollapsingHeader("MainCharacter Status"))
     {
         if (m_MainCharacter->getCollidingPf())
         {
@@ -487,8 +487,8 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "No collision with plateform");
         }
-		
-		if (m_MainCharacter->getCollidingLeft())
+        
+        if (m_MainCharacter->getCollidingLeft())
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Collision Left : Yes");
         }
@@ -559,7 +559,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Dead");
         }
-		
+        
 
     }
     
@@ -603,7 +603,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
                 if (i > 0)
                     ImGui::SameLine();
                     ImGui::PushID(i);
-					if (m_MainCharacter->getKeyboardKey(keyboard_name[i]))
+                    if (m_MainCharacter->getKeyboardKey(keyboard_name[i]))
                     {
                         ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(i / 5.0f, 0.85f, 0.85f));
                     }

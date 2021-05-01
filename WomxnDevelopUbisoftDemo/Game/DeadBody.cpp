@@ -5,13 +5,6 @@
 #include <Game/DeadBody.h>
 #include <Game/Plateform.h>
 
-#define DEBUG 1 
-#if DEBUG 
-    #define LOG(x) std::cout << x  << " "
-# else
-    #define LOG(x)
-#endif
-
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
 const float DeadBody::TIME_DESTRUCTION_WATER = 27.0f;
 const float DeadBody::TIME_DESTRUCTION_LAVA = 9.0f;
@@ -187,8 +180,8 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
 		Play(AnimName::Water, deltaTime, false);
         // Do get up til air 
         t_elapsed += deltaTime;
+
         // In water or in transition water//air: velocity ++
-        
         if (Tm.ElementsTiles(m_Position) == 1 )
         {
             // Poussée d'archimede 1000 km/m^-3 * 0.02 m^3 * g 
@@ -196,7 +189,7 @@ void DeadBody::Update(float deltaTime, TileMap& Tm)
         }
         else if (Tm.ElementsTiles(new_pos) == 10 and Tm.ElementsTiles(m_Position) == 1)
         {
-            // Poussée d'archimede 1000 km/m^-3 * 0.02 m^3 * g 
+            // Poussée d'archimede
             m_Velocity.y -= (1000 * 0.008f * 9.81f) / 32.0f;
             // Ajout rotation
             float Am0 = 10.0f / t_elapsed;

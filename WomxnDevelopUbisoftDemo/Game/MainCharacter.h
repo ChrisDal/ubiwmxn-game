@@ -57,6 +57,9 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
     };
 
     static float m_SFX_volume;
+    static const float MAX_TIMER_WATER;
+    static const float MAX_TIMER_VOID;
+    static const float MAX_TIMER_LAVA;
 
 public:	
     MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position);
