@@ -224,6 +224,11 @@ void GameDemo::Update(float deltaTime)
             m_MainCharacter->setRespawnPosition(m_checkpoints[k].GetCenter());
             m_checkpoints[k].Update(deltaTime, true);
         }
+        else
+        {
+            m_checkpoints[k].Update(deltaTime, false);
+        }
+       
     }
 	
    // Check the discs 

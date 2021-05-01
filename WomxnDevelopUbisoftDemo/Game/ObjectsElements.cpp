@@ -149,7 +149,8 @@ void ObjectsElements::setVFX()
 // Activate Elements : One time activation
 void ObjectsElements::Activate(float deltaTime)
 {
-	//bool not_vfx_call = m_activated and (!m_vfx.isPlaying());
+	bool vfx_call = (not m_activated) or (m_vfx.getCurrentAnim() != VFX::AnimName::EmptyFrame);
+	
 	switch (m_objtype)
 	{
 	case(ObjectType::checkpoint):
@@ -163,11 +164,15 @@ void ObjectsElements::Activate(float deltaTime)
 			setVFX();
 			m_activated = true;
 		}
-		// VFX time dependant
-		m_vfx.Update(deltaTime, m_vfxname, true); 
-		if (m_vfx_mirrored)
+
+		if (vfx_call)
 		{
-			m_vfx_mirror.Update(deltaTime, m_vfxname, false);
+			// VFX time dependant
+			m_vfx.Update(deltaTime, m_vfxname, true);
+			if (m_vfx_mirrored)
+			{
+				m_vfx_mirror.Update(deltaTime, m_vfxname, false);
+			}
 		}
 		break;
 	default:
@@ -185,8 +190,9 @@ void ObjectsElements::Update(float deltaTime, bool activated)
 
 	if (m_animated)
 	{
-		if (activated)
+		if (activated or m_activated)
 		{
+			// Call activation of animation
 			Activate(deltaTime);
 		}
 	}
