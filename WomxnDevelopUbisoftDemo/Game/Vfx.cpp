@@ -2,12 +2,6 @@
 #include <iostream>
 #include <Game/Vfx.h> 
 
-#define DEBUG 0 
-#if DEBUG 
-	#define LOG(x) std::cout << x  << " "
-# else
-	#define LOG(x)
-#endif
 
 sf::Texture* VFX::m_pTextureAtlas = nullptr;
 

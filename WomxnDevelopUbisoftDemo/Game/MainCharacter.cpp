@@ -3,16 +3,12 @@
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h> 
 
-#define DEBUG 0 
-#if DEBUG 
-    #define LOG(x) std::cout << x  << " "
-# else
-    #define LOG(x)
-#endif
-
 using namespace sf;
 
 float MainCharacter::m_SFX_volume = 18.0f;
+const float MainCharacter::MAX_TIMER_WATER = 1.5f;
+const float MainCharacter::MAX_TIMER_VOID = 0.25f;
+const float MainCharacter::MAX_TIMER_LAVA = 3.0f;
 
 // Joystick helpers
 namespace
@@ -71,15 +67,15 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 
     // sf vectors for min and max of windows app 
     WIN_LIMIT_X.x = 0.0f;
-    WIN_LIMIT_X.y = (float)WIN_LIMITS.x;
+    WIN_LIMIT_X.y = static_cast<float>(WIN_LIMITS.x);
     WIN_LIMIT_Y.x = 0.0f;
-    WIN_LIMIT_Y.y = (float)WIN_LIMITS.y;
+    WIN_LIMIT_Y.y = static_cast<float>(WIN_LIMITS.y);
 
     // Reborn init 
     m_RespawnPosition = m_Position; 
 
     // Animations structures and mapping
-    InitAnimType();             // ToDo : make a configuration files for animation's details
+    InitAnimType();            
     InitSoundType();
     // Visual Effects
     m_vfx = VFX(m_Position, false);
@@ -126,7 +122,6 @@ void MainCharacter::MoveToNextLevel(sf::Vector2f spawn_position)
     m_IsPlayingEndGame  = false; 
     m_IsPlayingEndLevel = false;
     m_WasButtonPressed  = false;
-
 }
 
 void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, 
@@ -626,7 +621,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 
     // Animate VFX 
     m_vfx.Update(deltaTime);
-    LOG(m_vfx.getCurrentAnimName());
 	
 }
 
@@ -1315,10 +1309,6 @@ float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const
 {
 	// begining 0% = out of element 
 	float pct_time = 0.0f;
-
-    static const float MAX_TIMER_WATER = 1.5f; 
-    static const float MAX_TIMER_VOID  = 0.25f; 
-    static const float MAX_TIMER_LAVA  = 3.0f; 
 	
 	switch(elem)
 	{
@@ -1349,10 +1339,6 @@ void MainCharacter::ResetTimers()
 // Set Alive or Dead
 bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std::vector<MovableEnnemies> l_mennemies, std::vector<MovableEnnemies> l_discs)
 {
-    static const float TIMER_DEAD_WATER = 1.5f; 
-    static const float TIMER_DEAD_VOID  = 0.25f;
-    static const float TIMER_DEAD_LAVA  = 3.0f;
-    
     if (m_Respawning)
     {
 		setAliveOrDead(true);
@@ -1360,9 +1346,9 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std:
     }
     
     // update elements counters
-    bool isDead_Water = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
-    bool isDead_Void = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
-    bool isDead_Lava = TimerElements(deltaTime, m_timer_lava, TIMER_DEAD_LAVA, m_CounterLava);
+    bool isDead_Water = TimerElements(deltaTime, m_InTheWater, MAX_TIMER_WATER, m_CounterWater);
+    bool isDead_Void = TimerElements(deltaTime, m_InTheVoid , MAX_TIMER_VOID, m_CounterVoid );
+    bool isDead_Lava = TimerElements(deltaTime, m_timer_lava, MAX_TIMER_LAVA, m_CounterLava);
 
     if (isDead_Water) { m_DiedInWater = true; }
     if (isDead_Void)  { m_DiedInVoid  = true; }
