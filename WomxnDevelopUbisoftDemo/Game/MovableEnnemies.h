@@ -119,10 +119,7 @@ private:
 	bool _colliding_plateforms;
 	bool moving;
 	bool is_animated;
-	bool _colliding_fire;
-	bool _colliding_water;
-	bool _colliding_void;
-	bool _colliding_lava;
+	bool _colliding_fire{ false };
 	bool _colliding{ false };
 	
 	bool m_patrolling{true}; 

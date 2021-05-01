@@ -33,8 +33,8 @@ Ennemie::Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Ve
 
 Ennemie::Ennemie()
 	: _colliding_plateforms(false), m_IsPlayingEndGame(false),
-	_colliding_fire(false), m_Dead(false), 
-	m_weak_fire(false), moving(false)
+	 _colliding_fire(false), m_Dead(false), 
+	 m_weak_fire(false), moving(false), is_animated(false)
 {}; 
 
 Ennemie::~Ennemie() {};

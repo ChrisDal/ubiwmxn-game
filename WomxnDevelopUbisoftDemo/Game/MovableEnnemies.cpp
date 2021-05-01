@@ -7,7 +7,7 @@ float MovableEnnemies::m_SFX_volume = 18.0f;
 // constructors
 MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft, E_Direction pathDirection = E_Direction::UP, int pathLengthInTiles = 0)
 	: m_Position(SpawnPosition), m_weak_fire{ false },
-	_colliding_fire(false), _colliding_plateforms(false), 
+	_colliding_fire(false), _colliding_plateforms(false), moving(true),
 	m_Dead(false) , m_PathDirection(pathDirection), m_PathLengthInTiles(pathLengthInTiles)
 {
 	m_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));
@@ -34,8 +34,9 @@ MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, un
 };
 
 MovableEnnemies::MovableEnnemies()
-	: m_weak_fire{ false }, m_Dead(false),
-	_colliding_fire(false), _colliding_plateforms(false)
+	: m_weak_fire(false), m_Dead(false), is_animated(false),
+	_colliding_fire(false), _colliding_plateforms(false), 
+	m_PathLengthInTiles(0), moving(false)
 {};
 
 sf::Vector2f MovableEnnemies::ComputeTargetPoint()
