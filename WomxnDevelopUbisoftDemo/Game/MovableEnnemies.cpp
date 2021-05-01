@@ -6,7 +6,7 @@ float MovableEnnemies::m_SFX_volume = 18.0f;
 
 // constructor 
 MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft)
-	: m_Position(SpawnPosition), m_weak_fire{ true },
+	: m_Position(SpawnPosition), m_weak_fire{ false },
 	_colliding_fire(false), _colliding_plateforms(false), m_Dead(false) 
 {
 	m_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));

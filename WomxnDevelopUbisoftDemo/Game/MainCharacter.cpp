@@ -1382,6 +1382,7 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std:
         {	
 			// Die 
             setAliveOrDead(false);
+            m_HitByEnnemies = false;
             break;
         }
     }
@@ -1403,7 +1404,7 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std:
         {
             // Die 
             setAliveOrDead(false);
-            m_HitByEnnemies = true;
+            m_HitByEnnemies = false;
             break;
         }
     }
