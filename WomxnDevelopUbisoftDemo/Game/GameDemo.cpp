@@ -1,7 +1,6 @@
 #include <iostream>
 #include "stdafx.h"
 #include "GameDemo.h"
-#include <iostream>
 
 
 GameDemo::GameDemo()
@@ -32,13 +31,21 @@ GameDemo::GameDemo()
     m_DeathsTextFont.loadFromFile("Assets\\calibrib.ttf");
     m_TextureTombstone.loadFromFile(".\\Assets\\tombstone.png");
     m_Tombstone.setTexture(m_TextureTombstone);
+
+
+    m_gameUI = std::make_unique<UIGame>(".\\Assets\\icons\\musicOn_small.png",
+                                        ".\\Assets\\icons\\musicOff_small.png",
+                                        ".\\Assets\\icons\\audioOn_small.png",
+                                        ".\\Assets\\icons\\audioOff_small.png");
+
+    /*
     // Sound
 	m_TextureIcoMusic.loadFromFile(".\\Assets\\icons\\musicOn_small.png"); 
 	m_TextureIcoNoMusic.loadFromFile(".\\Assets\\icons\\musicOff_small.png"); 
 	m_icoMusic.setTexture(m_TextureIcoMusic);
 	m_TextureIcoSound.loadFromFile(".\\Assets\\icons\\audioOn_small.png"); 
 	m_TextureIcoNoSound.loadFromFile(".\\Assets\\icons\\audioOff_small.png"); 
-	m_icoSFX.setTexture(m_TextureIcoSound);
+	m_icoSFX.setTexture(m_TextureIcoSound);*/
 
     // TEXTURES LOADING 
     // Get Main spritesheet
@@ -153,7 +160,6 @@ bool GameDemo::NextLevel(bool firstlevel)
 }
 
 /// Load TileSet and Elements maps from CSV
-/// \parae
 void GameDemo::LoadTileMaps(int level)
 {
     char tilename[45];
@@ -617,209 +623,8 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         }
     }
 
-	
 
-    ImGui::End();
-
-    
-    // Death Menu overlay 
-    static bool show_UI = true;
-    const float DISTANCE2 = 2.0f;
-    static int corner2 = 0;
-    ImGuiIO& io2 = ImGui::GetIO();
-    ImGuiWindowFlags window_flags2 = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-    if (corner2 != -1)
-    {
-        window_flags2 |= ImGuiWindowFlags_NoMove;
-        ImVec2 window_pos2 = ImVec2((corner2 & 1) ? io2.DisplaySize.x - DISTANCE2 : DISTANCE2, (corner2 & 2) ? io2.DisplaySize.y - DISTANCE2 : DISTANCE2);
-        ImVec2 window_pos_pivot2 = ImVec2((corner2 & 1) ? 1.0f : 0.0f, (corner2 & 2) ? 1.0f : 0.0f);
-        ImGui::SetNextWindowPos(window_pos2, ImGuiCond_Always, window_pos_pivot2);
-    }
-    ImGui::SetNextWindowBgAlpha(0.85f); // Transparent background
-    if (ImGui::Begin("Game UI", &show_UI, window_flags2))
-    {
-        int nb_deaths = m_MainCharacter->DeadBodiesCounter();
-        if (nb_deaths >= 9)
-        {
-            ImGui::TextColored(ImVec4(230.0f, 168.0f, 0.f, 1.f), "Deaths: %1d / %1d", nb_deaths, m_MainCharacter->DeadBodiesMax());
-        }
-        else
-        {
-            ImGui::TextColored(ImVec4(255.0f, 255.0f, 255.f, 1.f), "Deaths: %1d / %1d", nb_deaths, m_MainCharacter->DeadBodiesMax());
-        }
-
-        ImGui::SameLine(0.0f, 20.0f); 
-
-        // Bar for water  
-        float timer_progress_water = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Water);
-        
-        if (timer_progress_water < 0.3f)
-        {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
-
-        }
-        else
-        {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(188.8f / 360.f, 0.4f, 0.7f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(188.8f / 360.f, 0.7f, 0.7f));
-        }
-
-        ImGui::ProgressBar(timer_progress_water, ImVec2(70.0f, 0.0f));
-        ImGui::SameLine(0.0f, 5.0f);
-        ImGui::Text("Water");
-        ImGui::PopStyleColor(2);
-        // Bar for Void
-        ImGui::SameLine(0.0f, 20.0f);
-        float timer_progress_void = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Void);
-        if (timer_progress_void < 0.3f)
-        {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
-
-        }
-        else
-        {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.5f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(5.0f / 7.0f, 0.7f, 0.6f));
-        }
-        ImGui::ProgressBar(timer_progress_void, ImVec2(70.0f, 0.0f));
-        ImGui::SameLine(0.0f, 5.0f);
-        ImGui::Text("Void");
-        ImGui::PopStyleColor(2);
-
-        // Bar for Void
-        ImGui::SameLine(0.0f, 20.0f);
-        float timer_progress_lava = 1.0f - m_MainCharacter->GetPourcentageAllowedTime(terrain::Element::Lava);
-        if (timer_progress_lava < 0.3f)
-        {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.4f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.0f / 7.0f, 0.7f, 0.6f));
-
-        }
-        else
-        {
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(0.5f / 7.0f, 0.5f, 0.6f));
-            ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0.5f / 7.0f, 0.7f, 0.6f));
-        }
-        ImGui::ProgressBar(timer_progress_lava, ImVec2(70.0f, 0.0f));
-        ImGui::SameLine(0.0f, 5.0f);
-        ImGui::Text("Lava");
-        ImGui::PopStyleColor(2);
-		
-		
-		
-		// Parameters 
-		ImGui::SetCursorPosX(1024.0f - 75.0f);
-		ImGui::SetCursorPosY(0.0f);
-		// music 
-		ImGui::PushID(10);
-        bool click_music = ImGui::ImageButton(*m_icoMusic.getTexture(), 
-											    sf::Vector2f(m_icoMusic.getTexture()->getSize()), 
-                                                0,  sf::Color(0,0,0,255), sf::Color(255,255,255) );
-		if (ImGui::IsItemHovered()) 
-			ImGui::SetTooltip("Music Volume");	
-			
-		int slider_music = static_cast<int>(this->getMusicVolume());
-		if (click_music)
-		{
-			ImGui::OpenPopup("music_popup");	
-		}
-
-		if (ImGui::BeginPopup("music_popup", ImGuiWindowFlags_NoMove))
-		{
-			ImGui::Text("Volume");
-			ImGui::SliderInt("", &slider_music, 0, 100, "%d", ImGuiSliderFlags_None);
-			ImGui::EndPopup();
-            this->setMusicVolume((float)slider_music);
-		}
-        if (this->getMusicVolume() == 0.0f)
-        {
-            m_icoMusic.setTexture(m_TextureIcoNoMusic);
-        }
-        else
-        {
-            if (m_icoMusic.getTexture() != &m_TextureIcoMusic)
-            {
-                m_icoMusic.setTexture(m_TextureIcoMusic);
-            }
-        }
-		
-		// Enable Disable music on right click 
-        /*if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
-        {
-            if (m_icoMusic.getTexture() == &m_TextureIcoMusic)
-            {
-                m_icoMusic.setTexture(m_TextureIcoNoMusic);
-                this->setMusicVolume(0.0f);
-            }
-            else
-            {
-                m_icoMusic.setTexture(m_TextureIcoMusic);
-                this->setMusicVolume(m_MainCharacter->GetSFXVolume() / 10.f);
-            }
-        }*/
-		
-        ImGui::PopID();
-		ImGui::SameLine(0.0f, 5.0f);
-		// SFX
-        ImGui::PushID(11);
-        bool click_sfx = ImGui::ImageButton(*m_icoSFX.getTexture(), 
-                                            sf::Vector2f(m_icoSFX.getTexture()->getSize()),
-                                            0, sf::Color(0, 0, 0, 255), sf::Color(255, 255, 255));
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip("Modify SFX Volume");
-        }
-			
-		// Enable Disable SFX 
-        /*if (click_sfx)
-        {
-            if (m_icoSFX.getTexture() == &m_TextureIcoSound)
-            {
-                m_icoSFX.setTexture(m_TextureIcoNoSound);
-                m_MainCharacter->SetSFXVolume(0.0f);
-            }
-            else
-            {
-                m_icoSFX.setTexture(m_TextureIcoSound);
-                m_MainCharacter->SetSFXVolume(50.0f);
-            }
-        }*/
-		
-		// Handling Volume
-		int slider_i = static_cast<int>(m_MainCharacter->GetSFXVolume());
-		if (click_sfx)
-		{
-			ImGui::OpenPopup("my_volume_popup");
-		}
-		
-		if (ImGui::BeginPopup("my_volume_popup", ImGuiWindowFlags_NoMove))
-		{
-			ImGui::Text("Volume");
-			ImGui::SliderInt("", &slider_i, 0, 100, "%d", ImGuiSliderFlags_None);
-			ImGui::EndPopup();
-            m_MainCharacter->SetSFXVolume(static_cast<float>(slider_i));
-            for (auto& mush : m_mushrooms)
-            {
-                mush.SetSFXVolume(static_cast<float>(slider_i));
-            }
-		}
-		
-        if (m_MainCharacter->GetSFXVolume() == 0.0f)
-        {
-            m_icoSFX.setTexture(m_TextureIcoNoSound);
-        }
-        else
-        {
-            if (m_icoSFX.getTexture() != &m_TextureIcoSound)
-            {
-                m_icoSFX.setTexture(m_TextureIcoSound);
-            }
-        }
-        ImGui::PopID();
-
-    }
+    m_gameUI->DisplayUI(this, m_MainCharacter, m_mushrooms);
 
     ImGui::End();
 

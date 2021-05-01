@@ -13,6 +13,7 @@
 #include <Game/Vfx.h>
 #include <Modules/MoveToAR.h>
 #include <Modules/EatDeadbody.h>
+#include <Game/UIGame.h>
 
 class GameDemo : public Game
 {
@@ -53,6 +54,10 @@ private:
     sf::Sprite m_Tombstone;
     sf::Texture m_TextureTombstone;
     sf::Text m_DeathsText;
+
+
+    std::unique_ptr<UIGame> m_gameUI;
+    //
     sf::Sprite m_icoMusic; 
     sf::Texture m_TextureIcoMusic;
     sf::Texture m_TextureIcoNoMusic;

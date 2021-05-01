@@ -68,6 +68,9 @@
     <ClCompile Include="Modules\EatDeadbody.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
+    <ClCompile Include="Game\UIGame.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -133,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="Modules\EatDeadbody.h">
       <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\UIGame.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
