@@ -4,7 +4,8 @@
 
 std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, 
                                             std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& l_checkpoints, 
-                                            ObjectsElements& exit_sign, std::vector<MovableEnnemies>& mush)
+                                            ObjectsElements& exit_sign, 
+											std::vector<MovableEnnemies>& mush, std::vector<MovableEnnemies>& disc)
 {
 	
 	if (m_type != TmapType::monstobjects)
@@ -37,10 +38,13 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
                     m_spawnPosition = spaw; 
                     continue;
                 }
-
+                if (m_tiles[k] == 270)
+                {
+                    disc.push_back(MovableEnnemies(spaw, tileSize.x, tileSize.y, coord));
+                    continue; 
+                }
                 if (m_tiles[k] == 280)
                 {
-                    bool weak_against_fire = true;
                     mush.push_back(MovableEnnemies(spaw, tileSize.x, tileSize.y, coord));
                     continue; 
                 }

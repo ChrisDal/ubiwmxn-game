@@ -277,7 +277,7 @@ std::vector<SequencePath::Instructions> SequencePath::WrittenInstructions()
 				SequencePathInstructions.push_back(Instructions::GoToDown); 
 			
 			else // B <= A  
-				SequencePathInstructions.push_back(Instructions::GoToRight);
+				SequencePathInstructions.push_back(Instructions::GoToUp);
 		}
 		else 
 		{
