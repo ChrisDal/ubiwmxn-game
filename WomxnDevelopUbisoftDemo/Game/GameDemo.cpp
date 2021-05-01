@@ -1,8 +1,11 @@
+#include <iostream>
 #include "stdafx.h"
 #include "GameDemo.h"
+#include <iostream>
+
 
 GameDemo::GameDemo()
-    : Game{ "Game Demo" }
+    : Game{ "9Lives" }
     , m_IsFinished{ false }
 {
     m_EndgameTextFont.loadFromFile("Assets\\arial.ttf");
@@ -13,47 +16,160 @@ GameDemo::GameDemo()
     m_EndgameText.setCharacterSize(24);
     m_EndgameText.setFillColor(sf::Color::Red);
 
+    // Sounds
     m_EndgameSoundBuffer.loadFromFile("Assets\\Sounds\\Win_sound.wav");
-
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
+    // Music
+    if (!m_bgmusic.openFromFile("Assets\\Sounds\\music\\7-Dark Fantasy Studio-Tribe.wav"))
+    {
+        if (!m_bgmusic.openFromFile("Assets\\Sounds\\music\\2-Dark Fantasy Studio-Angry bull.wav"))
+            m_noMusic = true;
+    }
+    m_bgmusic.setLoop(true);
+
 
     // Future Game UI 
     m_DeathsTextFont.loadFromFile("Assets\\calibrib.ttf");
     m_TextureTombstone.loadFromFile(".\\Assets\\tombstone.png");
     m_Tombstone.setTexture(m_TextureTombstone);
+    // Sound
+	m_TextureIcoMusic.loadFromFile(".\\Assets\\icons\\musicOn.png"); 
+	m_TextureIcoNoMusic.loadFromFile(".\\Assets\\icons\\musicOff.png"); 
+	m_icoMusic.setTexture(m_TextureIcoMusic);
+	m_TextureIcoSound.loadFromFile(".\\Assets\\icons\\audioOn.png"); 
+	m_TextureIcoNoSound.loadFromFile(".\\Assets\\icons\\audioOff.png"); 
+	m_icoSFX.setTexture(m_TextureIcoSound);
 
-
-    // map tile 
-    m_Tilemap.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-tiles.csv");
-    // test
-    m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
-	// define found plateform 
-	m_plateform = m_Tilemap.getPlateforms(); 
-
-    // Ennemies 
-    m_Elements.loadCsvTilemap("Assets\\levels\\Level1-TMPF-Niv-01-elem.csv");
-    m_Elements.setTilemapType(false);
-
-    // Get texture 
-    const std::string texture_name = "Assets\\ennemies_empty3.png"; 
-    m_TextureAtlas.loadFromFile(texture_name);
+    // TEXTURES LOADING 
+    // Get Main spritesheet
+    m_AtlasName = "Assets\\ennemies_empty3.png";
+    m_TextureAtlas.loadFromFile(m_AtlasName);
+    // assign 
     Ennemie::SetTextureAtlas(&m_TextureAtlas);
     ObjectsElements::SetTextureAtlas(&m_TextureAtlas);
-	
-	// Dead Body Texture
-	const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png"; 
-    m_TextureDead.loadFromFile(dead_texture_name);
-	DeadBody::SetTextureAtlas(&m_TextureDead);
+    MovableEnnemies::SetTextureAtlas(&m_TextureAtlas);
+    VFX::SetTextureAtlas(&m_TextureAtlas);
 
-    const sf::Vector2u WINSIZE = { 1024, 768 };
-    m_ennemies = m_Elements.loadObjects(texture_name, sf::Vector2u(32, 32), sf::Vector2u(10, 50), 
-                                        static_cast<unsigned int>(WINSIZE.x / 32.0f), 
-                                        static_cast<unsigned int>(WINSIZE.y / 32.0f),
-                                        m_objects, m_cactus, m_checkpoints, m_exit_sign);
-    
-    // Load main character 
-    m_MainCharacter = new MainCharacter(WINSIZE, m_Elements.getMainCharacterSpawnPosition());
+    // Dead Body Texture
+    const std::string dead_texture_name = "Assets\\daedcat_addon_sprite.png";
+    m_TextureDead.loadFromFile(dead_texture_name);
+    DeadBody::SetTextureAtlas(&m_TextureDead);
+
+    // TILEMAPS
+    bool firstlevel = not (m_level > 0); 
+    NextLevel(firstlevel);
+
+    // SetUp Ennemies Path 
+    for (MovableEnnemies& mush : m_mushrooms)
+    {
+        // A/R
+        sf::Vector2f TargetPoint{ mush.GetCenter() };
+        TargetPoint.x += 32.0f * 6.0f;
+        // Mushroom config
+        mush.SetSFXVolume(50.0f);
+        mush.configurePatrol(mush.GetCenter(), TargetPoint);
+        // Routine config
+        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush); 
+        m_Routines.push_back(rout);
+        
+    }     
 	
+	// SetUp Ennemies Path 
+    for (MovableEnnemies& disc : m_discs)
+    {
+        // A/R
+        sf::Vector2f TargetPoint{ disc.GetCenter() };
+        TargetPoint.y += 32.0f * 5.0f;
+        // Disc config
+        disc.SetSFXVolume(50.0f);
+        disc.configurePatrol(disc.GetCenter(), TargetPoint);
+        disc.setAnimatedByRot(true); 
+        // Routine config
+        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(disc.GetCenter(), TargetPoint, &disc); 
+        m_RoutinesDiscs.push_back(rout);
+        
+    } 
+
+    // Set sound volume 
+    m_MainCharacter->SetSFXVolume(50.0f); 
+    this->setMusicVolume(m_MainCharacter->GetSFXVolume()/10.0f);
+	
+}
+
+
+// Clear data level
+void GameDemo::ClearDataLevel()
+{
+    // unload Data : call destructors; 
+    m_plateform.clear();
+    m_mushrooms.clear();
+    m_discs.clear();
+    m_cactus.clear();
+    m_ennemies.clear();
+    m_objects.clear();
+    m_checkpoints.clear();
+}
+
+
+// Clear and prepare for next level
+bool GameDemo::NextLevel(bool firstlevel)
+{
+    
+    if (not firstlevel)
+    {
+        // Unload data for TileMaps
+        m_Tilemap.PreNextLevel();
+        m_Elements.PreNextLevel();
+    }
+
+    // Remove Game Data
+    ClearDataLevel(); 
+
+    // Load Tilemap : Backgrounds (plateform) and Elements (ennemies, position)
+    LoadTileMaps(m_level);
+
+    // LOAD elements for Game  
+    m_ennemies = m_Elements.loadObjects(m_AtlasName, 
+                                        sf::Vector2u(32, 32), sf::Vector2u(10, 50),
+                                        static_cast<unsigned int>(m_WINSIZE.x / 32.0f),
+                                        static_cast<unsigned int>(m_WINSIZE.y / 32.0f),
+                                        m_objects, m_cactus, 
+                                        m_checkpoints, m_exit_sign, 
+                                        m_mushrooms, m_discs);
+
+    // Main character 
+    if (firstlevel)
+    {
+        m_MainCharacter = new MainCharacter(m_WINSIZE, m_Elements.getMainCharacterSpawnPosition());
+    }
+    else
+    {
+        m_MainCharacter->MoveToNextLevel(m_Elements.getMainCharacterSpawnPosition());
+    }
+
+    m_level++;
+
+    return true;
+}
+
+/// Load TileSet and Elements maps from CSV
+/// \parae
+void GameDemo::LoadTileMaps(int level)
+{
+    char tilename[45];
+    int cx;
+    cx = snprintf(tilename, 45, "Assets\\levels\\Level-TMPF-Niv-%02d-tiles.csv", level);
+    // background tilemap
+    m_Tilemap.loadCsvTilemap(std::string(tilename));
+    m_Tilemap.load("Assets\\tileset_32x32.png", sf::Vector2u(32, 32), 32, 24);
+    // define found plateform 
+    m_plateform = m_Tilemap.getPlateforms();
+
+    char elemname[45];
+    cx = snprintf(elemname, 45, "Assets\\levels\\Level-TMPF-Niv-%02d-elem.csv", level);
+    m_Elements.loadCsvTilemap(std::string(elemname));
+    m_Elements.setTilemapType(false);
+
 }
 
 GameDemo::~GameDemo()
@@ -63,7 +179,18 @@ GameDemo::~GameDemo()
 
 void GameDemo::Update(float deltaTime)
 {
-    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap, m_ennemies, m_cactus);
+
+    if (not m_noMusic)
+    {
+        if (not IsBGMusicPlaying())
+        {
+            // if pause or stopped => play
+            m_bgmusic.play(); 
+        }
+    }
+
+    m_MainCharacter->Update(deltaTime, m_plateform, m_Tilemap,
+                            m_ennemies, m_cactus, m_mushrooms, m_discs);
 
     // Handling death of cactus
     std::vector<Ennemie>::iterator it_cactus = m_cactus.begin();
@@ -74,28 +201,95 @@ void GameDemo::Update(float deltaTime)
             // erase returns following element
             it_cactus = m_cactus.erase(it_cactus);
         }
-        else 
+        else
         {
             ++it_cactus;
         }
     }
     // Update Living cactus
-    for (int i=0; i < m_cactus.size(); i++)
+    for (int i = 0; i < m_cactus.size(); i++)
     {
         m_cactus[i].Update(deltaTime, m_MainCharacter);
     }
- 
+
+    // Basic Ennemies 
+    for (int i = 0; i < m_ennemies.size(); i++)
+    {
+        m_ennemies[i].Update(deltaTime, m_MainCharacter);
+    }
+
+
+    // Check the checkpoints
     for (int k = 0; k < m_checkpoints.size(); k++)
     {
-        if (m_checkpoints[k].Contains(m_MainCharacter->GetCenter()))
+        if (m_checkpoints[k].IsColliding(*m_MainCharacter))
         {
             m_MainCharacter->setRespawnPosition(m_checkpoints[k].GetCenter());
             m_checkpoints[k].Update(deltaTime, true);
         }
-
-       
     }
+	
+   // Check the discs 
+    for (int i = 0; i < m_discs.size(); i++)
+    {
+		// MoveToAR routine 
+        m_discs[i].Update(deltaTime);
+        m_RoutinesDiscs[i]->Act(&m_discs[i], deltaTime);
+	}
 
+
+    m_deadbodies = m_MainCharacter->getDeadBodies();
+
+    // Check the mushrooms 
+    for (int i = 0; i < m_mushrooms.size(); i++)
+    {
+        // MoveToAR routine 
+        m_mushrooms[i].Update(deltaTime);
+
+        // routines handling 
+        if (m_mushrooms[i].IsColliding(*m_MainCharacter))
+        {
+            m_toapplyRoutine = true; 
+        }
+
+        if ((not m_appliedRoutine) and m_toapplyRoutine)
+        {
+            sf::Vector2f TargetPoint = { m_MainCharacter->GetCenter().x, m_mushrooms[i].GetCenter().y };
+            m_Routines.erase(m_Routines.begin() + i);
+            m_Routines.insert(m_Routines.begin() + i, std::make_shared<EatDeadbody>(&m_mushrooms[i], TargetPoint));
+
+            // Play eating Sound 
+            m_mushrooms[i].EatPerso(); 
+
+            // Routine applied : nothing else to be done : wait until finished
+            m_toapplyRoutine = false;
+            m_appliedRoutine = true;
+        }
+
+        // MoveTO AR doesn't succeed = infinite, others routine yes
+        // EatDeadBody is the only other Routine 
+        if (m_Routines[i]->isSuccessfull())
+        {
+            // last deadbody == killed by Ennemies
+            int k = m_deadbodies.size() - 1;
+            m_MainCharacter->RemoveDeadbody(k);
+
+            // stop eating perso
+            m_mushrooms[i].StopEatingPerso();
+
+            auto rout = std::make_shared<MoveToAR>(m_mushrooms[i].getPatrol()[0], m_mushrooms[i].getPatrol()[1], &m_mushrooms[i]);
+            m_Routines.erase(m_Routines.begin() + i);
+            m_Routines.insert(m_Routines.begin() + i, rout);
+
+            // handling application of Routines
+            // Patrol is the default routine when applied we can interrupt any time
+            m_toapplyRoutine = false;
+            m_appliedRoutine = false;
+        }
+
+        m_Routines[i]->Act(&m_mushrooms[i], deltaTime);
+
+    }
 
 
     if (!m_IsFinished)
@@ -104,9 +298,22 @@ void GameDemo::Update(float deltaTime)
         {
             m_EndgameSound.play();
 
-            m_MainCharacter->StartEndGame();
-            m_exit_sign.StartEndGame();
-            m_IsFinished = true;
+            if (m_level < m_NBLEVELS)
+            {
+                // End of the level
+                bool isfirst = (m_level == 0); 
+                NextLevel(isfirst);
+                m_bgmusic.pause();
+            }
+            else
+            {
+                // End of the game 
+                m_MainCharacter->StartEndGame();
+                m_exit_sign.StartEndGame();
+                m_IsFinished = true;
+            }
+            
+            
         }
     }
 }
@@ -141,6 +348,20 @@ void GameDemo::Render(sf::RenderTarget& target)
 	
     // Exit and MC
     target.draw(m_exit_sign);
+	
+    // Mushrooms 
+    for (MovableEnnemies& mvenm : m_mushrooms)
+    {
+        target.draw(mvenm);
+    }
+	
+	// discs 
+    for (MovableEnnemies& mdisc : m_discs)
+    {
+        target.draw(mdisc);
+    }
+
+    // Main character
     target.draw(*m_MainCharacter);
 
     if (m_IsFinished)
@@ -218,10 +439,13 @@ void GameDemo::RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE)
 
 }
 
+
+
+
 void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 {
     // DEBUG 
-    /*ImGui::Begin("Debug Menu");
+    ImGui::Begin("Debug Menu");
     ImGui::Text("Press F1 to close this debug menu");
     ImGui::NewLine();
 
@@ -243,6 +467,12 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             ImGui::TextColored(ImVec4(0.f, 255.0f, 0.f, 1.f), "GAME IN PROGRESS");
         }
+    }
+	
+	if (ImGui::CollapsingHeader("Sound status"))
+    {
+		ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(this->getMusicVolume())).c_str());		
+		ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), (std::to_string(m_MainCharacter->GetSFXVolume())).c_str());
     }
 	
 	if (ImGui::CollapsingHeader("MainCharacter Status"))
@@ -327,6 +557,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         {
             ImGui::TextColored(ImVec4(255.f, 0.f, 0.f, 1.f), "Dead");
         }
+		
 
     }
     
@@ -388,7 +619,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
 	
 
-    ImGui::End();*/
+    ImGui::End();
 
 
     /*// ImGui example menu overlay 
@@ -445,7 +676,7 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
     if (ImGui::Begin("Game UI", &show_UI, window_flags2))
     {
         int nb_deaths = m_MainCharacter->DeadBodiesCounter();
-        if (nb_deaths >= 9)// use to put back the cursor on top/left corner of the image to display above it
+        if (nb_deaths >= 9)
         {
             ImGui::TextColored(ImVec4(230.0f, 168.0f, 0.f, 1.f), "Deaths: %1d / %1d", nb_deaths, m_MainCharacter->DeadBodiesMax());
         }
@@ -512,6 +743,118 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
         ImGui::SameLine(0.0f, 5.0f);
         ImGui::Text("Lava");
         ImGui::PopStyleColor(2);
+		
+		
+		
+		// Parameters 
+		ImGui::SetCursorPosX(1024.0f - 150.0f);
+		ImGui::SetCursorPosY(0.0f);
+		// music 
+		ImGui::PushID(10);
+        bool click_music = ImGui::ImageButton(*m_icoMusic.getTexture(), 
+											    sf::Vector2f(m_icoMusic.getTexture()->getSize()), 
+                                                0,  sf::Color(0,0,0,255), sf::Color(255,255,255) );
+		if (ImGui::IsItemHovered()) 
+			ImGui::SetTooltip("Music Volume");	
+			
+		int slider_music = static_cast<int>(this->getMusicVolume());
+		if (click_music)
+		{
+			ImGui::OpenPopup("music_popup");	
+		}
+
+		if (ImGui::BeginPopup("music_popup", ImGuiWindowFlags_NoMove))
+		{
+			ImGui::Text("Volume");
+			ImGui::SliderInt("", &slider_music, 0, 100, "%d", ImGuiSliderFlags_None);
+			ImGui::EndPopup();
+            this->setMusicVolume((float)slider_music);
+		}
+        if (this->getMusicVolume() == 0.0f)
+        {
+            m_icoMusic.setTexture(m_TextureIcoNoMusic);
+        }
+        else
+        {
+            if (m_icoMusic.getTexture() != &m_TextureIcoMusic)
+            {
+                m_icoMusic.setTexture(m_TextureIcoMusic);
+            }
+        }
+		
+		// Enable Disable music on right click 
+        /*if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        {
+            if (m_icoMusic.getTexture() == &m_TextureIcoMusic)
+            {
+                m_icoMusic.setTexture(m_TextureIcoNoMusic);
+                this->setMusicVolume(0.0f);
+            }
+            else
+            {
+                m_icoMusic.setTexture(m_TextureIcoMusic);
+                this->setMusicVolume(m_MainCharacter->GetSFXVolume() / 10.f);
+            }
+        }*/
+		
+        ImGui::PopID();
+		ImGui::SameLine(0.0f, 5.0f);
+		// SFX
+        ImGui::PushID(11);
+        bool click_sfx = ImGui::ImageButton(*m_icoSFX.getTexture(), 
+                                            sf::Vector2f(m_icoSFX.getTexture()->getSize()),
+                                            0, sf::Color(0, 0, 0, 255), sf::Color(255, 255, 255));
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Modify SFX Volume");
+        }
+			
+		// Enable Disable SFX 
+        /*if (click_sfx)
+        {
+            if (m_icoSFX.getTexture() == &m_TextureIcoSound)
+            {
+                m_icoSFX.setTexture(m_TextureIcoNoSound);
+                m_MainCharacter->SetSFXVolume(0.0f);
+            }
+            else
+            {
+                m_icoSFX.setTexture(m_TextureIcoSound);
+                m_MainCharacter->SetSFXVolume(50.0f);
+            }
+        }*/
+		
+		// Handling Volume
+		int slider_i = static_cast<int>(m_MainCharacter->GetSFXVolume());
+		if (click_sfx)
+		{
+			ImGui::OpenPopup("my_volume_popup");
+		}
+		
+		if (ImGui::BeginPopup("my_volume_popup", ImGuiWindowFlags_NoMove))
+		{
+			ImGui::Text("Volume");
+			ImGui::SliderInt("", &slider_i, 0, 100, "%d", ImGuiSliderFlags_None);
+			ImGui::EndPopup();
+            m_MainCharacter->SetSFXVolume(static_cast<float>(slider_i));
+            for (auto& mush : m_mushrooms)
+            {
+                mush.SetSFXVolume(static_cast<float>(slider_i));
+            }
+		}
+		
+        if (m_MainCharacter->GetSFXVolume() == 0.0f)
+        {
+            m_icoSFX.setTexture(m_TextureIcoNoSound);
+        }
+        else
+        {
+            if (m_icoSFX.getTexture() != &m_TextureIcoSound)
+            {
+                m_icoSFX.setTexture(m_TextureIcoSound);
+            }
+        }
+        ImGui::PopID();
 
     }
 

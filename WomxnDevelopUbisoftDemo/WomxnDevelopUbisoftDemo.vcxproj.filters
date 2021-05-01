@@ -23,9 +23,6 @@
     <ClCompile Include="Game\MainCharacter.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Game\Door.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Game.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="Game\TileMap.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Game\Exit.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Game\Plateform.cpp">
@@ -56,6 +50,24 @@
     <ClCompile Include="Game\ObjectsElements.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game\SequencePath.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\MovableEnnemies.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Neighbourhood.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Vfx.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\MoveToAR.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Modules\EatDeadbody.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -71,9 +83,6 @@
     <ClInclude Include="Game\MainCharacter.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Game\Door.h">
-      <Filter>Game</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Game.h">
       <Filter>Engine</Filter>
     </ClInclude>
@@ -84,9 +93,6 @@
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Game\TileMap.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Game\Exit.h">
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Game\Plateform.h">
@@ -107,6 +113,27 @@
     <ClInclude Include="Game\EnumElements.h">
       <Filter>Game</Filter>
     </ClInclude>
+    <ClInclude Include="Game\SequencePath.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\MovableEnnemies.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Neighbourhood.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Vfx.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\MoveToAR.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\Routine.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Modules\EatDeadbody.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -117,6 +144,9 @@
     </Filter>
     <Filter Include="Engine\ImGui">
       <UniqueIdentifier>{f630cd3c-1cea-471c-9a95-a35b86a8dd9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules">
+      <UniqueIdentifier>{868e24fd-6492-47fb-b26a-d5c35edf0fdb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

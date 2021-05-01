@@ -1,8 +1,18 @@
+#include <iostream> 
 #include <stdafx.h>
 #include <Game/MainCharacter.h>
 #include <Game/Ennemie.h> 
 
+#define DEBUG 0 
+#if DEBUG 
+    #define LOG(x) std::cout << x  << " "
+# else
+    #define LOG(x)
+#endif
+
 using namespace sf;
+
+float MainCharacter::m_SFX_volume = 18.0f;
 
 // Joystick helpers
 namespace
@@ -23,10 +33,10 @@ namespace
 
     float GetScaledAxis(unsigned int index, sf::Joystick::Axis axis, float deadZone, float scale)
     {
-        float value = (Joystick::getAxisPosition(index, axis) / 100.0f) * scale;
-        if (value >= -deadZone && value <= deadZone)
+        float rawValue = Joystick::getAxisPosition(index, axis);
+        if (rawValue >= -deadZone && rawValue <= deadZone)
             return 0.0f;
-
+        float value = (rawValue / 100.0f) * scale;
         return value;
     }
 }
@@ -35,9 +45,11 @@ namespace
 
 // constructor
 MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position)
-    : m_IsPlayingEndGame(false), m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false), 
-    c_left(false), c_right(false), c_up(false), c_down(false),  m_InTheAir(true), m_InTheWater(false), 
-    m_InTheVoid(false), m_CanJump(true), a_textsquare_offset(12,22)
+    : m_IsPlayingEndGame(false), m_IsPlayingEndLevel(false), 
+        m_IsUsingJoystick(false), m_JoystickIndex(0), m_WasButtonPressed(false),
+        c_left(false), c_right(false), c_up(false), c_down(false),  
+        m_InTheAir(true), m_InTheWater(false),  m_InTheVoid(false), 
+        m_CanJump(true), a_textsquare_offset(12,22)
 {
     // Texture
     m_Texture.loadFromFile(".\\Assets\\hero\\cat_addon_sprite.png");
@@ -65,15 +77,63 @@ MainCharacter::MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_positio
 
     // Reborn init 
     m_RespawnPosition = m_Position; 
+
     // Animations structures and mapping
     InitAnimType();             // ToDo : make a configuration files for animation's details
-   
+    InitSoundType();
+    // Visual Effects
+    m_vfx = VFX(m_Position, false);
 }
 
 
-void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus)
+// Set Up MainCharacter and deadbodies for next level 
+void MainCharacter::MoveToNextLevel(sf::Vector2f spawn_position)
 {
-    if (m_IsPlayingEndGame)
+    // Movement 
+    m_Position = spawn_position; 
+    m_RespawnPosition = m_Position;
+    m_Sprite.setPosition(m_Position);
+    // Bounding box
+    const sf::Vector2f size(32.0f, 32.0f);
+    SetBoundingBox(m_Position, sf::Vector2f(0.5625 * static_cast<float>(m_Sprite.getScale().x) * size.x,
+                                0.9375 * static_cast<float>(m_Sprite.getScale().y) * size.y));
+
+    m_Velocity = { 0.0f, 0.0f };
+    // FX
+    m_vfx = VFX(m_Position, false);
+    m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
+
+    // Deadbodies 
+    m_deadbodies.clear(); 
+    // Ennemies 
+    _colliding_plateforms = false;
+    _colliding_deadbodies = false;
+    _colliding_cactus = false;
+    m_HitByEnnemies = false;
+    m_isAlive = true; 
+    m_Respawning = false; 
+
+    // Reset Jump 
+    m_CanJump = true;
+    ResetJumpCounter();
+    // Reset Elements
+    m_touched_lava = false; 
+    m_timer_lava = false;
+    ResetTimers(); 
+    ResetElements();
+
+    // End or not
+    m_IsPlayingEndGame  = false; 
+    m_IsPlayingEndLevel = false;
+    m_WasButtonPressed  = false;
+
+}
+
+void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap& Tm, 
+                            std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus, 
+                            std::vector<MovableEnnemies>& l_mennemies, std::vector<MovableEnnemies>& l_discs)
+{
+    if (m_IsPlayingEndLevel or m_IsPlayingEndGame)
     {
         return;
     }
@@ -81,14 +141,18 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     // Define if in the air or not 
     setInElements(Tm);
 
+    // Alive and respawning process
     if (!m_isAlive and not m_Respawning and a_done_anim)
     {
-        ResetElements();
         // call reborn 
-        m_Velocity = {0.0f, 0.0f}; 
 		m_Respawning = true; 
-        // create dead bodies 
-        bool no_solid = not (m_InTheAir or (not m_InTheWater)) or m_DiedInLava;
+		// Reset Animation flag ending
+		a_done_anim = false;
+        
+        // create dead bodies : no_solid = go through
+        // Solid : in the air or in the water 
+        // No Solid : in the lava, in the void
+        bool no_solid = m_DiedInLava or m_DiedInVoid;
         terrain::Element died_element; 
         if (m_DiedInLava)
         {
@@ -98,22 +162,23 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         {
             died_element = m_current_elem;
         }
-        
-		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element));
+		m_deadbodies.push_back(DeadBody(m_Position, 32, 32, no_solid, died_element, a_direction, m_HitByEnnemies));
         DeathCounterAdd();
 		// assign position to respawn spot 
 		m_Position = m_RespawnPosition;
+        m_Velocity = { 0.0f, 0.0f };
 
-        // Reassign dead flags
-        m_DiedInWater = false;
-        m_DiedInVoid = false;
-        m_DiedInLava = false;
+        // VFX
+        m_vfx.setParamVFX(VFX::AnimName::Reborn, m_Position);
 
+        // Reset Elements 
+        ResetElements();
 
     } 
 	else if (m_Respawning)
 	{
 		Play(AnimName::Reborn, deltaTime, false); 
+        m_vfx.Update(deltaTime);
 		if (a_done_anim)
 		{
 			m_Respawning = false; 
@@ -121,52 +186,108 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		}
         // reset counters 
         ResetTimers();
+        // Reassign dead flags
+        m_DiedInWater = false;
+        m_DiedInVoid  = false;
+        m_DiedInLava  = false;
+        // Reset Lava switch 
+        m_touched_lava = false;
+        m_timer_lava = false;
+        // Reset Ennemies hit 
+        m_HitByEnnemies = false; 
         return;
 	}
 
 
     // Alive or not 
-    bool living = Alive(deltaTime, l_ennemie);
+    bool living = Alive(deltaTime, l_ennemie, l_mennemies, l_discs);
+
+    
     if (not living)
     {
-        // Launch dies 
+        
+		// Launch dies 
         if (m_DiedInLava or m_touched_lava)
         {
-            Play(AnimName::FireEnd, deltaTime, false);
+			Play(AnimName::FireEnd, deltaTime, false);
         }
         else
         {
-            Play(AnimName::Die, deltaTime, false);
+			Play(AnimName::Die, deltaTime, false);
+        }
+        // VFX
+        m_vfx.setParamVFX(VFX::AnimName::Death, m_Position);
+        m_vfx.Update(deltaTime);
+
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            std::string death_sound = "Assets\\Sounds\\deaths\\cat_meow_0" + std::to_string(rand() % 5 + 1) + ".wav";
+            // Assign both animation 
+            LoadStructSound(m_AllSounds.Die, death_sound, false);
+            dictSound[AnimName::Die] = m_AllSounds.Die;
+            LoadStructSound(m_AllSounds.FireEnd, death_sound, false);
+            dictSound[AnimName::FireEnd] = m_AllSounds.FireEnd;
+            // set Buffer and play
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
         }
 
         return;
     }
+	else if (m_Respawning and living)
+	{
+		// No play just set new position
+		m_Velocity = {0.0f, 0.0f};
+		m_Sprite.setPosition(m_Position);
+		SetCenter(m_Position);
+        m_vfx.setPosition(m_Position);
+		return; 
+	}
 	
-    UpdateDeadBodies();
+	// Updating on Deadbodies 
+    UpdateDeadBodies(deltaTime, Tm);
 
-    // Handling Lava
-    if (m_InTheLava)
+
+    // Handling Lava: One time call per life
+    if (m_InTheLava and (not m_touched_lava))
     {
+        // Keep information on went to lava
+		m_touched_lava = true;
+        // launch timer 
+        m_timer_lava = true;
+    }
+    
+    // touched deadbodies lava
+    if (isCollidingDeadBodyLava())
+    {
+        // Keep information  "went to/ touched lava"
         m_touched_lava = true;
+        // launch timer 
+        m_timer_lava = true;
+    }
+    // Firefighter
+    if (m_InTheWater and m_touched_lava)
+    {
+        m_timer_lava = false; 
+        m_touched_lava = false; 
     }
 
-
-
+    // Position and movement process calculations
     static const float SPEED_MAX = 150.0f;
     static const float WATER_SPEED_MAX = SPEED_MAX * 0.3f;
     static const float SPEED_MAX_FALL = 800.0f;
     static const float WATER_SPEED_MAX_FALL = SPEED_MAX_FALL / 8.0f;
 
     static const float APPLIED_FACTOR = 0.6f;
-    static const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.82f;
-    static const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.15f;
+    static const float APPLIED_FALL_FACTOR = APPLIED_FACTOR * 0.5f;
+    static const float APPLIED_WATER_FACTOR = APPLIED_FACTOR * 0.25f;
     static const float GRAVITY = 98.1f;
     static const float NO_GRAVITY = 0.0f;
-    static const float JUMP_HEIGHT = 32.f*12.0f*10.0f;
+    static const float JUMP_HEIGHT = 32.f*12.0f*5.0f;
     static const short unsigned int NB_MAX_JUMPS = 3;
 
     static const float SPEED_INC = 12.0f;
-    static const float DEAD_ZONE = 5.0f;
+    static const float DEAD_ZONE = 25.0f;
     static const float SLOWDOWN_RATE = 0.5f;
 
     // handling collision : new pos vs old pos 
@@ -232,12 +353,16 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                         m_InTheAir = true;
                         m_IsJumping = true;
                         m_nbjumps++;
+                        // Get Jumping Position
+                        m_vfx.setPosition(m_Position);
                     }
                     else if (m_InTheWater)
                     {
                         m_Velocity.y = -sqrtf(2.0f * GRAVITY * JUMP_HEIGHT * APPLIED_WATER_FACTOR);
                         m_IsJumping = true;
                         m_nbjumps++;
+                        // Get Jumping Position
+                        m_vfx.setPosition(m_Position);
                     }
                     else
                     {
@@ -297,13 +422,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
         }
         else
         {
-            /*// if we were going left modify velocity
-            m_Velocity.x = std::abs(m_Velocity.x * SLOWDOWN_RATE);
-            if (s_Velocity.x)
-            {
-                m_Velocity.x = -m_Velocity.x;
-            }*/
-
             m_Velocity.x = 0.0f;
             
             k_KeyboardPressed[0] = false;
@@ -351,6 +469,8 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 					
 					m_IsJumping = true;
 					m_nbjumps++;
+                    // Get Jumping Position
+                    m_vfx.setPosition(m_Position);
 
                 }
                 else
@@ -380,20 +500,61 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     m_Sprite.setPosition(m_Position);
     SetCenter(m_Position);
 	
-
-	
+    // VFX Settings 
+    m_vfx.setDirection(a_direction);
 
 	// Animation to play
-    if (m_InTheLava)
+    if (m_InTheLava and not a_done_anim)
     {
-        Play(AnimName::FireBegin, deltaTime, false);
+        if (m_current_anim != AnimName::FireSet && m_current_anim != AnimName::FireEnd)
+        {
+            Play(AnimName::FireBegin, deltaTime, false);
+            m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
+            
+        }
+        else if (m_current_anim == AnimName::FireSet)
+        {
+            Play(m_current_anim, deltaTime, true);
+            m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
+        }
+        // else nothing
+
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
+        if (m_IsJumping)
+        {
+            // VFX: jumping position already set
+            m_vfx.setParamVFX(VFX::AnimName::DustJump);
+        }
+
+
     }
-    else if (m_touched_lava)
+    else if (m_touched_lava or m_InTheLava)
     {
         Play(AnimName::FireSet, deltaTime, true);  
+        if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            playSFX(m_current_anim);
+        }
+
+        if (m_IsJumping)
+        {
+            // VFX: jumping position already set
+            m_vfx.setParamVFX(VFX::AnimName::DustJump);
+        }
+
     }
 	else if (m_IsJumping)
 	{
+        
+
 		if (m_nbjumps == 1)
 		{
 			Play(AnimName::Jump, deltaTime, true);
@@ -402,25 +563,76 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
 		{
 			Play(AnimName::DoubleJump, deltaTime, true);
 		}
+
+        // VFX 
+        m_vfx.setParamVFX(VFX::AnimName::DustJump);
+
+        if (m_InTheAir)
+        {
+            // Sound when Anim is defined 
+            setSoundType(m_current_anim);
+            // Leap authorized = sound
+            if (k_KeyboardPressed[4] or k_JoystickPressed[0])
+                playSFX(m_current_anim);
+        }
+        else
+        {
+            // Sound when Anim is defined 
+            setSoundType(AnimName::JumpWater);
+            // Leap authorized = sound
+            if (k_KeyboardPressed[4] or k_JoystickPressed[0])
+                playSFX(AnimName::JumpWater);
+        }
+        
 	}
 	else
 	{
 		if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) == 0.0f))
 		{
 			Play(AnimName::Idle, deltaTime, true);
+            m_vfx.setParamVFX(VFX::AnimName::EmptyFrame, m_Position);
 		}
 		// moving left right 
 		else if ((std::abs(m_Velocity.y) == 0.0f) and (std::abs(m_Velocity.x) != 0.0f))
 		{
 			Play(AnimName::Walk, deltaTime, true);
+            // VFX 
+            sf::Vector2f dustpos = m_Position;
+            if (a_direction) {
+                dustpos -= sf::Vector2f(std::abs(m_Sprite.getTextureRect().width) / 2.0f, -2.0f);
+            } else {
+                dustpos += sf::Vector2f(std::abs(m_Sprite.getTextureRect().width) / 1.3f, 2.0f);
+            }
+            
+            m_vfx.setParamVFX(VFX::AnimName::DustTrail, dustpos, a_direction);
+
+            
 		}
 	}
+
+    if (m_InTheWater and (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped))
+    {
+        // Sound when Anim is defined 
+        setSoundType(AnimName::Walk);
+        playSFX(AnimName::Walk);
+    }
+
+
+
+    if (m_soundfx.getStatus() == sf::SoundSource::Status::Stopped)
+    {
+        resetPlaying();
+    }
+
+    // Animate VFX 
+    m_vfx.Update(deltaTime);
+    LOG(m_vfx.getCurrentAnimName());
 	
 }
 
 
 
-
+// draw MainCharacter and its deadbodies
 void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_Sprite);
@@ -428,13 +640,19 @@ void MainCharacter::draw(sf::RenderTarget& target, sf::RenderStates states) cons
     for (const auto& dbd : m_deadbodies)
     {
         target.draw(dbd);
-
     }
+
+    target.draw(m_vfx);
 }
 
 void MainCharacter::StartEndGame()
 {
     m_IsPlayingEndGame = true;
+}
+
+void MainCharacter::StartEndLevel()
+{
+    m_IsPlayingEndLevel = true;
 }
 
 
@@ -495,6 +713,20 @@ void MainCharacter::setInElements(TileMap& Tm)
             m_InTheVoid  = true;
             m_current_elem = terrain::Element::Void;
             break;
+        case(10): // Transition Water => Air
+            m_InTheAir = true;
+            m_InTheWater = false;
+            m_InTheLava = false;
+            m_InTheVoid = false;
+            m_current_elem = terrain::Element::Air;
+            break;
+        case(20): // Transition Lava => Air
+            m_InTheAir = true;
+            m_InTheWater = false;
+            m_InTheLava = false;
+            m_InTheVoid = false;
+            m_current_elem = terrain::Element::Air;
+            break;
         default:
             break;
         }
@@ -510,9 +742,6 @@ void MainCharacter::ResetElements()
     m_InTheWater    = false;
     m_InTheVoid     = false;
     m_InTheLava     = false;
-
-    // Siwtch off touched by lava
-    m_touched_lava = false;
 }
 
 void MainCharacter::setRespawnPosition(const sf::Vector2f& new_respawn)
@@ -555,14 +784,6 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std
 			cloop++;
             setPosition(deltaTime, Pf, l_cactus, cloop);
 		}
-        /*else if (_colliding_cactus)
-        {
-            new_Position = m_Position;
-            m_Velocity.x = 0.0f;
-            m_Velocity.y *= 0.9f;
-            cloop++;
-            setPosition(deltaTime, Pf, l_cactus, cloop);
-        }*/
         else
         {
             new_Position = m_Position;
@@ -571,10 +792,7 @@ void MainCharacter::setPosition(float deltaTime, std::vector<Plateform>& Pf, std
             setPosition(deltaTime, Pf, l_cactus, cloop);
             
         }
-        
     } 
-	
-
 }
 
 // colliding plateforms and dead bodies 
@@ -614,11 +832,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
                 {
                     m_Velocity.x = 0.0f;
                 }
-
-                 
             }
-            
-
         }
     };
 	
@@ -644,16 +858,11 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
             {
                 ResetJumpCounter();
             }
-
-
-
         }
-
     }	
     
     for (Ennemie& cac : l_cactus)
     {
-
         if (this->IsColliding(cac))
         {
             _colliding_cactus = true;
@@ -676,9 +885,7 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
                 m_isWalkable = true;
                 m_InTheAir = true;
             }
-
         }
-
     }
 
     if ((!_colliding_plateforms) and (!_colliding_deadbodies) and (!_colliding_cactus))
@@ -699,6 +906,27 @@ void MainCharacter::isCollidingSolid(sf::Vector2f newpos, std::vector<Plateform>
 
 };
 
+
+// Return true if colliding with deadbody on fire because of lava
+bool MainCharacter::isCollidingDeadBodyLava()
+{
+    // Handling colliding with deadbody in lava 
+    bool lavacolliding = false;
+    for (DeadBody& dbd : m_deadbodies)
+    {
+        if (not dbd.getIsOnFire())
+        {
+            continue;
+        }
+
+        if (dbd.IsColliding(*this))
+        {
+            lavacolliding = true;
+        }
+    }
+
+    return lavacolliding;
+}
 
 
 
@@ -753,7 +981,7 @@ bool MainCharacter::getKeyboardKey(std::string keyname) const
 //          Dead Bodies & Death
 // ----------------------------------------
 
-void MainCharacter::UpdateDeadBodies()
+void MainCharacter::UpdateDeadBodies(float deltaTime, TileMap& Tm)
 {
     // TO DO : maybe modified type of m_deadbodies => tableau ?
     if ( m_deadbodies.size() > MAX_DEADBODIES )
@@ -761,6 +989,37 @@ void MainCharacter::UpdateDeadBodies()
         m_deadbodies.erase(m_deadbodies.begin());
     }
 
+    // According to the timer for specific element (water)
+    std::vector<DeadBody>::iterator it_dbd = m_deadbodies.begin();
+    while (it_dbd != m_deadbodies.end())
+    {
+        if (it_dbd->CanBeRemoved())
+        {
+            // erase returns following element
+            it_dbd = m_deadbodies.erase(it_dbd);
+        }
+        else
+        {
+            ++it_dbd;
+        }
+    }
+	
+    // Update Living deadbodies
+    for (int i = 0; i < m_deadbodies.size(); i++)
+    {
+        m_deadbodies[i].Update(deltaTime, Tm);
+    }
+
+}
+
+
+// action by mushrooms : tag to be removed 
+void MainCharacter::RemoveDeadbody(int index)
+{
+    if (index < m_deadbodies.size())
+    {
+        m_deadbodies[index].EatenByEnnemies(); 
+    }
 }
 
 // ----------------------------------------
@@ -860,18 +1119,20 @@ inline bool MainCharacter::ToTheRight(BoxCollideable& other)
 //              Animation 
 // ----------------------------------
 
-// 
+// Animation : set Frame (texture)
 void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
 {
     
     if (m_current_anim != anim_name)
     {
         Stop(); // reset counters
+		//if (not loop) // flag anim done valid on not looping animations
+		a_done_anim = false;  
     }
     // play once
     if (not loop)
     {
-        // Get next Anim
+		// Get next Anim
         if (a_framecounttexture == (dictAnim[anim_name].nb_frames_anim-1))
         {
             Pause(); 
@@ -883,7 +1144,7 @@ void MainCharacter::Play(AnimName anim_name, float deltaTime, bool loop)
 
         if (not a_done_anim)
         {
-            // Update frame texture 
+			// Update frame texture 
             setFrameTexture(anim_name, deltaTime);
             // set current
             setCurrentAnim(anim_name);
@@ -928,12 +1189,12 @@ void MainCharacter::InitAnimType()
     m_AllAnims.Walk = { 8, 1, 0, "Walk" };
     m_AllAnims.Jump = { 8, 2, 0, "Jump" };
     m_AllAnims.DoubleJump   = { 6, 2, 2, "DoubleJump" };
-    m_AllAnims.Die          = { 7, 4, 0, "Die" };
+    m_AllAnims.Die          = { 6, 4, 0, "Die" };
     m_AllAnims.Hurt         = { 2, 4, 1, "Hurt" };
     m_AllAnims.FireSet      = { 5, 11, 4, "FireSet" };
     m_AllAnims.FireBegin    = { 4, 11, 0, "FireBegin" };
-    m_AllAnims.FireEnd      = { 5, 11, 10, "FireEnd" };
-    m_AllAnims.Reborn       = { 4, 4, 7, "Reborn" };
+    m_AllAnims.FireEnd      = { 4, 11, 10, "FireEnd" };
+    m_AllAnims.Reborn       = { 3, 4, 6, "Reborn" };
 
     dictAnim[AnimName::Idle]        = m_AllAnims.Idle;
     dictAnim[AnimName::Walk]        = m_AllAnims.Walk;
@@ -957,73 +1218,6 @@ void MainCharacter::setFrameTexture(AnimName anim_name, float deltaTime)
     nb_frames_anim = dictAnim[anim_name].nb_frames_anim;
     line_anim = dictAnim[anim_name].line_anim;
     a_offset = dictAnim[anim_name].a_offset;
-
-    /* OLD 
-    switch (anim_name)
-    {
-        case AnimName::Idle:      
-            nb_frames_anim = 4;
-            line_anim = 0; 
-            a_offset = 0;
-            break;
-        case AnimName::Walk:      
-            nb_frames_anim = 8;
-            line_anim = 1; 
-            a_offset = 0;
-            break;
-        case AnimName::Jump:       
-            nb_frames_anim = 8;
-            line_anim = 2; 
-            a_offset = 0;
-            break;
-        case AnimName::DoubleJump : 
-            nb_frames_anim = 6;
-            line_anim = 2; 
-            a_offset = 2;
-            break;
-        case AnimName::Die:
-            nb_frames_anim = 7;
-            line_anim = 4;
-            a_offset = 0;
-            break;
-        case AnimName::Attack: 
-            nb_frames_anim = 6;
-            line_anim = 15; 
-            a_offset = 0;
-            break;
-        case AnimName::Hurt: 
-            nb_frames_anim = 2;
-            line_anim = 4;
-            a_offset = 1;
-            break;
-        case AnimName::FireSet: 
-            nb_frames_anim = 5;
-            line_anim = 11; 
-            a_offset = 4;
-            break;
-        case AnimName::FireBegin: 
-            nb_frames_anim = 4;
-            line_anim = 11; 
-            a_offset = 0;
-            break;        
-        case AnimName::FireEnd: 
-            nb_frames_anim = 5;
-            line_anim = 11; 
-            a_offset = 9;
-            break;
-        case AnimName::Reborn: 
-            nb_frames_anim = 4;
-            line_anim = 4;
-            a_offset = 7;
-            break;
-
-        default: 
-            nb_frames_anim = 4;
-            line_anim = 4;
-            a_offset = 0;
-            break;
-    }*/
-
 
     // DT = 1/ 60.0 APP FRAMERATE 
 	sumdeltaTime += deltaTime;
@@ -1069,7 +1263,8 @@ std::string MainCharacter::getAnimName()
     return animname;
 }
 
-
+// Set the direction that the character is facing : left(false) or right(true), 
+// set a_direction value
 void MainCharacter::setFacingDirection()
 {
     // direction for animation 
@@ -1120,22 +1315,27 @@ float MainCharacter::GetPourcentageAllowedTime(terrain::Element elem) const
 {
 	// begining 0% = out of element 
 	float pct_time = 0.0f;
+
+    static const float MAX_TIMER_WATER = 1.5f; 
+    static const float MAX_TIMER_VOID  = 0.25f; 
+    static const float MAX_TIMER_LAVA  = 3.0f; 
 	
 	switch(elem)
 	{
 		case(terrain::Element::Water):
-			pct_time = m_CounterWater / 2.0f;
+			pct_time = m_CounterWater / MAX_TIMER_WATER;
 			break; 
 		case(terrain::Element::Void):
-			pct_time = m_CounterVoid / 0.25f;
+			pct_time = m_CounterVoid / MAX_TIMER_VOID;
 			break; 
 		case(terrain::Element::Lava):
-			pct_time = m_CounterLava / 3.0f;
+			pct_time = m_CounterLava / MAX_TIMER_LAVA;
 			break; 
 		default:
 			break; 
 	}
-	return  pct_time;
+
+	return pct_time;
 	
 }
 
@@ -1147,26 +1347,30 @@ void MainCharacter::ResetTimers()
 }
 
 // Set Alive or Dead
-bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
+bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies, std::vector<MovableEnnemies> l_mennemies, std::vector<MovableEnnemies> l_discs)
 {
-    static const float TIMER_DEAD_WATER = 2.0f; 
+    static const float TIMER_DEAD_WATER = 1.5f; 
     static const float TIMER_DEAD_VOID  = 0.25f;
     static const float TIMER_DEAD_LAVA  = 3.0f;
     
     if (m_Respawning)
     {
-        setAliveOrDead(true);
+		setAliveOrDead(true);
         return getAlive();
     }
     
     // update elements counters
-    m_DiedInWater = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
-    m_DiedInVoid  = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
-    m_DiedInLava  = TimerElements(deltaTime, m_touched_lava , TIMER_DEAD_LAVA, m_CounterLava);
+    bool isDead_Water = TimerElements(deltaTime, m_InTheWater, TIMER_DEAD_WATER, m_CounterWater);
+    bool isDead_Void = TimerElements(deltaTime, m_InTheVoid , TIMER_DEAD_VOID , m_CounterVoid );
+    bool isDead_Lava = TimerElements(deltaTime, m_timer_lava, TIMER_DEAD_LAVA, m_CounterLava);
+
+    if (isDead_Water) { m_DiedInWater = true; }
+    if (isDead_Void)  { m_DiedInVoid  = true; }
+    if (isDead_Lava)  { m_DiedInLava  = true; }
     
     if (m_DiedInWater or m_DiedInVoid or m_DiedInLava)
     {
-        setAliveOrDead(false);
+		setAliveOrDead(false);
         return getAlive();
     }
 
@@ -1174,11 +1378,33 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
     // check at each frame if it collides against ennemies 
     for (auto const& enm : l_ennemies)
     {
-
-       
         if (IsColliding(enm) and m_isAlive)
-        {	// Die 
+        {	
+			// Die 
             setAliveOrDead(false);
+            m_HitByEnnemies = false;
+            break;
+        }
+    }
+
+    for (auto const& menm : l_mennemies)
+    {
+        if (IsColliding(menm) and m_isAlive)
+        {
+            // Die 
+            setAliveOrDead(false);
+            m_HitByEnnemies = true;
+            break;
+        }
+    }
+
+    for (auto const& mdks : l_discs)
+    {
+        if (IsColliding(mdks) and m_isAlive)
+        {
+            // Die 
+            setAliveOrDead(false);
+            m_HitByEnnemies = false;
             break;
         }
     }
@@ -1186,3 +1412,83 @@ bool MainCharacter::Alive(float deltaTime, std::vector<Ennemie> l_ennemies)
 
     return getAlive();
 }
+
+// ----------------- //
+//      Sound        //
+// ----------------- //
+
+
+void MainCharacter::LoadStructSound(struct SoundType& onesound, const std::string soundpath, bool looping)
+{
+    onesound.no_sound = not onesound.s_buffer.loadFromFile(soundpath);
+    onesound.is_playing = false;
+    onesound.pathsound  = soundpath;
+    onesound.looping    = looping; 
+};
+
+void MainCharacter::InitSoundType()
+{
+    /*
+    struct SoundType {
+        sf::SoundBuffer s_buffer;       // sound buffer 
+        bool is_playing{ false };       // sound is playing
+        bool no_sound{ true };          // = sound not loaded
+        std::string pathsound{ "" };    // path to wav sound file 
+        bool looping{ false };          // looping or not
+    };
+    */
+
+    LoadStructSound(m_AllSounds.Jump, "Assets\\Sounds\\jump_03.wav", false); 
+    LoadStructSound(m_AllSounds.Walk, "Assets\\Sounds\\7534_cut.wav", false); 
+    LoadStructSound(m_AllSounds.DoubleJump, "Assets\\Sounds\\jump_water_06.wav", false);
+    LoadStructSound(m_AllSounds.Die, "Assets\\Sounds\\deaths\\cat_meow_01.wav", false);
+    LoadStructSound(m_AllSounds.FireEnd, "Assets\\Sounds\\deaths\\cat_meow_02.wav", false);
+    LoadStructSound(m_AllSounds.FireBegin, "Assets\\Sounds\\lava.flac", false);
+    LoadStructSound(m_AllSounds.FireSet, "Assets\\Sounds\\10000_cut.wav", false);
+    // default initialisation for the others
+    dictSound[AnimName::Idle] = m_AllSounds.Idle;
+    dictSound[AnimName::Walk] = m_AllSounds.Walk;
+    dictSound[AnimName::Jump] = m_AllSounds.Jump;
+    dictSound[AnimName::JumpWater] = m_AllSounds.JumpWater;
+    dictSound[AnimName::DoubleJump] = m_AllSounds.DoubleJump;
+    dictSound[AnimName::Die] = m_AllSounds.Die;
+    dictSound[AnimName::FireSet] = m_AllSounds.FireSet;
+    dictSound[AnimName::FireBegin] = m_AllSounds.FireBegin;
+    dictSound[AnimName::FireEnd] = m_AllSounds.FireEnd;
+    dictSound[AnimName::Reborn] = m_AllSounds.Reborn;
+
+}
+
+void MainCharacter::setSoundType(AnimName anim)
+{
+    if (not dictSound[anim].no_sound)
+    {
+        m_soundfx.setBuffer(dictSound[anim].s_buffer);
+        m_soundfx.setVolume(GetSFXVolume());
+        m_soundfx.setLoop(dictSound[anim].looping);
+    }
+}
+
+void MainCharacter::playSFX(AnimName anim)
+{
+    if (dictSound[anim].no_sound) { return; }
+    m_soundfx.setBuffer(dictSound[anim].s_buffer); // re-set buffer 
+    m_soundfx.play();
+    dictSound[anim].is_playing = true; 
+}
+
+void MainCharacter::resetPlaying()
+{
+    // TODO iterate on enum
+    dictSound[AnimName::Idle].is_playing = false;
+    dictSound[AnimName::Walk].is_playing = false;
+    dictSound[AnimName::Jump].is_playing = false;
+    dictSound[AnimName::JumpWater].is_playing = false;
+    dictSound[AnimName::DoubleJump].is_playing = false;
+    dictSound[AnimName::Die].is_playing = false;
+    dictSound[AnimName::FireSet].is_playing = false;
+    dictSound[AnimName::FireBegin].is_playing = false;
+    dictSound[AnimName::FireEnd].is_playing = false;
+    dictSound[AnimName::Reborn].is_playing = false;
+}
+

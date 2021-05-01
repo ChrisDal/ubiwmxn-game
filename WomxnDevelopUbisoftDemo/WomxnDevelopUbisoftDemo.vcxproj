@@ -210,16 +210,20 @@ xcopy /y /d  "$(SolutionDir)external\SFML-2.5.1\bin\*.dll" "$(OutDir)"</Command>
     <ClCompile Include="Engine\Animation.cpp" />
     <ClCompile Include="Engine\Collision.cpp" />
     <ClCompile Include="Engine\Game.cpp" />
+    <ClCompile Include="Engine\Neighbourhood.cpp" />
     <ClCompile Include="Game\DeadBody.cpp" />
-    <ClCompile Include="Game\Door.cpp" />
     <ClCompile Include="Game\Ennemie.cpp" />
-    <ClCompile Include="Game\Exit.cpp" />
     <ClCompile Include="Game\GameDemo.cpp" />
     <ClCompile Include="Game\MainCharacter.cpp" />
+    <ClCompile Include="Game\MovableEnnemies.cpp" />
     <ClCompile Include="Game\ObjectsElements.cpp" />
     <ClCompile Include="Game\Plateform.cpp" />
+    <ClCompile Include="Game\SequencePath.cpp" />
     <ClCompile Include="Game\TileMap.cpp" />
+    <ClCompile Include="Game\Vfx.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Modules\EatDeadbody.cpp" />
+    <ClCompile Include="Modules\MoveToAR.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\external\imgui-master\imgui.h" />
@@ -228,16 +232,21 @@ xcopy /y /d  "$(SolutionDir)external\SFML-2.5.1\bin\*.dll" "$(OutDir)"</Command>
     <ClInclude Include="Engine\Animation.h" />
     <ClInclude Include="Engine\Collision.h" />
     <ClInclude Include="Engine\Game.h" />
+    <ClInclude Include="Engine\Neighbourhood.h" />
     <ClInclude Include="Game\DeadBody.h" />
-    <ClInclude Include="Game\Door.h" />
     <ClInclude Include="Game\Ennemie.h" />
     <ClInclude Include="Game\EnumElements.h" />
-    <ClInclude Include="Game\Exit.h" />
     <ClInclude Include="Game\GameDemo.h" />
     <ClInclude Include="Game\MainCharacter.h" />
+    <ClInclude Include="Game\MovableEnnemies.h" />
     <ClInclude Include="Game\ObjectsElements.h" />
     <ClInclude Include="Game\Plateform.h" />
+    <ClInclude Include="Game\SequencePath.h" />
     <ClInclude Include="Game\TileMap.h" />
+    <ClInclude Include="Game\Vfx.h" />
+    <ClInclude Include="Modules\EatDeadbody.h" />
+    <ClInclude Include="Modules\MoveToAR.h" />
+    <ClInclude Include="Modules\Routine.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

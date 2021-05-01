@@ -1,5 +1,5 @@
 #pragma once
-
+#include <Engine/Neighbourhood.h>
 #include <Game/EnumElements.h>
 
 class MainCharacter;
@@ -26,6 +26,7 @@ public:
     Ennemie(sf::Vector2f& spawn_pos, bool canmove, bool is_animated, sf::Vector2u& upperleft,
             unsigned int sx, unsigned int sy, bool weakness_fire);
     ~Ennemie();
+    Ennemie() {};
 
     void Update(float deltaTime, MainCharacter* mchara);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -34,7 +35,7 @@ public:
     bool getCanMove() const { return moving; }; 
 
     // Death 
-    bool GetIsDead() const { return e_Dead; }
+    bool GetIsDead() const { return m_Dead; }
     void SetDead(); // Return if dead or not
 
     // Fire handling 
@@ -43,37 +44,31 @@ public:
     
 
 protected:
-    // Neighboorhood
-    class Neighboorhood : public BoxCollideable 
-    {
-    public: 
-        void setNeighboorhood(Ennemie* enm, float dpx);
-    };
-    
-
-private:
-    
-    sf::Sprite e_Sprite;
-    sf::Vector2f e_size;
-
-    sf::Vector2f e_Position;
-    
-    // Dead 
-    bool e_IsPlayingEndGame;
-    bool e_Dead;
-
+    // Neighboorhood 
+    Neighbourhood m_neighb; 
     // attributes for all types of ennemies
     bool _colliding_plateforms;
     bool moving; 
     bool is_animated; 
     bool _colliding_fire;
+    bool _colliding_water;
+    bool _colliding_void;
+    bool _colliding_lava;
     bool _colliding{ false };
+    
 
-    // Neighboorhood 
-    Ennemie::Neighboorhood _neighb; 
+private:
+    
+    sf::Sprite m_Sprite;
+    sf::Vector2f m_size;
+    sf::Vector2f m_Position;
+    
+    // Dead 
+    bool m_IsPlayingEndGame;
+    bool m_Dead;
 
     // Fire 
-    bool e_weak_fire;
+    bool m_weak_fire;
     float counter_fire = 0.0f;
     float a_counter_seconds = 1.0f / 10.0f;
     Fire m_current_fire = Fire::None;

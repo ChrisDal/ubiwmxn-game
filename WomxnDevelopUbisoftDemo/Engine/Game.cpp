@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <stdafx.h>
 #include <Engine/Game.h>
 
@@ -12,6 +13,9 @@ Game::Game(const char* windowTitle)
     m_Window.setFramerateLimit(static_cast<uint32_t>(APP_MAX_FRAMERATE));
     m_Window.setActive();
     ImGui::SFML::Init(m_Window);
+
+    // initialize random seed
+    std::srand(time(NULL));
 }
 
 Game::~Game()

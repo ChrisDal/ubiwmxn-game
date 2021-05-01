@@ -3,12 +3,13 @@
 #include <Game/Plateform.h> 
 #include <Game/DeadBody.h> 
 #include <Game/EnumElements.h> 
+#include <Game/Vfx.h>
 
 class Ennemie;
 
 class MainCharacter : public sf::Drawable, public BoxCollideable
 {
-    enum class AnimName { Idle, Walk, Jump, DoubleJump, 
+    enum class AnimName { Idle, Walk, Jump, JumpWater, DoubleJump, 
                             Attack, Hurt, Die, 
                             FireSet, FireBegin, FireEnd,
                             Reborn };
@@ -18,6 +19,14 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
         short unsigned int line_anim{ 0 };
         short unsigned int a_offset{ 0 };
         std::string name{ "" };
+    };
+
+    struct SoundType {
+        sf::SoundBuffer s_buffer;       // sound buffer 
+        bool is_playing{ false };       // sound is playing
+        bool no_sound{ true };          // = sound not loaded
+        std::string pathsound{ "" };    // path to wav sound file 
+        bool looping{ false };          // looping or not 
     };
 
     struct AllAnims {
@@ -31,14 +40,35 @@ class MainCharacter : public sf::Drawable, public BoxCollideable
         struct AnimType FireBegin;
         struct AnimType FireEnd;
         struct AnimType Reborn;
+    };    
+    
+    struct AllSounds {
+        struct SoundType Idle;
+        struct SoundType Walk;
+        struct SoundType Jump;
+        struct SoundType JumpWater;
+        struct SoundType DoubleJump;
+        struct SoundType Die;
+        struct SoundType Hurt;
+        struct SoundType FireSet;
+        struct SoundType FireBegin;
+        struct SoundType FireEnd;
+        struct SoundType Reborn;
     };
+
+    static float m_SFX_volume;
 
 public:	
     MainCharacter(sf::Vector2u WIN_LIMITS, sf::Vector2f spawn_position);
 
-    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus);
+    void Update(float deltaTime, std::vector<Plateform> &Pf, TileMap& Tm, 
+                std::vector<Ennemie>& l_ennemie, std::vector<Ennemie>& l_cactus, 
+                std::vector<MovableEnnemies>& l_mennemies,
+                std::vector<MovableEnnemies>& l_discs);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
+    void MoveToNextLevel(sf::Vector2f spawn_position);
+    void StartEndLevel();
     void StartEndGame();
     
     // Colliding and position 
@@ -76,7 +106,9 @@ public:
 	void setAliveOrDead(const bool& not_dead) { m_isAlive = not_dead;}
 	bool getAlive() const { return m_isAlive; }
 	// Define if Alive or not
-	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies); 
+	bool Alive(float deltaTime, std::vector<Ennemie> l_ennemies, 
+                std::vector<MovableEnnemies> l_mennemies, 
+        std::vector<MovableEnnemies> l_discs);
 
     // Elements with associated time counters
     void setInElements(TileMap& Tm); // set air, water, void, lava
@@ -94,8 +126,11 @@ public:
     void DeathCounterReset() { m_death_counter = 0; }
     int  DeadBodiesCounter() const { return m_deadbodies.size() > MAX_DEADBODIES ? MAX_DEADBODIES : static_cast<int>(m_deadbodies.size());  }
     int  DeadBodiesMax() const { return MAX_DEADBODIES; }
-    // Dead body count
-    void UpdateDeadBodies(); 
+    // Dead body 
+    void UpdateDeadBodies(float deltaTime, TileMap& Tm); // count 
+    bool isCollidingDeadBodyLava(); 
+    std::vector<DeadBody> getDeadBodies() const { return m_deadbodies;  }
+    void RemoveDeadbody(int index); 
 
 
     // Animation 
@@ -104,12 +139,22 @@ public:
     void Pause();
     void Stop();
     void setFrameTexture(AnimName anim_name, float deltaTime);
-    void resetFrameCounter() {a_framecount = 0; a_framecounttexture= 0; };
     void setCurrentAnim(AnimName anim_name) { m_current_anim = anim_name; };
     bool getPlaying() const { return is_PlayingAnim; };
     void setPlaying(const bool& status) { is_PlayingAnim = status; };
     std::string getAnimName(); 
     bool a_done_anim{ false }; 
+
+    // Sound 
+    void InitSoundType();
+    void LoadStructSound(struct SoundType& onesound, const std::string soundpath, bool looping);
+    inline void setSoundType(AnimName anim);
+    inline void playSFX(AnimName anim);
+    bool getPlayStatusSFX() const { return m_soundfx.getStatus() == sf::SoundSource::Status::Playing; }
+    void resetPlaying();
+
+    static void SetSFXVolume(float percentage) { m_SFX_volume = percentage; }
+    static const float GetSFXVolume() { return m_SFX_volume; }
 
 
 private:
@@ -141,6 +186,7 @@ private:
     float m_CounterLava{ 0.0f };
 	
     bool m_IsPlayingEndGame;
+    bool m_IsPlayingEndLevel; 
 
     // in the air vs on the floor 
     bool m_isWalkable; 
@@ -149,6 +195,7 @@ private:
     bool m_InTheVoid;
     bool m_InTheLava;
     bool m_touched_lava{ false }; 
+    bool m_timer_lava{ false }; 
 
 
     // Jumping
@@ -160,6 +207,9 @@ private:
 	bool m_isAlive{true}; 
 	bool m_Respawning{false}; 
     sf::Vector2f m_RespawnPosition{0.0f,0.f};
+
+    // Cause of death 
+    bool m_HitByEnnemies{ false }; 
 
     // max move window 
     sf::Vector2f WIN_LIMIT_X;
@@ -175,6 +225,12 @@ private:
 	bool c_up; 
 	bool c_down; 
 
+    // Sound
+    sf::Sound m_soundfx;
+    std::map< AnimName, SoundType > dictSound;
+    AllSounds m_AllSounds; 
+    // VFX 
+    VFX m_vfx;
 
     // animation texure 
     sf::Vector2u a_textsquare_offset;
@@ -188,14 +244,16 @@ private:
     std::map< AnimName, AnimType > dictAnim;
     AnimName m_current_anim = AnimName::Idle; 
     bool is_PlayingAnim{ false };
-    std::vector<AnimName> m_OneTimeAnimations{};
     AllAnims m_AllAnims;
     // Facing direction
     bool a_direction{ false }; // true: right, false: left 
     void setFacingDirection(); 
 
+
+
     // current element : Air / Void / Water 
     terrain::Element m_current_elem{ terrain::Element::Air };
+
     
     
 };
