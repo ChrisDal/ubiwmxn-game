@@ -67,7 +67,7 @@ GameDemo::GameDemo()
         mush.configurePatrol(mush.GetCenter(), TargetPoint);
         // Routine config
         std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush); 
-        m_Routines.push_back(rout);
+        m_Routines.push_back(std::move(rout));
         
     }     
     
@@ -82,7 +82,7 @@ GameDemo::GameDemo()
         disc.setAnimatedByRot(true); 
         // Routine config
         std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(disc.GetCenter(), TargetPoint, &disc); 
-        m_RoutinesDiscs.push_back(rout);
+        m_RoutinesDiscs.push_back(std::move(rout));
         
     } 
 
@@ -104,6 +104,11 @@ void GameDemo::ClearDataLevel()
     m_ennemies.clear();
     m_objects.clear();
     m_checkpoints.clear();
+
+    // unload routines 
+    m_Routines.clear(); 
+    m_RoutinesDiscs.clear();
+
 }
 
 
@@ -133,6 +138,35 @@ bool GameDemo::NextLevel(bool firstlevel)
                                         m_checkpoints, m_exit_sign, 
                                         m_mushrooms, m_discs);
 
+    // Discs and mushroom 
+    for (MovableEnnemies& mush : m_mushrooms)
+    {
+        // A/R
+        sf::Vector2f TargetPoint{ mush.ComputeTargetPoint() };
+        // Mushroom config
+        mush.SetSFXVolume(50.0f);
+        mush.configurePatrol(mush.GetCenter(), TargetPoint);
+        // Routine config
+        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(mush.GetCenter(), TargetPoint, &mush);
+        m_Routines.push_back(std::move(rout));
+
+    }
+
+    // SetUp Ennemies Path 
+    for (MovableEnnemies& disc : m_discs)
+    {
+        // A/R
+        sf::Vector2f TargetPoint{ disc.ComputeTargetPoint() };
+        // Disc config
+        disc.SetSFXVolume(50.0f);
+        disc.configurePatrol(disc.GetCenter(), TargetPoint);
+        disc.setAnimatedByRot(true);
+        // Routine config
+        std::shared_ptr<MoveToAR> rout = std::make_shared<MoveToAR>(disc.GetCenter(), TargetPoint, &disc);
+        m_RoutinesDiscs.push_back(std::move(rout));
+
+    }
+    
     // Main character 
     if (firstlevel)
     {
