@@ -1,13 +1,6 @@
-#include <stdafx.h>
 #include <iostream>
+#include <stdafx.h>
 #include <Game/ObjectsElements.h>
-
-#define DEBUG 1 
-#if DEBUG 
-#define LOG(x) std::cout << x  << " "
-# else
-#define LOG(x)
-#endif
 
 sf::Texture*  ObjectsElements::m_pTextureAtlas = nullptr;
 float ObjectsElements::m_SFX_volume = 20.0f;
@@ -35,8 +28,6 @@ ObjectsElements::ObjectsElements(sf::Vector2f& spawn_pos, bool canmove, bool ani
 	setObjType(elem_type);
 	// Sound and Visual assignment 
 	setFXType();
-
-
 
 };
 

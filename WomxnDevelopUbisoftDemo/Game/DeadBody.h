@@ -6,7 +6,7 @@
 
 class DeadBody : public sf::Drawable, public BoxCollideable, public Animation
 {
-	// common to dead bodies
+	// Animation
 	enum class AnimName { Idle, Stack, Water, Fire, Iced, Void, 
 							Smoked, FireEnd, Food }; 
 	static sf::Texture*  m_pTextureAtlas;

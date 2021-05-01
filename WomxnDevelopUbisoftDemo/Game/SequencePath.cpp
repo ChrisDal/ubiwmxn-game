@@ -2,23 +2,15 @@
 #include <stdafx.h>
 #include <Game/SequencePath.h>
 
-#define DEBUG 0 
-#if DEBUG 
-	#define LOG(x) std::cout << x  << " "
-# else
-	#define LOG(x)
-#endif
-
 // empty constructor 
-SequencePath::SequencePath(){
-	LOG("\n[SequencePath] Default SequencePath constructor.\n");
-};
+SequencePath::SequencePath()
+	: m_isNavigating{ true }, m_IsFinished{ false }, m_direction{ true }
+{};
 
 SequencePath::SequencePath(sf::Vector2f A, sf::Vector2f B)
 	: m_isNavigating{ true }, m_IsFinished{ false },
 	  m_Point_BL{ A }, m_Point_ER{ B }
 {
-	LOG("\n[SequencePath] Nice SequencePath Constructor.\n");
 	// Determine on which axis moving 
 	setAxisMove();
 	// Direction of path
@@ -36,8 +28,6 @@ SequencePath::SequencePath(sf::Vector2f A, sf::Vector2f B)
 	
 	// init flag reached
 	m_FlagReached.assign(m_SequencePath.size(), false);
-	// iterator initialisation on point done  in setLinearSequence
-	//m_it_path = m_SequencePath.begin();
 	
 	// Set Written Instructions 
 	m_PathInstructions = WrittenInstructions(); 
@@ -48,7 +38,8 @@ SequencePath::SequencePath(sf::Vector2f A, sf::Vector2f B)
 void SequencePath::setTargetPoint(sf::Vector2f target_point) { m_Point_ER = target_point; }
 void SequencePath::setBeginingPoint(sf::Vector2f beg_point) { m_Point_BL = beg_point; }
 
-// set NavX and Nav Y
+// Path : 
+// Naviguating on X axis or on Y axis
 void SequencePath::setAxisMove()
 {
 	// Determine on which axis moving 
@@ -68,10 +59,11 @@ void SequencePath::setAxisMove()
 		m_NavX = false;
 		m_NavY = false;
 	}
-
 }
 
-// Direction of path
+// Path : A ------- B
+// Direction towards A or towards B
+// According to only one axis, else not handle
 void SequencePath::setDirectionMove()
 {
 	if (m_NavX and not m_NavY)
@@ -94,7 +86,9 @@ void SequencePath::setDirectionMove()
 	}
 }
 
-
+// Path: 
+// Define m_SequencePath : a vector of points, every DPX (delta pixels) to follow 
+// Set m_PathInstructions : Get instructions according to this vector
 void SequencePath::SetLinearSequencePath(sf::Vector2f StartingPoint, sf::Vector2f EndingPoint)
 {
 	// Init 
@@ -174,11 +168,12 @@ void SequencePath::SetLinearSequencePath(sf::Vector2f StartingPoint, sf::Vector2
 
 }	
 
-// Not implemented 
+// Not implemented : 2 axis movements
 void SequencePath::ProcessSequencePath(sf::Vector2f StartingPoint, sf::Vector2f EndingPoint) {};
 
 
-
+// Path: 
+// Return if at target point
 bool SequencePath::isAtTargetPoint(BoxCollideable& CollObj)
 {
 	if (CollObj.Contains(m_Point_ER))
@@ -191,8 +186,8 @@ bool SequencePath::isAtTargetPoint(BoxCollideable& CollObj)
 	
 }
 
-
-// Update if sprite reached point
+// Path:
+// Update if sprite reached intermediate points
 bool SequencePath::UpdateFlags(BoxCollideable& CollObj)
 {
 	bool reached = false;  

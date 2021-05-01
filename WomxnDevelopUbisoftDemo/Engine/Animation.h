@@ -14,20 +14,14 @@ private:
 protected : 
 
 	struct AnimType {
-		short unsigned int nb_frames_anim; 
-		short unsigned int line_anim; 
-		short unsigned int a_offset;
-		std::string name; 
+		short unsigned int nb_frames_anim{ 0 };
+		short unsigned int line_anim{ 0 };
+		short unsigned int a_offset{ 0 };
+		std::string name{ "" };
 	};
 	
 
 public:
-
-
-	
-	// entire file for animation
-	void setMainTexture(const sf::Texture charatexture) { *a_spritesheet = charatexture; }
-	sf::Texture* getMainTexture() const { return a_spritesheet; }
 
 	// Animations : Play, Pause, Stop
 	void Play(AnimName anim_name, float deltaTime);
@@ -57,7 +51,6 @@ public:
 
 protected:
 
-	sf::Texture* a_spritesheet = nullptr;
 	short unsigned int a_framecount = 0; 			// frame counter
 	short unsigned int a_framerate = 10; 			// anim = 10 fps
 	unsigned int a_frametexture = 0; 			    // index of the frame texture
