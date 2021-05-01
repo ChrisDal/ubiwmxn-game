@@ -32,20 +32,11 @@ GameDemo::GameDemo()
     m_TextureTombstone.loadFromFile(".\\Assets\\tombstone.png");
     m_Tombstone.setTexture(m_TextureTombstone);
 
-
+    // Death and sound
     m_gameUI = std::make_unique<UIGame>(".\\Assets\\icons\\musicOn_small.png",
                                         ".\\Assets\\icons\\musicOff_small.png",
                                         ".\\Assets\\icons\\audioOn_small.png",
                                         ".\\Assets\\icons\\audioOff_small.png");
-
-    /*
-    // Sound
-	m_TextureIcoMusic.loadFromFile(".\\Assets\\icons\\musicOn_small.png"); 
-	m_TextureIcoNoMusic.loadFromFile(".\\Assets\\icons\\musicOff_small.png"); 
-	m_icoMusic.setTexture(m_TextureIcoMusic);
-	m_TextureIcoSound.loadFromFile(".\\Assets\\icons\\audioOn_small.png"); 
-	m_TextureIcoNoSound.loadFromFile(".\\Assets\\icons\\audioOff_small.png"); 
-	m_icoSFX.setTexture(m_TextureIcoSound);*/
 
     // TEXTURES LOADING 
     // Get Main spritesheet

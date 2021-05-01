@@ -55,15 +55,9 @@ private:
     sf::Texture m_TextureTombstone;
     sf::Text m_DeathsText;
 
-
+    // UI 
     std::unique_ptr<UIGame> m_gameUI;
-    //
-    sf::Sprite m_icoMusic; 
-    sf::Texture m_TextureIcoMusic;
-    sf::Texture m_TextureIcoNoMusic;
-    sf::Sprite m_icoSFX;
-    sf::Texture m_TextureIcoSound;
-    sf::Texture m_TextureIcoNoSound;
+
     // Sound
     sf::SoundBuffer m_GameSoundBuffer;
     sf::SoundBuffer m_EndgameSoundBuffer;
