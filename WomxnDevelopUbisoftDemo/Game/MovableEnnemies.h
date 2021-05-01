@@ -45,7 +45,7 @@ public:
 	};
 
 	MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft, E_Direction pathDirection, int pathLengthInTiles);
-	MovableEnnemies(){};
+	MovableEnnemies();
 	~MovableEnnemies() {};
 
 	sf::Vector2f ComputeTargetPoint();
