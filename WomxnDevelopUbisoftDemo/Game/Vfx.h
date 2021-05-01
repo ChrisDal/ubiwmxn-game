@@ -55,6 +55,7 @@ public:
 	void SetFacingDirection(float speedx);
 	void setDirection(bool sidex) { a_direction = sidex; }
 	inline bool isPlaying() const { return a_isPlaying; }	// not playing and empty frame
+	inline bool isDone() const { return a_done_anim; }		// done with animation
 	// current animation 
 	void resetCurrentAnim(AnimName anim_name);		
 	void setCurrentAnim(AnimName anim_name) { a_current_anim = anim_name; }

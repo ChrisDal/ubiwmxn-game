@@ -266,7 +266,7 @@ void VFX::InitAnimType()
 	}; */
 
 	m_vfxs.EmptyFrame		= { 1, 30, 0, "EmptyFrame" };
-	m_vfxs.DemiCircularActivation = { 3, 30, 1, "DemiCircularActivation" };
+	m_vfxs.DemiCircularActivation = { 4, 30, 1, "DemiCircularActivation" };
 	m_vfxs.DustJump = { 5, 30, 5, "DustJump" };
 	m_vfxs.Reborn	= { 5, 34, 0, "Reborn" };
 	m_vfxs.Death	= { 8, 31, 0, "Death" };
