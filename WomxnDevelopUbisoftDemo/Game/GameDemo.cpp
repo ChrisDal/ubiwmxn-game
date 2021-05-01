@@ -254,7 +254,7 @@ void GameDemo::Update(float deltaTime)
 
         if ((not m_appliedRoutine) and m_toapplyRoutine)
         {
-            sf::Vector2f TargetPoint = { m_MainCharacter->GetCenter().x, m_mushrooms[i].GetCenter().y };
+            sf::Vector2f TargetPoint = { m_mushrooms[i].GetCenter().x, m_mushrooms[i].GetCenter().y };
             m_Routines.erase(m_Routines.begin() + i);
             m_Routines.insert(m_Routines.begin() + i, std::make_shared<EatDeadbody>(&m_mushrooms[i], TargetPoint));
 
