@@ -5,9 +5,9 @@ sf::Texture*  MovableEnnemies::m_pTextureAtlas = nullptr;
 float MovableEnnemies::m_SFX_volume = 18.0f;
 
 // constructor 
-MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft)
+MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft, E_Direction pathDirection = E_Direction::UP, int pathLengthInTiles = 0)
 	: m_Position(SpawnPosition), m_weak_fire{ false },
-	_colliding_fire(false), _colliding_plateforms(false), m_Dead(false) 
+	_colliding_fire(false), _colliding_plateforms(false), m_Dead(false) , m_PathDirection(pathDirection), m_PathLengthInTiles(pathLengthInTiles)
 {
 	m_size = sf::Vector2f(static_cast<float>(sx), static_cast<float>(sy));
 
@@ -32,6 +32,20 @@ MovableEnnemies::MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, un
 
 };
 
+sf::Vector2f MovableEnnemies::ComputeTargetPoint()
+{
+	sf::Vector2f TargetPoint{ GetCenter() };
+
+	switch(m_PathDirection)
+	{
+		case E_Direction::UP:		TargetPoint.y -= 32.0f * m_PathLengthInTiles;  break;
+		case E_Direction::RIGHT:	TargetPoint.x += 32.0f * m_PathLengthInTiles;  break;
+		case E_Direction::DOWN:		TargetPoint.y += 32.0f * m_PathLengthInTiles;  break;
+		case E_Direction::LEFT:		TargetPoint.x -= 32.0f * m_PathLengthInTiles;  break;
+	}
+
+	return TargetPoint;
+}
 
 
 bool MovableEnnemies::setPath(sf::Vector2f beginpoint, sf::Vector2f endpoint)

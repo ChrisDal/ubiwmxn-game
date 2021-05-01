@@ -36,10 +36,19 @@ class MovableEnnemies : public Ennemie
 	static float m_SFX_volume;
 
 public:
+	enum class E_Direction
+	{
+		UP,
+		RIGHT,
+		DOWN,
+		LEFT
+	};
 
-	MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft);
+	MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft, E_Direction pathDirection, int pathLengthInTiles);
 	MovableEnnemies(){};
 	~MovableEnnemies() {};
+
+	sf::Vector2f ComputeTargetPoint();
 
 	static const sf::Texture* GetTextureAtlas() { return m_pTextureAtlas; }
 	static void SetTextureAtlas(sf::Texture* _Tex) { m_pTextureAtlas = _Tex; }
@@ -73,6 +82,7 @@ public:
 	static void SetSFXVolume(float percentage) { m_SFX_volume = percentage; }
 	static const float GetSFXVolume() { return m_SFX_volume; }
 
+
 private:
 	sf::Sprite m_Sprite;
 	sf::Vector2f m_size;
@@ -80,6 +90,9 @@ private:
 	sf::Vector2f m_Velocity;
 	// movement 
 	SequencePath m_Path;
+	E_Direction m_PathDirection;
+	int m_PathLengthInTiles;
+
 	
 
 	// Death 

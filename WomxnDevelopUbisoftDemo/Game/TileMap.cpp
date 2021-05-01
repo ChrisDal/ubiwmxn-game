@@ -38,15 +38,25 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
                     m_spawnPosition = spaw; 
                     continue;
                 }
-                if (m_tiles[k] == 270)
+                if( (m_tiles[k] >= 400) && (m_tiles[k] < 500) )   // Disc Enemy
                 {
-                    disc.push_back(MovableEnnemies(spaw, tileSize.x, tileSize.y, coord));
+                    int code = m_tiles[k] - 400;
+                    int length = code % 10;
+                    coord.x = 0;
+                    coord.y = 544; // Disc sprite in Atlas
+                    MovableEnnemies::E_Direction direction = static_cast<MovableEnnemies::E_Direction>(code / 10);
+                    disc.push_back(MovableEnnemies(spaw, tileSize.x, tileSize.y, coord, direction, length));
                     continue; 
                 }
-                if (m_tiles[k] == 280)
+                if ((m_tiles[k] >= 500) && (m_tiles[k] < 600))   // Mushroom Enemy
                 {
-                    mush.push_back(MovableEnnemies(spaw, tileSize.x, tileSize.y, coord));
-                    continue; 
+                    int code = m_tiles[k] - 500;
+                    int length = code % 10;
+                    MovableEnnemies::E_Direction direction = static_cast<MovableEnnemies::E_Direction>(code / 10);
+                    coord.x = 0;
+                    coord.y = 544+32; // mushroom sprite in Atlas
+                    mush.push_back(MovableEnnemies(spaw, tileSize.x, tileSize.y, coord, direction, length));
+                    continue;
                 }
 				else if (m_tiles[k] < 300 && m_tiles[k] > 200)
                 {

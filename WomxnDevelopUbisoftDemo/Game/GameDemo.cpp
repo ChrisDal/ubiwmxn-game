@@ -61,8 +61,7 @@ GameDemo::GameDemo()
     for (MovableEnnemies& mush : m_mushrooms)
     {
         // A/R
-        sf::Vector2f TargetPoint{ mush.GetCenter() };
-        TargetPoint.x += 32.0f * 6.0f;
+        sf::Vector2f TargetPoint{ mush.ComputeTargetPoint() };
         // Mushroom config
         mush.SetSFXVolume(50.0f);
         mush.configurePatrol(mush.GetCenter(), TargetPoint);
@@ -76,8 +75,7 @@ GameDemo::GameDemo()
     for (MovableEnnemies& disc : m_discs)
     {
         // A/R
-        sf::Vector2f TargetPoint{ disc.GetCenter() };
-        TargetPoint.y += 32.0f * 5.0f;
+        sf::Vector2f TargetPoint{ disc.ComputeTargetPoint() };
         // Disc config
         disc.SetSFXVolume(50.0f);
         disc.configurePatrol(disc.GetCenter(), TargetPoint);
