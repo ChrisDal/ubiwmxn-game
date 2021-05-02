@@ -47,8 +47,7 @@ private:
     const sf::Vector2u m_WINSIZE{ 1024, 768 };
     std::string m_AtlasName;
     const short unsigned int m_NBLEVELS = 6;
-    sf::Font m_EndgameTextFont;
-    sf::Text m_EndgameText;
+
     // UI Game
     sf::Font m_DeathsTextFont;
     sf::Sprite m_Tombstone;
@@ -57,7 +56,7 @@ private:
 
     // UI 
     std::unique_ptr<UIGame> m_gameUI;
-    int m_deathsbounds[6] {50,54,63,72,81,90};
+    int m_deathsbounds[6] {48,54,63,72,81,90};
 
     // Sound
     sf::SoundBuffer m_GameSoundBuffer;

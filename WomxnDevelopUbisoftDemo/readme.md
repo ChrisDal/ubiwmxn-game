@@ -19,7 +19,7 @@ MainPlayer :
 - [ ] Interaction Terrain :
 	- [X] Eau / Vide / Lave Timer 
 	- [X] Lave + Eau = Normal 
-- [ ] Interactions Elements :
+- [X] Interactions Elements :
     - [X] Panneau de Sortie
     - [X] Perso[Lave] + Cactus 
     - [X] Deadbody enflammé 
@@ -30,7 +30,6 @@ Tilemap :
  - [X] Chargement CSV modifié 
  - [X] Map background 
  - [X] Map elements / objects
- - [ ] Map ennemies movement 
 
 DeadBodies :
 - [X] Animation 
@@ -38,25 +37,22 @@ DeadBodies :
 	- [X] Eau : Solide
 	- [X] Lave : No-Solide
 	- [X] Vide : No Solide
-- [ ] Mobile (<= x => ) 
-- [ ] Attirer les monstres
+- [X] Attirer les monstres
 
 Enemies :
  - [X] Mise en Place Classe générale 
  - [X] Ennemie immobiles
- - [ ] Ennemie mobiles
+ - [X] Ennemie mobiles
  - [ ] Animation 
 
-[ ] Objects / Elements :
- - [ ] Cactus   
+Objects / Elements :
+ - [X] Cactus   
  - [ ] Levier 
 
-[ ] VFX :
-- [ ] Mise en place de la Class 
-- [ ] Recherche et Ajout des graphiques
-- [ ] Ajout des VFX MainCharacter 
+VFX :
+- [X] Ajout des VFX MainCharacter 
 - [ ] Ajout des VFX Ennemies 
 
-[ ] Sound : 
-- [ ] SFX Maincharacter
-- [ ] Background Music 
+Sound : 
+- [X] SFX Maincharacter
+- [X] Background Music 

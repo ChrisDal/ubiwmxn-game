@@ -7,14 +7,6 @@ GameDemo::GameDemo()
     : Game{ "9Lives" }
     , m_IsFinished{ false }
 {
-    m_EndgameTextFont.loadFromFile("Assets\\arial.ttf");
-
-    m_EndgameText.setFont(m_EndgameTextFont);
-    m_EndgameText.setPosition(500, 400);
-    m_EndgameText.setString("!!! WIN !!!");
-    m_EndgameText.setCharacterSize(24);
-    m_EndgameText.setFillColor(sf::Color::Red);
-
     // Sounds
     m_EndgameSoundBuffer.loadFromFile("Assets\\Sounds\\Win_sound.wav");
     m_EndgameSound.setBuffer(m_EndgameSoundBuffer);
@@ -372,7 +364,6 @@ void GameDemo::Render(sf::RenderTarget& target)
 
     if (m_IsFinished)
     {
-        //target.draw(m_EndgameText);
         sf::Vector2u winsize = { 1024, 768 };
         RenderEndMenu(target, winsize);
     }
@@ -450,8 +441,11 @@ void GameDemo::RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE)
 
 void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 {
+    
+    m_gameUI->DisplayUI(this, m_MainCharacter, m_mushrooms);
+    
     // DEBUG 
-    ImGui::Begin("Debug Menu");
+    /*ImGui::Begin("Debug Menu");
     ImGui::Text("Press F1 to close this debug menu");
     ImGui::NewLine();
 
@@ -567,7 +561,6 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
 
     }
     
-
     if (ImGui::CollapsingHeader("Inputs"))
     {
 
@@ -621,13 +614,6 @@ void GameDemo::RenderDebugMenu(sf::RenderTarget& target)
             }
             ImGui::TreePop();
         }
-    }
-
-
-    m_gameUI->DisplayUI(this, m_MainCharacter, m_mushrooms);
-
-    ImGui::End();
-
-
+    }*/
 
 }
