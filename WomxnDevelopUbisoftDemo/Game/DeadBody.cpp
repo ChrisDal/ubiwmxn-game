@@ -6,7 +6,7 @@
 #include <Game/Plateform.h>
 
 sf::Texture* DeadBody::m_pTextureAtlas = nullptr;
-const float DeadBody::TIME_DESTRUCTION_WATER = 27.0f;
+const float DeadBody::TIME_DESTRUCTION_WATER = 17.0f;
 const float DeadBody::TIME_DESTRUCTION_LAVA = 9.0f;
 
 
