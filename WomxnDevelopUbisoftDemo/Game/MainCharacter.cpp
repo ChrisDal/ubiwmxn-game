@@ -281,7 +281,7 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
     static const float JUMP_HEIGHT = 32.f*12.0f*5.0f;
     static const short unsigned int NB_MAX_JUMPS = 3;
 
-    static const float SPEED_INC = 12.0f;
+    static const float SPEED_INC = 20.0f;
     static const float DEAD_ZONE = 25.0f;
     static const float SLOWDOWN_RATE = 0.5f;
 
@@ -381,14 +381,10 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                 m_IsJumping = false;
             }
         }
-        s_Velocity.x = (m_Velocity.x >= 0.0f);
-        s_Velocity.y = (m_Velocity.y >= 0.0f);
     }
     else
     {
         
-        s_Velocity.x = (m_Velocity.x >= 0.0f);
-
         if (Keyboard::isKeyPressed(Keyboard::Right))
         {
             if (m_InTheWater)
@@ -473,7 +469,6 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
                     m_IsJumping = false;
                 }
             }
-            s_Velocity.y = (m_Velocity.y >= 0.0f);
         }
         else
         {
@@ -485,8 +480,13 @@ void MainCharacter::Update(float deltaTime, std::vector<Plateform>& Pf, TileMap&
             }
         }
 
+
+
     }
 
+    // Update Velocity Sign 
+    s_Velocity.x = (m_Velocity.x >= 0.0f);
+    s_Velocity.y = (m_Velocity.y >= 0.0f);
 
     // Test collision with new Position 
     short unsigned int colliding_loop = 0; 
