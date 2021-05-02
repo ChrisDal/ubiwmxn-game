@@ -22,7 +22,8 @@ public:
     std::vector<Ennemie> loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, 
                                     unsigned int width, unsigned int height, std::vector<ObjectsElements>& l_objects, 
                                     std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& m_checkpoints,
-                                    ObjectsElements& exit_sign, std::vector<MovableEnnemies>& mush, std::vector<MovableEnnemies>& disc);
+                                    ObjectsElements& exit_sign, ObjectsElements& hard_sign,
+                                    std::vector<MovableEnnemies>& mush, std::vector<MovableEnnemies>& disc);
     
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
