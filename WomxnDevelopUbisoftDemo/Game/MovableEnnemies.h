@@ -45,7 +45,7 @@ public:
 	};
 
 	MovableEnnemies(sf::Vector2f SpawnPosition, unsigned int sx, unsigned sy, sf::Vector2u& upperleft, E_Direction pathDirection, int pathLengthInTiles);
-	MovableEnnemies(){};
+	MovableEnnemies();
 	~MovableEnnemies() {};
 
 	sf::Vector2f ComputeTargetPoint();
@@ -119,10 +119,7 @@ private:
 	bool _colliding_plateforms;
 	bool moving;
 	bool is_animated;
-	bool _colliding_fire;
-	bool _colliding_water;
-	bool _colliding_void;
-	bool _colliding_lava;
+	bool _colliding_fire{ false };
 	bool _colliding{ false };
 	
 	bool m_patrolling{true}; 

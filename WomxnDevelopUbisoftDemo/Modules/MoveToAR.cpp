@@ -18,7 +18,7 @@ void MoveToAR::Act(MovableEnnemies* enm, float deltaTime)
 	if (isRunning())
 	{
 		// if dead stops
-		if (! enm->GetIsDead())
+		if (enm->GetIsDead())
 		{
 			this->Fail(); 
 			return; 
