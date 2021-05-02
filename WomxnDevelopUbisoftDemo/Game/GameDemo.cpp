@@ -99,7 +99,7 @@ bool GameDemo::NextLevel(bool firstlevel)
                                         static_cast<unsigned int>(m_WINSIZE.x / 32.0f),
                                         static_cast<unsigned int>(m_WINSIZE.y / 32.0f),
                                         m_objects, m_cactus, 
-                                        m_checkpoints, m_exit_sign, 
+                                        m_checkpoints, m_exit_sign, m_hard_sign,
                                         m_mushrooms, m_discs);
 
     // Discs and mushroom 
@@ -313,6 +313,23 @@ void GameDemo::Update(float deltaTime)
             
             
         }
+
+        // if we are in the menu
+        if (m_level == 1)
+        {
+            if (m_hard_sign.Contains(m_MainCharacter->GetCenter()))
+            {
+                m_EndgameSound.play();
+                m_level = m_NBLEVELS - 1;
+                if (m_level < m_NBLEVELS)
+                {
+                    // GoTo Last Level
+                    NextLevel(false);
+                    m_bgmusic.pause();
+                }
+            }
+        }
+
     }
 }
 
@@ -344,8 +361,13 @@ void GameDemo::Render(sf::RenderTarget& target)
         target.draw(ckp);
     }
     
-    // Exit and MC
+    // Exits
     target.draw(m_exit_sign);
+    if (m_level == 1)
+    {
+        target.draw(m_hard_sign);
+    }
+    
     
     // Mushrooms 
     for (MovableEnnemies& mvenm : m_mushrooms)

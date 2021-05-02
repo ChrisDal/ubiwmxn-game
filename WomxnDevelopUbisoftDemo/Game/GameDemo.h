@@ -75,6 +75,7 @@ private:
     sf::Texture m_TextureAtlas;
     sf::Texture m_TextureDead;
     ObjectsElements m_exit_sign;
+    ObjectsElements m_hard_sign;
     std::vector<MovableEnnemies> m_mushrooms = {};
     std::vector<MovableEnnemies> m_discs = {};
 

@@ -4,7 +4,7 @@
 
 std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vector2u tileSize, sf::Vector2u NspriteSize, unsigned int width, unsigned int height, 
                                             std::vector<ObjectsElements>& l_objects, std::vector<Ennemie>& cactus, std::vector<ObjectsElements>& l_checkpoints, 
-                                            ObjectsElements& exit_sign, 
+                                            ObjectsElements& exit_sign, ObjectsElements& hard_sign,
 											std::vector<MovableEnnemies>& mush, std::vector<MovableEnnemies>& disc)
 {
 	
@@ -84,7 +84,12 @@ std::vector<Ennemie> TileMap::loadObjects(const std::string& objectset, sf::Vect
 				{
 					// classical elements
                     exit_sign = ObjectsElements(spaw, true, false, coord, tileSize.x, tileSize.y, m_tiles[k]);
-				}                
+				}   
+                else if (m_tiles[k] == 109)
+                {
+                    // panneau
+                    hard_sign = ObjectsElements(spaw, true, false, coord, tileSize.x, tileSize.y, m_tiles[k]);
+                }
                 else
 				{
 					// classical elements
