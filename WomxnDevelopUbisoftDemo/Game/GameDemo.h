@@ -57,6 +57,7 @@ private:
 
     // UI 
     std::unique_ptr<UIGame> m_gameUI;
+    int m_deathsbounds[6] {45,50,58,75,85,90 };
 
     // Sound
     sf::SoundBuffer m_GameSoundBuffer;

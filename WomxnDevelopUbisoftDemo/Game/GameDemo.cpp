@@ -403,32 +403,32 @@ void GameDemo::RenderEndMenu(sf::RenderTarget& target, sf::Vector2u& WINSIZE)
         ImGui::SetCursorPosY(static_cast<float>(m_TextureTombstone.getSize().y + 10.0f));
         ImGui::Separator();
         ImGui::Text("Total Number of Deaths : %d ", m_MainCharacter->DeathCounter());
-        if (m_MainCharacter->DeathCounter() < 12)
+        if (m_MainCharacter->DeathCounter() < m_deathsbounds[0])
         {
             ImGui::Text("Rank : Cream Puff");
             ImGui::Text("Oldest Cat to Have Ever Lived");
         }
-        else if (m_MainCharacter->DeathCounter() < 15)
+        else if (m_MainCharacter->DeathCounter() < m_deathsbounds[1])
         {
             ImGui::Text("Rank : Felicette");
             ImGui::Text("RIP : the first Astrocat");
         }
-        else if (m_MainCharacter->DeathCounter() < 18)
+        else if (m_MainCharacter->DeathCounter() < m_deathsbounds[2])
         {
             ImGui::Text("Rank : Nyan Cat");
             ImGui::Text("Cake and rainbow");
         }
-        else if (m_MainCharacter->DeathCounter() < 22)
+        else if (m_MainCharacter->DeathCounter() < m_deathsbounds[3])
         {
             ImGui::Text("Rank : Grumpy Cat");
             ImGui::Text("Just google me");
         }
-        else if (m_MainCharacter->DeathCounter() < 25)
+        else if (m_MainCharacter->DeathCounter() < m_deathsbounds[4])
         {
             ImGui::Text("Rank : Colonel Meow");
             ImGui::Text("The 2014 Guinness World record for the longest fur on a cat");
         }
-        else if (m_MainCharacter->DeathCounter() < 30)
+        else if (m_MainCharacter->DeathCounter() < m_deathsbounds[5])
         {
             ImGui::Text("Rank : Tom");
             ImGui::Text("Without Jerry, try again !");
